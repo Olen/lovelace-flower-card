@@ -4,7 +4,7 @@
 
 ### Instructions
 
-1: Install card
+1: Install card (`type: module`)
 
 2: Get CSV database file (No. I won't tell you where)
 
