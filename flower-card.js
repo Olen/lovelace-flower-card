@@ -11,6 +11,9 @@ class FlowerCard extends cardTools.LitElement {
 
   static get styles() {
     return cardTools.LitCSS`
+    ha-card {
+      margin-top: 32px;
+    }
     .attributes {
       white-space: nowrap;
       padding: 8px;
@@ -30,11 +33,13 @@ class FlowerCard extends cardTools.LitElement {
       height: 72px;
     }
     .header > img {
-      width: 56px;
-      border-radius: 28px;
+      width: 88px;
+      border-radius: var(--ha-card-border-radius, 2px);
       margin-left: 16px;
       margin-right: 16px;
+      margin-top: -32px;
       float: left;
+      box-shadow: var( --ha-card-box-shadow, 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2) );
     }
     .header > #name {
       font-weight: bold;
