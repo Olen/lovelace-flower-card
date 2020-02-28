@@ -93,7 +93,7 @@ customElements.whenDefined('card-tools').then(() => {
       const Flower = FlowerData[species];
       if(!this.stateObj)
         return cardTools.LitHtml``;
-console.log(this.stateObj);
+
     const attribute = (icon, attr, min, max) => {
       const unit = this.stateObj.attributes.unit_of_measurement_dict[attr];
       const val = this.stateObj.attributes[attr];
