@@ -2,13 +2,25 @@
 
 ![](https://user-images.githubusercontent.com/1299821/56608848-fb66c300-660b-11e9-843e-369327c75926.png)
 
+### Dependencies
+1: lovelace-card-tools
+2: MiFlora database (PlantDB_5335_U0.csv)
+
 ### Instructions
 
 1: Install card (`type: module`)
-
-2: Get CSV database file (No. I won't tell you where)
+```yaml
+  - type: module
+    url: /local/lovelace-flower-card/flower-card.js
+```
+2: Get CSV database file ()
 
 3: Run `python3 convert.py DBFileName.csv > data.js`
+3a: Execute convert.py on a Linux machine (not Windows)
+3b: Check data.js via cli command: file data.js. Correct is:
+```
+data.js: ASCII text, with very long lines
+```
 
 4: Move `data.js` to `www/lovelace-flower-card/data/data.js`
 
