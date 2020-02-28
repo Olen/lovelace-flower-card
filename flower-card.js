@@ -84,6 +84,34 @@ customElements.whenDefined('card-tools').then(() => {
         opacity: 0.25;
         margin-left: 8px;
         margin-right: 8px;
+      }    .tooltip {
+      position: relative;
+      }
+      .tooltip:after {
+        opacity: 0;
+        visibility: hidden;
+        position: absolute;
+        content: attr(data-tooltip);
+        padding: 6px 10px;
+        top: 1.4em;
+        left: 50%;
+        -webkit-transform: translateX(-50%) translateY(-180%);
+                transform: translateX(-50%) translateY(-180%);
+        background: grey;
+        color: white;
+        white-space: nowrap;
+        z-index: 2;
+        border-radius: 2px;
+        transition: opacity 0.2s cubic-bezier(0.64, 0.09, 0.08, 1), -webkit-transform 0.2s cubic-bezier(0.64, 0.09, 0.08, 1);
+        transition: opacity 0.2s cubic-bezier(0.64, 0.09, 0.08, 1), transform 0.2s cubic-bezier(0.64, 0.09, 0.08, 1);
+        transition: opacity 0.2s cubic-bezier(0.64, 0.09, 0.08, 1), transform 0.2s cubic-bezier(0.64, 0.09, 0.08, 1), -webkit-transform 0.2s cubic-bezier(0.64, 0.09, 0.08, 1);
+      }
+      .tooltip:hover:after, .tooltip:active:after {
+        display: block;
+        opacity: 1;
+        visibility: visible;
+        -webkit-transform: translateX(-50%) translateY(-200%);
+                transform: translateX(-50%) translateY(-200%);
       }
       `;
     }
@@ -99,8 +127,8 @@ customElements.whenDefined('card-tools').then(() => {
       const val = this.stateObj.attributes[attr];
         const pct = 100*Math.max(0, Math.min(1, (val-min)/(max-min)));
         return cardTools.LitHtml`
-          <div class="attribute" 
-          title="Current: ${val + " "+ unit}, min: ${min + " "+ unit}, max: ${max + " "+ unit}"
+        <div class="attribute tooltip"
+        data-tooltip="${val + " "+ unit + " | " + min + " ~ " + max + " " + unit}"
           @click="${() => cardTools.moreInfo(this.stateObj.attributes.sensors[attr])}">
             <ha-icon .icon="${icon}"></ha-icon>
             <div class="meter red">
