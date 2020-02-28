@@ -34,8 +34,8 @@ customElements.whenDefined('card-tools').then(() => {
         height: 72px;
       }
       .header > img {
+        border-radius: 50%;
         width: 88px;
-        border-radius: var(--ha-card-border-radius, 2px);
         margin-left: 16px;
         margin-right: 16px;
         margin-top: -32px;
