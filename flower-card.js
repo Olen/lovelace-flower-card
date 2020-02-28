@@ -93,11 +93,15 @@ customElements.whenDefined('card-tools').then(() => {
       const Flower = FlowerData[species];
       if(!this.stateObj)
         return cardTools.LitHtml``;
-
-      const attribute = (icon, val, min, max) => {
+console.log(this.stateObj);
+    const attribute = (icon, attr, min, max) => {
+      const unit = this.stateObj.attributes.unit_of_measurement_dict[attr];
+      const val = this.stateObj.attributes[attr];
         const pct = 100*Math.max(0, Math.min(1, (val-min)/(max-min)));
         return cardTools.LitHtml`
-          <div class="attribute">
+          <div class="attribute" 
+          title="Current: ${val + " "+ unit}, min: ${min + " "+ unit}, max: ${max + " "+ unit}"
+          @click="${() => cardTools.moreInfo(this.stateObj.attributes.sensors[attr])}">
             <ha-icon .icon="${icon}"></ha-icon>
             <div class="meter red">
               <span
@@ -134,12 +138,12 @@ customElements.whenDefined('card-tools').then(() => {
       <div class="divider"></div>
 
       <div class="attributes">
-      ${attribute('mdi:thermometer', this.stateObj.attributes.temperature, Flower[4], Flower[5])}
-      ${attribute('mdi:white-balance-sunny', this.stateObj.attributes.brightness, Flower[2], Flower[3])}
+      ${attribute('mdi:thermometer', 'temperature', Flower[4], Flower[5])}
+      ${attribute('mdi:white-balance-sunny', 'brightness', Flower[2], Flower[3])}
       </div>
       <div class="attributes">
-      ${attribute('mdi:water-percent', this.stateObj.attributes.moisture, Flower[6], Flower[7])}
-      ${attribute('mdi:leaf', this.stateObj.attributes.conductivity, Flower[8], Flower[9])}
+      ${attribute('mdi:water-percent', 'moisture', Flower[6], Flower[7])}
+      ${attribute('mdi:leaf', 'conductivity', Flower[8], Flower[9])}
       </div>
 
       </ha-card>
