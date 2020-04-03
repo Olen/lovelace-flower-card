@@ -43,15 +43,12 @@ species: "tulipa 'hollandia'"
 To get a list of the available species run `python3 convert.py DBFilename.csv species`. The value you want is the one after the colon. Enter it exactly like it says, with quotes and all.
 
 7: configuration.yaml
-
 Add the following to configuration.yaml (bottom of this file)
 ```plant: !include plants.yaml```
-
 I do this to separate my config files.
 
 8: plants.yaml
-
-Create, edit and add the following to plants.yaml. Change accordingly.
+Create, edit and add the following to plants.yaml. Change accordingly. Repeat this section for other plants. Separate each section with a blank line.
 ```
 spathiphyllum_bingo_cupido:
   sensors:
