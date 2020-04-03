@@ -1,6 +1,6 @@
 # EARLY BETA
 
-![](https://user-images.githubusercontent.com/1299821/56608848-fb66c300-660b-11e9-843e-369327c75926.png)
+![](https://github.com/remkolems/lovelace-flower-card/blob/master/lovelace-flower-card_popup.png)
 
 ### Dependencies
 1: lovelace-card-tools
