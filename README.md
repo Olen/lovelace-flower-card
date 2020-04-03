@@ -11,6 +11,7 @@ I looked into several forks of the original card https://github.com/thomasloven/
 ### Dependencies
 1. lovelace-card-tools (https://github.com/thomasloven/lovelace-card-tools)
 2. MiFlora database (PlantDB_5335_U0.csv)
+3. Plant sensor (https://www.home-assistant.io/integrations/plant)
 
 ### Instructions
 
