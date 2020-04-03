@@ -9,8 +9,8 @@ Also see my detailed post in this same thread at https://community.home-assistan
 I looked into several forks of the original card https://github.com/thomasloven/lovelace-flower-card. Some forks were very interesting and I edited several of those source codes changes into my own new fork. Credits to those original authors.
 
 ### Dependencies
-1: lovelace-card-tools
-2: MiFlora database (PlantDB_5335_U0.csv)
+1. lovelace-card-tools (https://github.com/thomasloven/lovelace-card-tools)
+2. MiFlora database (PlantDB_5335_U0.csv)
 
 ### Instructions
 
