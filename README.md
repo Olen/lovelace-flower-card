@@ -1,4 +1,4 @@
-# EARLY BETA
+# Release
 
 ![](https://github.com/remkolems/lovelace-flower-card/blob/master/lovelace-flower-card_popup.png)
 
