@@ -1,6 +1,12 @@
 # Release
 
+See https://community.home-assistant.io/t/miflora-sensor-plant-database/53131 for more information of this particular MiFlora / Home-Assistant card.
+Also see my detailed post in this same thread at https://community.home-assistant.io/t/miflora-sensor-plant-database/53131/73
+
 ![](https://github.com/remkolems/lovelace-flower-card/blob/master/lovelace-flower-card_popup.png)
+
+### Disclaimer
+I looked into several forks of the original card https://github.com/thomasloven/lovelace-flower-card. Some forks were very interesting and I edited several of those source codes changes into my own new fork. Credits to those original authors.
 
 ### Dependencies
 1: lovelace-card-tools
@@ -35,3 +41,23 @@ species: "tulipa 'hollandia'"
 ```
 
 To get a list of the available species run `python3 convert.py DBFilename.csv species`. The value you want is the one after the colon. Enter it exactly like it says, with quotes and all.
+
+7. configuration.yaml
+
+Add the following to configuration.yaml (bottom of this file)
+```plant: !include plants.yaml```
+
+I do this to separate my config files.
+
+8. plants.yaml
+
+Create, edit and add the following to plants.yaml. Change accordingly.
+```
+spathiphyllum_bingo_cupido:
+  sensors:
+    moisture: sensor.spathiphyllum_moisture
+    battery: sensor.spathiphyllum_battery
+    temperature: sensor.spathiphyllum_temperature
+    conductivity: sensor.spathiphyllum_conductivity
+    brightness: sensor.spathiphyllum_brightness
+```
