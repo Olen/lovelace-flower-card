@@ -15,11 +15,17 @@ I looked into several forks of the original card https://github.com/thomasloven/
 
 ### Instructions
 
-1: Install card (`type: module`)
+1: Install the card
+Go to Configuration -> Lovelace Dashboards -> Resources -> press the + (lower right corner of screen) and add the following information:
+
 ```yaml
-  - type: module
-    url: /local/lovelace-flower-card/flower-card.js
+  Url: /local/lovelace-flower-card/flower-card.js
+  Resource type: JavaScript Module
 ```
+![image](https://user-images.githubusercontent.com/45675902/80322223-ebd41880-8823-11ea-992d-7070d4197f8b.png)
+
+Press *Create* afterwards to add the new resource.
+
 2: Get CSV database file (https://github.com/khronimo/MiFloraDB)
 
 3: Run `python3 convert.py DBFileName.csv > data.js`
