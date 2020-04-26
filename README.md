@@ -17,7 +17,8 @@ I looked into several forks of the original card https://github.com/thomasloven/
 
 1: Install the card
 
-	1a: Go to Configuration -> Lovelace Dashboards -> Resources -> press the + (lower right corner of screen) and add the following information:
+	1a: Go to Configuration -> Lovelace Dashboards -> Resources -> press the + (lower right corner of screen) 
+	and add the following information:
 
 ```yaml
   Url: /local/lovelace-flower-card/flower-card.js
