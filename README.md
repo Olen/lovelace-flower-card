@@ -16,7 +16,8 @@ I looked into several forks of the original card https://github.com/thomasloven/
 ### Instructions
 
 1: Install the card
-Go to Configuration -> Lovelace Dashboards -> Resources -> press the + (lower right corner of screen) and add the following information:
+
+1a: Go to Configuration -> Lovelace Dashboards -> Resources -> press the + (lower right corner of screen) and add the following information:
 
 ```yaml
   Url: /local/lovelace-flower-card/flower-card.js
@@ -24,7 +25,7 @@ Go to Configuration -> Lovelace Dashboards -> Resources -> press the + (lower ri
 ```
 ![image](https://user-images.githubusercontent.com/45675902/80322223-ebd41880-8823-11ea-992d-7070d4197f8b.png)
 
-Press *Create* afterwards to add the new resource.
+1b: Press *Create* afterwards to add the new resource.
 
 2: Get CSV database file (https://github.com/khronimo/MiFloraDB)
 
