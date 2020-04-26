@@ -17,7 +17,7 @@ I looked into several forks of the original card https://github.com/thomasloven/
 
 1: Install the card
 
-1a: Go to Configuration -> Lovelace Dashboards -> Resources -> press the + (lower right corner of screen) and add the following information:
+	1a: Go to Configuration -> Lovelace Dashboards -> Resources -> press the + (lower right corner of screen) and add the following information:
 
 ```yaml
   Url: /local/lovelace-flower-card/flower-card.js
@@ -25,15 +25,15 @@ I looked into several forks of the original card https://github.com/thomasloven/
 ```
 ![image](https://user-images.githubusercontent.com/45675902/80322223-ebd41880-8823-11ea-992d-7070d4197f8b.png)
 
-1b: Press *Create* afterwards to add the new resource.
+	1b: Press *Create* afterwards to add the new resource.
 
 2: Get CSV database file (https://github.com/khronimo/MiFloraDB)
 
 3: Run `python3 convert.py DBFileName.csv > data.js`
 
-3a: Execute convert.py on a Linux machine (not Windows)
+	3a: Execute convert.py on a Linux machine (not Windows)
 
-3b: Check data.js via cli command: file data.js. Correct is:
+	3b: Check data.js via cli command: file data.js. Correct is:
 ```
 data.js: ASCII text, with very long lines
 ```
