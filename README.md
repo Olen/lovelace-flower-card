@@ -30,7 +30,9 @@ I looked into several forks of the original card https://github.com/thomasloven/
 2: Get CSV database file (https://github.com/khronimo/MiFloraDB)
 
 3: Run `python3 convert.py DBFileName.csv > data.js`
+
 3a: Execute convert.py on a Linux machine (not Windows)
+
 3b: Check data.js via cli command: file data.js. Correct is:
 ```
 data.js: ASCII text, with very long lines
