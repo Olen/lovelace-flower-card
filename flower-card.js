@@ -1,13 +1,11 @@
-import {FlowerData} from '/local/lovelace-flower-card/data/data.js';
+import {FlowerData} from '/hacsfiles/flower-card/data.js';
 customElements.whenDefined('card-tools').then(() => {
-  
+
   var cardTools = customElements.get('card-tools');
   class FlowerCard extends cardTools.LitElement {
-    
+
     async setConfig(config) {
-
       this.config = config;
-
     }
 
     static get styles() {
@@ -84,8 +82,9 @@ customElements.whenDefined('card-tools').then(() => {
         opacity: 0.25;
         margin-left: 8px;
         margin-right: 8px;
-      }    .tooltip {
-      position: relative;
+      }
+      .tooltip {
+        position: relative;
       }
       .tooltip:after {
         opacity: 0;
@@ -127,53 +126,38 @@ customElements.whenDefined('card-tools').then(() => {
       const val = this.stateObj.attributes[attr];
         const pct = 100*Math.max(0, Math.min(1, (val-min)/(max-min)));
         return cardTools.LitHtml`
-        <div class="attribute tooltip"
-        data-tooltip="${val + " "+ unit + " | " + min + " ~ " + max + " " + unit}"
-          @click="${() => cardTools.moreInfo(this.stateObj.attributes.sensors[attr])}">
-            <ha-icon .icon="${icon}"></ha-icon>
-            <div class="meter red">
-              <span
-              class="${val < min || val > max ? 'bad' : 'good'}"
-              style="width: 100%;"
-              ></span>
-            </div>
-            <div class="meter green">
-              <span
-              class="${val > max ? 'bad' : 'good'}"
-              style="width:${pct}%;"
-              ></span>
-            </div>
-            <div class="meter red">
-              <span
-              class="bad"
-              style="width:${val > max ? 100 : 0}%;"
-              ></span>
-            </div>
+        <div class="attribute tooltip" data-tooltip="${val + " "+ unit + " | " + min + " ~ " + max + " " + unit}" @click="${() => cardTools.moreInfo(this.stateObj.attributes.sensors[attr])}">
+          <ha-icon .icon="${icon}"></ha-icon>
+          <div class="meter red">
+            <span class="${val < min || val > max ? 'bad' : 'good'}" style="width: 100%;"></span>
           </div>
+          <div class="meter green">
+            <span class="${val > max ? 'bad' : 'good'}" style="width:${pct}%;"></span>
+          </div>
+          <div class="meter red">
+            <span class="bad" style="width:${val > max ? 100 : 0}%;"></span>
+          </div>
+        </div>
         `;
             // ${val} (${min}-${max})
       }
 
       return cardTools.LitHtml`
       <ha-card>
-      <div class="header"
-      @click="${() => cardTools.moreInfo(this.stateObj.entity_id)}"
-      >
-      <img src="/local/lovelace-flower-card/data/Images/${this.config.species}.jpg">
-      <span id="name"> ${this.stateObj.attributes.friendly_name} - ${Flower[1]}</span>
-      <span id="species"> ${Flower[0]} </span>
-      </div>
-      <div class="divider"></div>
-
-      <div class="attributes">
-      ${attribute('mdi:thermometer', 'temperature', Flower[4], Flower[5])}
-      ${attribute('mdi:white-balance-sunny', 'brightness', Flower[2], Flower[3])}
-      </div>
-      <div class="attributes">
-      ${attribute('mdi:water-percent', 'moisture', Flower[6], Flower[7])}
-      ${attribute('mdi:leaf', 'conductivity', Flower[8], Flower[9])}
-      </div>
-
+        <div class="header" @click="${() => cardTools.moreInfo(this.stateObj.entity_id)}">
+          <img src="/local/images/plants/${this.config.species}.jpg">
+          <span id="name"> ${this.stateObj.attributes.friendly_name} </span>
+          <span id="species"> ${Flower[0]} </span>
+        </div>
+        <div class="divider"></div>
+        <div class="attributes">
+          ${attribute('mdi:thermometer', 'temperature', Flower[4], Flower[5])}
+          ${attribute('mdi:white-balance-sunny', 'brightness', Flower[2], Flower[3])}
+        </div>
+        <div class="attributes">
+          ${attribute('mdi:water-percent', 'moisture', Flower[6], Flower[7])}
+          ${attribute('mdi:leaf', 'conductivity', Flower[8], Flower[9])}
+        </div>
       </ha-card>
       `;
     }
@@ -193,5 +177,6 @@ window.setTimeout(() => {
   if(customElements.get('card-tools')) return;
   customElements.define('flower-card', class extends HTMLElement{
     setConfig() { throw new Error("Can't find card-tools. See https://github.com/thomasloven/lovelace-card-tools");}
-  });
+});
+
 }, 2000);
