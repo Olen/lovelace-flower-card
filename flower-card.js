@@ -1,4 +1,4 @@
-import {FlowerData} from '/hacsfiles/flower-card/data.js';
+import {FlowerData} from '/local/lovelace-flower-card/data/data.js';
 customElements.whenDefined('card-tools').then(() => {
 
   var cardTools = customElements.get('card-tools');
