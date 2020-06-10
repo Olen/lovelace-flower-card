@@ -145,7 +145,7 @@ customElements.whenDefined('card-tools').then(() => {
       return cardTools.LitHtml`
       <ha-card>
         <div class="header" @click="${() => cardTools.moreInfo(this.stateObj.entity_id)}">
-          <img src="/local/images/plants/${this.config.species}.jpg">
+          <img src="${this.config.image}">
           <span id="name"> ${this.stateObj.attributes.friendly_name} </span>
           <span id="species"> ${Flower[0]} </span>
         </div>
