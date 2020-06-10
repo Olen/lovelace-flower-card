@@ -48,6 +48,7 @@ data.js: ASCII text, with very long lines
 type: custom:flower-card
 entity: plant.my_plant
 species: "tulipa 'hollandia'"
+image: "http://example.com/images/plant.jpg"
 ```
 
 To get a list of the available species run `python3 convert.py DBFilename.csv species`. The value you want is the one after the colon. Enter it exactly like it says, with quotes and all.
