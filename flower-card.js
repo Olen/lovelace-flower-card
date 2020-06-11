@@ -10,9 +10,7 @@ customElements.whenDefined('card-tools').then(() => {
 
     static get styles() {
       return cardTools.LitCSS`
-      ha-card {
-        margin-top: 32px;
-      }
+      ha-card {}
       .attributes {
         white-space: nowrap;
         padding: 8px;
