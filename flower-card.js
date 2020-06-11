@@ -28,26 +28,26 @@ customElements.whenDefined('card-tools').then(() => {
       }
 
       .header {
-        padding-top: 8px;
-        height: 72px;
+
       }
-      .header > img {
-        border-radius: 50%;
-        width: 88px;
-        margin-left: 16px;
-        margin-right: 16px;
-        margin-top: -32px;
-        float: left;
+      .header > .image-container {
+        display: block;
+        width: 100%;
+        height: 150px;
+        overflow: hidden;
         box-shadow: var( --ha-card-box-shadow, 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2) );
       }
-      .header > #name {
+      .header > .identification {
+        padding: 10px;
+      }
+      .header > .name {
         font-weight: bold;
         width: 100%;
-        margin-top: 16px;
+        margin-top: 5px;
         text-transform: capitalize;
         display: block;
       }
-      .header > #species {
+      .header > .species {
         text-transform: capitalize;
         color: #8c96a5;
         display: block;
@@ -82,6 +82,8 @@ customElements.whenDefined('card-tools').then(() => {
         opacity: 0.25;
         margin-left: 8px;
         margin-right: 8px;
+        margin-top: 5px;
+        margin-bottom: 10px;
       }
       .tooltip {
         position: relative;
@@ -145,9 +147,13 @@ customElements.whenDefined('card-tools').then(() => {
       return cardTools.LitHtml`
       <ha-card>
         <div class="header" @click="${() => cardTools.moreInfo(this.stateObj.entity_id)}">
-          <img src="${this.config.image}">
-          <span id="name"> ${this.stateObj.attributes.friendly_name} </span>
-          <span id="species"> ${Flower[0]} </span>
+          <div class="image-container">  
+            <img src="${this.config.image}">
+          </div>
+          <div class="identification">
+            <div class="name"> ${this.stateObj.attributes.friendly_name}</div>
+            <div class="species"> ${Flower[0]} </div>
+          </div>
         </div>
         <div class="divider"></div>
         <div class="attributes">
