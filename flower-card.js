@@ -37,15 +37,17 @@ customElements.whenDefined('card-tools').then(() => {
       }
       .header > .identification {
         padding: 10px;
+        padding-left: 20px;
+        padding-top: 15px;
       }
-      .header > .name {
+      .header > .identification > .name {
         font-weight: bold;
         width: 100%;
         margin-top: 5px;
         text-transform: capitalize;
         display: block;
       }
-      .header > .species {
+      .header > .identification > .species {
         text-transform: capitalize;
         color: #8c96a5;
         display: block;
@@ -80,7 +82,6 @@ customElements.whenDefined('card-tools').then(() => {
         opacity: 0.25;
         margin-left: 8px;
         margin-right: 8px;
-        margin-top: 5px;
         margin-bottom: 10px;
       }
       .tooltip {
