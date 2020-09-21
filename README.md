@@ -35,7 +35,7 @@ I looked into several forks of the original card https://github.com/thomasloven/
 ```yaml
 type: custom:flower-card
 entity: plant.my_plant
-
+```
 7: configuration.yaml
 
 Add the following to configuration.yaml (bottom of this file)
@@ -46,6 +46,7 @@ I do this to separate my config files.
 8: plants.yaml
 
 Create, edit and add the following to plants.yaml. Change accordingly. Repeat this section for other plants. Separate each section with a blank line.
+
 ```
 spathiphyllum_bingo_cupido:
   species: spathiphyllum bingo cupido
