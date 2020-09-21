@@ -1,7 +1,9 @@
 # Release
 
-See https://community.home-assistant.io/t/miflora-sensor-plant-database/53131 for more information of this particular MiFlora / Home-Assistant card.
-Also see my detailed post in this same thread at https://community.home-assistant.io/t/miflora-sensor-plant-database/53131/73
+This fork of the flower-card depends on this patch to the internal Plant component:
+https://github.com/Olen/homeassistant-plant
+
+Instead of reading the max/min-values from the huge data-file, it gets the values from the plant entity.  
 
 ![](https://github.com/remkolems/lovelace-flower-card/blob/master/lovelace-flower-card_popup.png)
 
@@ -10,8 +12,7 @@ I looked into several forks of the original card https://github.com/thomasloven/
 
 ### Dependencies
 1. lovelace-card-tools (https://github.com/thomasloven/lovelace-card-tools)
-2. MiFlora database (PlantDB_5335_U0.csv)
-3. Plant sensor (https://www.home-assistant.io/integrations/plant)
+3. Patched Plant sensor (https://github.com/Olen/homeassistant-plant)
 
 ### Instructions
 
@@ -27,31 +28,13 @@ I looked into several forks of the original card https://github.com/thomasloven/
 
  1b: Press *Create* afterwards to add the new resource.
 
-2: Get CSV database file (https://github.com/khronimo/MiFloraDB)
-
-3: Run `python3 convert.py DBFileName.csv > data.js`
-
- 3a: Execute convert.py on a Linux machine (not Windows)
-
- 3b: Check data.js via cli command: file data.js. Correct is:
-```
-data.js: ASCII text, with very long lines
-```
-
-4: Move `data.js` to `www/lovelace-flower-card/data/data.js`
-
-5: Get flower images and extract to `www/lovelace-flower-card/data/Images`
+5: Get flower images and extract to `www/images/plants/<species>.jpg`
 
 6: Setup card
 
 ```yaml
 type: custom:flower-card
 entity: plant.my_plant
-species: "tulipa 'hollandia'"
-image: "http://example.com/images/plant.jpg"
-```
-
-To get a list of the available species run `python3 convert.py DBFilename.csv species`. The value you want is the one after the colon. Enter it exactly like it says, with quotes and all.
 
 7: configuration.yaml
 
@@ -65,6 +48,7 @@ I do this to separate my config files.
 Create, edit and add the following to plants.yaml. Change accordingly. Repeat this section for other plants. Separate each section with a blank line.
 ```
 spathiphyllum_bingo_cupido:
+  species: spathiphyllum bingo cupido
   sensors:
     moisture: sensor.spathiphyllum_moisture
     battery: sensor.spathiphyllum_battery
