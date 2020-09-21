@@ -1,6 +1,4 @@
-import {FlowerData} from '/local/lovelace-flower-card/data/data.js';
 customElements.whenDefined('card-tools').then(() => {
-
   var cardTools = customElements.get('card-tools');
   class FlowerCard extends cardTools.LitElement {
 
@@ -10,7 +8,9 @@ customElements.whenDefined('card-tools').then(() => {
 
     static get styles() {
       return cardTools.LitCSS`
-      ha-card {}
+      ha-card {
+        margin-top: 32px;
+      }
       .attributes {
         white-space: nowrap;
         padding: 8px;
@@ -26,28 +26,26 @@ customElements.whenDefined('card-tools').then(() => {
       }
 
       .header {
-
+        padding-top: 8px;
+        height: 72px;
       }
-      .header > .image-container {
-        display: block;
-        width: 100%;
-        height: 150px;
-        overflow: hidden;
+      .header > img {
+        border-radius: 50%;
+        width: 88px;
+        margin-left: 16px;
+        margin-right: 16px;
+        margin-top: -32px;
+        float: left;
         box-shadow: var( --ha-card-box-shadow, 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2) );
       }
-      .header > .identification {
-        padding: 10px;
-        padding-left: 20px;
-        padding-top: 15px;
-      }
-      .header > .identification > .name {
+      .header > #name {
         font-weight: bold;
         width: 100%;
-        margin-top: 5px;
+        margin-top: 16px;
         text-transform: capitalize;
         display: block;
       }
-      .header > .identification > .species {
+      .header > #species {
         text-transform: capitalize;
         color: #8c96a5;
         display: block;
@@ -82,7 +80,6 @@ customElements.whenDefined('card-tools').then(() => {
         opacity: 0.25;
         margin-left: 8px;
         margin-right: 8px;
-        margin-bottom: 10px;
       }
       .tooltip {
         position: relative;
@@ -117,14 +114,15 @@ customElements.whenDefined('card-tools').then(() => {
     }
 
     render() {
-      const species = this.config.species;
-      const Flower = FlowerData[species];
-      if(!this.stateObj)
+      if(!this.stateObj) {
+	console.log("No plant found for entity " + this.config.entity);
         return cardTools.LitHtml``;
-
-    const attribute = (icon, attr, min, max) => {
-      const unit = this.stateObj.attributes.unit_of_measurement_dict[attr];
-      const val = this.stateObj.attributes[attr];
+      }
+      const species = this.stateObj.attributes.species;
+      const limits = this.stateObj.attributes.limits;
+      const attribute = (icon, attr, min, max) => {
+        const unit = this.stateObj.attributes.unit_of_measurement_dict[attr];
+        const val = this.stateObj.attributes[attr];
         const pct = 100*Math.max(0, Math.min(1, (val-min)/(max-min)));
         return cardTools.LitHtml`
         <div class="attribute tooltip" data-tooltip="${val + " "+ unit + " | " + min + " ~ " + max + " " + unit}" @click="${() => cardTools.moreInfo(this.stateObj.attributes.sensors[attr])}">
@@ -146,22 +144,18 @@ customElements.whenDefined('card-tools').then(() => {
       return cardTools.LitHtml`
       <ha-card>
         <div class="header" @click="${() => cardTools.moreInfo(this.stateObj.entity_id)}">
-          <div class="image-container">  
-            <img src="${this.config.image}">
-          </div>
-          <div class="identification">
-            <div class="name"> ${this.stateObj.attributes.friendly_name}</div>
-            <div class="species"> ${Flower[0]} </div>
-          </div>
+          <img src="/local/images/plants/${this.config.species}.jpg">
+          <span id="name"> ${this.stateObj.attributes.friendly_name} </span>
+          <span id="species">${species} </span>
         </div>
         <div class="divider"></div>
         <div class="attributes">
-          ${attribute('mdi:thermometer', 'temperature', Flower[4], Flower[5])}
-          ${attribute('mdi:white-balance-sunny', 'brightness', Flower[2], Flower[3])}
+          ${attribute('mdi:thermometer', 'temperature', limits['min_temperature'], limits['max_temperature'])}
+          ${attribute('mdi:white-balance-sunny', 'brightness', limits['min_brightness'], limits['max_brightness'])}
         </div>
         <div class="attributes">
-          ${attribute('mdi:water-percent', 'moisture', Flower[6], Flower[7])}
-          ${attribute('mdi:leaf', 'conductivity', Flower[8], Flower[9])}
+          ${attribute('mdi:water-percent', 'moisture', limits['min_moisture'], limits['max_moisture'])}
+          ${attribute('mdi:leaf', 'conductivity', limits['min_condictivity'], limits['max_condictivity'])}
         </div>
       </ha-card>
       `;
