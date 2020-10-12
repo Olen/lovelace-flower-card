@@ -155,7 +155,7 @@ customElements.whenDefined('card-tools').then(() => {
         </div>
         <div class="attributes">
           ${attribute('mdi:water-percent', 'moisture', limits['min_moisture'], limits['max_moisture'])}
-          ${attribute('mdi:leaf', 'conductivity', limits['min_condictivity'], limits['max_condictivity'])}
+          ${attribute('mdi:leaf', 'conductivity', limits['min_conductivity'], limits['max_conductivity'])}
         </div>
       </ha-card>
       `;
