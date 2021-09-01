@@ -45,6 +45,9 @@ customElements.whenDefined('card-tools').then(() => {
         text-transform: capitalize;
         display: block;
       }
+      #name ha-icon {
+          color: rgb(240, 163, 163);
+      }
       .header > #species {
         text-transform: capitalize;
         color: #8c96a5;
@@ -145,7 +148,7 @@ customElements.whenDefined('card-tools').then(() => {
       <ha-card>
         <div class="header" @click="${() => cardTools.moreInfo(this.stateObj.entity_id)}">
           <img src="${this.stateObj.attributes.image}">
-          <span id="name"> ${this.stateObj.attributes.name} </span>
+          <span id="name"> ${this.stateObj.attributes.name} <ha-icon .icon="mdi:${this.stateObj.state == 'problem' ? 'alert-circle-outline' : ''}"></ha-icon></span>
           <span id="species">${species} </span>
         </div>
         <div class="divider"></div>
