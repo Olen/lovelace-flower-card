@@ -151,7 +151,7 @@ customElements.whenDefined('card-tools').then(() => {
       return cardTools.LitHtml`
       <ha-card>
         <div class="header" @click="${() => cardTools.moreInfo(this.stateObj.entity_id)}">
-          <img src="${this.stateObj.attributes.image}">
+          <img src="${this.stateObj.attributes.entity_picture}">
           <span id="name"> ${this.stateObj.attributes.name} <ha-icon .icon="mdi:${this.stateObj.state == 'problem' ? 'alert-circle-outline' : ''}"></ha-icon></span>
           <span id="species">${species} </span>
         </div>
