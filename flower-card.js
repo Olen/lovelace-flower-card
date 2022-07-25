@@ -1,7 +1,6 @@
-customElements.whenDefined('card-tools').then(() => {
-  var cardTools = customElements.get('card-tools');
+customElements.whenDefined("card-tools").then(() => {
+  var cardTools = customElements.get("card-tools");
   class FlowerCard extends cardTools.LitElement {
-
     async setConfig(config) {
       this.config = config;
     }
@@ -45,6 +44,9 @@ customElements.whenDefined('card-tools').then(() => {
         text-transform: capitalize;
         display: block;
       }
+      #name ha-icon {
+          color: rgb(240, 163, 163);
+      }
       .header > #species {
         text-transform: capitalize;
         color: #8c96a5;
@@ -73,6 +75,9 @@ customElements.whenDefined('card-tools').then(() => {
       }
       .meter > .bad {
         background-color: rgba(240,163,163);
+      }
+      .meter > .unavailable {
+        background-color: rgba(158,158,158,1);
       }
       .divider {
         height: 1px;
@@ -114,49 +119,152 @@ customElements.whenDefined('card-tools').then(() => {
     }
 
     render() {
-      if(!this.stateObj) {
-	console.log("No plant found for entity " + this.config.entity);
+      if (!this.stateObj) {
+        console.log("No plant found for entity " + this.config.entity);
         return cardTools.LitHtml``;
       }
-      const species = this.stateObj.attributes.species;
-      const limits = this.stateObj.attributes.limits;
-      const attribute = (icon, attr, min, max) => {
-        const unit = this.stateObj.attributes.unit_of_measurement_dict[attr];
-        const val = this.stateObj.attributes[attr];
-        const pct = 100*Math.max(0, Math.min(1, (val-min)/(max-min)));
+      const icons = {
+        temperature: "mdi:thermometer",
+        humidity: "mdi:water-percent",
+        moisture: "mdi:water-percent",
+        brightness: "mdi:white-balance-sunny",
+        conductivity: "mdi:leaf",
+      };
+      const species = this._hass.states[this.stateObj.attributes.species].state;
+      const limits = {};
+      const curr = {};
+      // console.log(this.config.show_bars);
+      const monitored = this.config.show_bars;
+      const displayed = [];
+      // const monitored = ["moisture", "brightness", "conductivity", "temperature", "humidity"]
+      for (let elem in monitored) {
+        try {
+          limits["max_" + monitored[elem]] =
+            this._hass.states[
+              this.stateObj.attributes.thresholds[monitored[elem]].max
+            ].state;
+          limits["min_" + monitored[elem]] =
+            this._hass.states[
+              this.stateObj.attributes.thresholds[monitored[elem]].min
+            ].state;
+          curr[monitored[elem]] =
+            this._hass.states[
+              this.stateObj.attributes.meters[monitored[elem]]
+            ].state;
+          displayed.push(monitored[elem]);
+        } catch (error) {
+          console.log(
+            "No sensor for " +
+              monitored[elem] +
+              " found for " +
+              this.stateObj.attributes.friendly_name
+          );
+          limits["max_" + monitored[elem]] = 100;
+          limits["min_" + monitored[elem]] = 0;
+          curr[monitored[elem]] = 50;
+          displayed.push(monitored[elem]);
+        }
+      }
+      console.log(monitored);
+      console.log(displayed);
+      //  this.stateObj.attributes.limits;
+      const attribute = (icon, attr) => {
+        const val = parseInt(curr[attr]);
+        const min = parseInt(limits["min_" + attr]);
+        const max = parseInt(limits["max_" + attr]);
+        const unit = ""; // We currently have no units
+        // const unit = this.stateObj.attributes.unit_of_measurement_dict[attr];
+        const aval = val !== "unavailable" ? true : false;
+        const pct = 100 * Math.max(0, Math.min(1, (val - min) / (max - min)));
+
         return cardTools.LitHtml`
-        <div class="attribute tooltip" data-tooltip="${val + " "+ unit + " | " + min + " ~ " + max + " " + unit}" @click="${() => cardTools.moreInfo(this.stateObj.attributes.sensors[attr])}">
+        <div class="attribute tooltip" data-tooltip="${
+          aval ? val + " " + unit + " | " + min + " ~ " + max + " " + unit : val
+        }" @click="${() =>
+          cardTools.moreInfo(this.stateObj.attributes[attr + "_sensor"])}">
           <ha-icon .icon="${icon}"></ha-icon>
           <div class="meter red">
-            <span class="${val < min || val > max ? 'bad' : 'good'}" style="width: 100%;"></span>
+            <span class="${
+              aval ? (val < min || val > max ? "bad" : "good") : "unavailable"
+            }" style="width: 100%;"></span>
           </div>
           <div class="meter green">
-            <span class="${val > max ? 'bad' : 'good'}" style="width:${pct}%;"></span>
+            <span class="${
+              aval ? (val > max ? "bad" : "good") : "unavailable"
+            }" style="width:${aval ? pct : "0"}%;"></span>
           </div>
           <div class="meter red">
-            <span class="bad" style="width:${val > max ? 100 : 0}%;"></span>
+            <span class="bad" style="width:${
+              aval ? (val > max ? 100 : 0) : "0"
+            }%;"></span>
           </div>
         </div>
         `;
-            // ${val} (${min}-${max})
-      }
+      };
 
       return cardTools.LitHtml`
       <ha-card>
-        <div class="header" @click="${() => cardTools.moreInfo(this.stateObj.entity_id)}">
-          <img src="${this.stateObj.attributes.image}.jpg">
-          <span id="name"> ${this.stateObj.attributes.name} </span>
+        <div class="header" @click="${() =>
+          cardTools.moreInfo(this.stateObj.entity_id)}">
+          <img src="${this.stateObj.attributes.entity_picture}">
+          <span id="name"> ${
+            this.stateObj.attributes.friendly_name
+          } <ha-icon .icon="mdi:${
+        this.stateObj.state.toLowerCase() == "problem"
+          ? "alert-circle-outline"
+          : ""
+      }"></ha-icon></span>
           <span id="species">${species} </span>
         </div>
         <div class="divider"></div>
         <div class="attributes">
-          ${attribute('mdi:thermometer', 'temperature', limits['min_temperature'], limits['max_temperature'])}
-          ${attribute('mdi:white-balance-sunny', 'brightness', limits['min_brightness'], limits['max_brightness'])}
+          ${console.log(displayed[5])}
+          ${
+            displayed[4] == undefined
+              ? console.log("4 Undefined")
+              : console.log("4 Defined")
+          }
+          ${
+            displayed[5] == undefined
+              ? console.log("5 Undefined")
+              : console.log("5 Defined")
+          }
+          ${
+            displayed[0] == undefined
+              ? console.log("0 Undefined")
+              : attribute(icons[displayed[0]], displayed[0])
+          }
+          ${
+            displayed[1] == undefined
+              ? console.log("1 Undefined")
+              : attribute(icons[displayed[1]], displayed[1])
+          }
         </div>
         <div class="attributes">
-          ${attribute('mdi:water-percent', 'moisture', limits['min_moisture'], limits['max_moisture'])}
-          ${attribute('mdi:leaf', 'conductivity', limits['min_conductivity'], limits['max_conductivity'])}
+          ${
+            displayed[2] == undefined
+              ? console.log("2 Undefined")
+              : attribute(icons[displayed[2]], displayed[2])
+          }
+          ${
+            displayed[3] == undefined
+              ? console.log("3 Undefined")
+              : attribute(icons[displayed[3]], displayed[3])
+          }
         </div>
+        <div class="attributes">
+          ${
+            displayed[4] == undefined
+              ? console.log("4 Undefined")
+              : attribute(icons[displayed[4]], displayed[4])
+          }
+          ${
+            displayed[5] == undefined
+              ? console.log("5 Undefined")
+              : attribute(icons[displayed[5]], displayed[5])
+          }
+        </div>
+
       </ha-card>
       `;
     }
@@ -166,16 +274,21 @@ customElements.whenDefined('card-tools').then(() => {
       this.stateObj = hass.states[this.config.entity];
       this.requestUpdate();
     }
-
   }
 
-  customElements.define('flower-card', FlowerCard);
+  customElements.define("flower-card", FlowerCard);
 });
 
 window.setTimeout(() => {
-  if(customElements.get('card-tools')) return;
-  customElements.define('flower-card', class extends HTMLElement{
-    setConfig() { throw new Error("Can't find card-tools. See https://github.com/thomasloven/lovelace-card-tools");}
-});
-
+  if (customElements.get("card-tools")) return;
+  customElements.define(
+    "flower-card",
+    class extends HTMLElement {
+      setConfig() {
+        throw new Error(
+          "Can't find card-tools. See https://github.com/thomasloven/lovelace-card-tools"
+        );
+      }
+    }
+  );
 }, 2000);

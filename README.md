@@ -7,12 +7,9 @@ Instead of reading the max/min-values from the huge data-file, it gets the value
 
 ![](https://github.com/remkolems/lovelace-flower-card/blob/master/lovelace-flower-card_popup.png)
 
-### Disclaimer
-I looked into several forks of the original card https://github.com/thomasloven/lovelace-flower-card. Some forks were very interesting and I edited several of those source codes changes into my own new fork. Credits to those original authors.
-
 ### Dependencies
-1. lovelace-card-tools (https://github.com/thomasloven/lovelace-card-tools)
-3. Patched Plant sensor (https://github.com/Olen/homeassistant-plant)
+* lovelace-card-tools (https://github.com/thomasloven/lovelace-card-tools)
+* Patched Plant sensor (https://github.com/Olen/homeassistant-plant)
 
 ### Instructions
 
@@ -28,32 +25,19 @@ I looked into several forks of the original card https://github.com/thomasloven/
 
  1b: Press *Create* afterwards to add the new resource.
 
-5: Get flower images and extract to `www/images/plants/<species>.jpg`
-
-6: Setup card
+2: Setup card
 
 ```yaml
 type: custom:flower-card
 entity: plant.my_plant
+show_bars:
+- brigthness
+- humidity
+- moisture
+- conductivity
+- temperature
 ```
-7: configuration.yaml
 
-Add the following to configuration.yaml (bottom of this file)
-```plant: !include plants.yaml```
+### Disclaimer
+I looked into several forks of the original card https://github.com/thomasloven/lovelace-flower-card. Some forks were very interesting and I edited several of those source codes changes into my own new fork. Credits to those original authors.
 
-I do this to separate my config files.
-
-8: plants.yaml
-
-Create, edit and add the following to plants.yaml. Change accordingly. Repeat this section for other plants. Separate each section with a blank line.
-
-```
-spathiphyllum_bingo_cupido:
-  species: spathiphyllum bingo cupido
-  sensors:
-    moisture: sensor.spathiphyllum_moisture
-    battery: sensor.spathiphyllum_battery
-    temperature: sensor.spathiphyllum_temperature
-    conductivity: sensor.spathiphyllum_conductivity
-    brightness: sensor.spathiphyllum_brightness
-```
