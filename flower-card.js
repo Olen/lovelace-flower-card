@@ -31,6 +31,8 @@ customElements.whenDefined("card-tools").then(() => {
       .header > img {
         border-radius: 50%;
         width: 88px;
+        height: 88px;
+        object-fit: cover;
         margin-left: 16px;
         margin-right: 16px;
         margin-top: -32px;
@@ -60,10 +62,10 @@ customElements.whenDefined("card-tools").then(() => {
         overflow: hidden;
       }
       .meter.red {
-        width: 10%;
+        width: 5%;
       }
       .meter.green {
-        width: 50%;
+        width: 40%;
       }
       .meter > span {
         grid-row: 1;
@@ -123,20 +125,27 @@ customElements.whenDefined("card-tools").then(() => {
         console.log("No plant found for entity " + this.config.entity);
         return cardTools.LitHtml``;
       }
-      const icons = {
-        temperature: "mdi:thermometer",
-        humidity: "mdi:water-percent",
-        moisture: "mdi:water-percent",
-        brightness: "mdi:white-balance-sunny",
-        conductivity: "mdi:leaf",
-      };
+      var icons = {};
+      var uom = {};
+      // const icons = {
+      //  temperature: "mdi:thermometer",
+      //  humidity: "mdi:water-percent",
+      //  moisture: "mdi:water-percent",
+      //  brightness: "mdi:white-balance-sunny",
+      //  conductivity: "mdi:leaf",
+      // };
       const species = this._hass.states[this.stateObj.attributes.species].state;
-      const limits = {};
-      const curr = {};
+      let limits = {};
+      let curr = {};
       // console.log(this.config.show_bars);
       const monitored = this.config.show_bars;
-      const displayed = [];
+      let displayed = [];
       // const monitored = ["moisture", "brightness", "conductivity", "temperature", "humidity"]
+      // const tempvar = this._hass.states[
+      //  this.stateObj.attributes.meters["moisture"]
+      // ];
+      // console.log(tempvar)
+
       for (let elem in monitored) {
         try {
           limits["max_" + monitored[elem]] =
@@ -151,6 +160,15 @@ customElements.whenDefined("card-tools").then(() => {
             this._hass.states[
               this.stateObj.attributes.meters[monitored[elem]]
             ].state;
+          icons[monitored[elem]] =
+            this._hass.states[
+              this.stateObj.attributes.meters[monitored[elem]]
+            ].attributes.icon;
+          uom[monitored[elem]] =
+            this._hass.states[
+              this.stateObj.attributes.meters[monitored[elem]]
+            ].attributes.unit_of_measurement;
+
           displayed.push(monitored[elem]);
         } catch (error) {
           console.log(
@@ -165,21 +183,35 @@ customElements.whenDefined("card-tools").then(() => {
           displayed.push(monitored[elem]);
         }
       }
-      console.log(monitored);
-      console.log(displayed);
+      // console.log(icons)
+      // console.log(monitored);
+      // console.log(displayed);
       //  this.stateObj.attributes.limits;
-      const attribute = (icon, attr) => {
+      const attribute = (attr) => {
         const val = parseInt(curr[attr]);
         const min = parseInt(limits["min_" + attr]);
         const max = parseInt(limits["max_" + attr]);
-        const unit = ""; // We currently have no units
+        const unit = uom[attr];
+        const icon = icons[attr];
         // const unit = this.stateObj.attributes.unit_of_measurement_dict[attr];
         const aval = val !== "unavailable" ? true : false;
         const pct = 100 * Math.max(0, Math.min(1, (val - min) / (max - min)));
 
         return cardTools.LitHtml`
         <div class="attribute tooltip" data-tooltip="${
-          aval ? val + " " + unit + " | " + min + " ~ " + max + " " + unit : val
+          aval
+            ? attr +
+              ": " +
+              val +
+              " " +
+              unit +
+              " | " +
+              min +
+              " ~ " +
+              max +
+              " " +
+              unit
+            : val
         }" @click="${() =>
           cardTools.moreInfo(this.stateObj.attributes[attr + "_sensor"])}">
           <ha-icon .icon="${icon}"></ha-icon>
@@ -198,6 +230,7 @@ customElements.whenDefined("card-tools").then(() => {
               aval ? (val > max ? 100 : 0) : "0"
             }%;"></span>
           </div>
+          <span class="header"> ${val} ${unit}</span>
         </div>
         `;
       };
@@ -218,51 +251,16 @@ customElements.whenDefined("card-tools").then(() => {
         </div>
         <div class="divider"></div>
         <div class="attributes">
-          ${console.log(displayed[5])}
-          ${
-            displayed[4] == undefined
-              ? console.log("4 Undefined")
-              : console.log("4 Defined")
-          }
-          ${
-            displayed[5] == undefined
-              ? console.log("5 Undefined")
-              : console.log("5 Defined")
-          }
-          ${
-            displayed[0] == undefined
-              ? console.log("0 Undefined")
-              : attribute(icons[displayed[0]], displayed[0])
-          }
-          ${
-            displayed[1] == undefined
-              ? console.log("1 Undefined")
-              : attribute(icons[displayed[1]], displayed[1])
-          }
+          ${displayed[0] == undefined ? void 0 : attribute(displayed[0])}
+          ${displayed[1] == undefined ? void 0 : attribute(displayed[1])}
         </div>
         <div class="attributes">
-          ${
-            displayed[2] == undefined
-              ? console.log("2 Undefined")
-              : attribute(icons[displayed[2]], displayed[2])
-          }
-          ${
-            displayed[3] == undefined
-              ? console.log("3 Undefined")
-              : attribute(icons[displayed[3]], displayed[3])
-          }
+          ${displayed[2] == undefined ? void 0 : attribute(displayed[2])}
+          ${displayed[3] == undefined ? void 0 : attribute(displayed[3])}
         </div>
         <div class="attributes">
-          ${
-            displayed[4] == undefined
-              ? console.log("4 Undefined")
-              : attribute(icons[displayed[4]], displayed[4])
-          }
-          ${
-            displayed[5] == undefined
-              ? console.log("5 Undefined")
-              : attribute(icons[displayed[5]], displayed[5])
-          }
+          ${displayed[4] == undefined ? void 0 : attribute(displayed[4])}
+          ${displayed[5] == undefined ? void 0 : attribute(displayed[5])}
         </div>
 
       </ha-card>
@@ -272,6 +270,7 @@ customElements.whenDefined("card-tools").then(() => {
     set hass(hass) {
       this._hass = hass;
       this.stateObj = hass.states[this.config.entity];
+      // console.log(this.stateObj)
       this.requestUpdate();
     }
   }
