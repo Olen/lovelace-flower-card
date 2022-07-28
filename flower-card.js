@@ -134,7 +134,7 @@ customElements.whenDefined("card-tools").then(() => {
       //  brightness: "mdi:white-balance-sunny",
       //  conductivity: "mdi:leaf",
       // };
-      const species = this._hass.states[this.stateObj.attributes.species].state;
+      const species = this.stateObj.attributes.species;
       let limits = {};
       let curr = {};
       // console.log(this.config.show_bars);
