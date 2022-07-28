@@ -5,7 +5,17 @@ https://github.com/Olen/homeassistant-plant
 
 Instead of reading the max/min-values from the huge data-file, it gets the values from the plant entity.  
 
-![](https://github.com/remkolems/lovelace-flower-card/blob/master/lovelace-flower-card_popup.png)
+![image](https://user-images.githubusercontent.com/203184/181523876-4185c023-fd9a-4e1d-b415-7f98f40481ce.png)
+
+The card adapts to both °C and °F
+
+![image](https://user-images.githubusercontent.com/203184/181524097-23e203bc-27bd-474b-9bcb-5d0525f3e6be.png)
+
+You can also select what bars you want to show for each card
+
+![image](https://user-images.githubusercontent.com/203184/181523597-a4b4e617-efad-421b-a157-813d15564c11.png)
+
+
 
 ### Dependencies
 * lovelace-card-tools (https://github.com/thomasloven/lovelace-card-tools)
@@ -14,6 +24,11 @@ Instead of reading the max/min-values from the huge data-file, it gets the value
 ### Instructions
 
 1: Install the card
+
+#### Install via HACS
+
+#### Install manually
+
 
  1a: Go to Configuration -> Lovelace Dashboards -> Resources -> press the + (lower right corner of screen) and add the following information:
 
