@@ -1,4 +1,15 @@
 customElements.whenDefined("card-tools").then(() => {
+  /*
+  /
+  / Possible options for bars:
+  / - moisture
+  / - illuminance
+  / - conductivity
+  / - temperature
+  / - humidity
+  / - dli
+  /
+  */
   var cardTools = customElements.get("card-tools");
   class FlowerCard extends cardTools.LitElement {
     async setConfig(config) {
@@ -127,27 +138,42 @@ customElements.whenDefined("card-tools").then(() => {
       }
       var icons = {};
       var uom = {};
-      // const icons = {
-      //  temperature: "mdi:thermometer",
-      //  humidity: "mdi:water-percent",
-      //  moisture: "mdi:water-percent",
-      //  brightness: "mdi:white-balance-sunny",
-      //  conductivity: "mdi:leaf",
-      // };
       const species = this.stateObj.attributes.species;
       let limits = {};
       let curr = {};
-      // console.log(this.config.show_bars);
       const monitored = this.config.show_bars;
       let displayed = [];
-      // const monitored = ["moisture", "brightness", "conductivity", "temperature", "humidity"]
+      // const monitored = ["moisture", "illuminance", "conductivity", "temperature", "humidity"]
       // const tempvar = this._hass.states[
       //  this.stateObj.attributes.meters["moisture"]
       // ];
       // console.log(tempvar)
+      // Special handling of DLI
 
       for (let elem in monitored) {
         try {
+          if (monitored[elem] == "dli") {
+            // 1 ppfd / 1 HOUR = 0.0036 DLI
+            // https://www.ledtonic.com/blogs/guides/dli-daily-light-integral-chart-understand-your-plants-ppfd-photoperiod-requirements
+            const DLI_FACTOR = 0.0036;
+            limits["max_dli"] =
+              this._hass.states[
+                this.stateObj.attributes.thresholds["mol"].max
+              ].state;
+            limits["min_dli"] =
+              this._hass.states[
+                this.stateObj.attributes.thresholds["mol"].min
+              ].state;
+            curr["dli"] =
+              this._hass.states[this.stateObj.attributes.meters["dli"]].state;
+            icons["dli"] =
+              this._hass.states[
+                this.stateObj.attributes.meters["dli"]
+              ].attributes.icon;
+            uom["dli"] = "mol/d⋅m²";
+            displayed.push(monitored[elem]);
+            continue;
+          }
           limits["max_" + monitored[elem]] =
             this._hass.states[
               this.stateObj.attributes.thresholds[monitored[elem]].max
@@ -213,7 +239,7 @@ customElements.whenDefined("card-tools").then(() => {
               unit
             : val
         }" @click="${() =>
-          cardTools.moreInfo(this.stateObj.attributes[attr + "_sensor"])}">
+          cardTools.moreInfo(this.stateObj.attributes.meters[attr])}">
           <ha-icon .icon="${icon}"></ha-icon>
           <div class="meter red">
             <span class="${
