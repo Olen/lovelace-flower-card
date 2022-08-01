@@ -198,12 +198,14 @@ customElements.whenDefined("card-tools").then(() => {
 
           displayed.push(monitored[elem]);
         } catch (error) {
+          /**
           console.log(
             "No sensor for " +
               monitored[elem] +
               " found for " +
               this.stateObj.attributes.friendly_name
           );
+          **/
           limits["max_" + monitored[elem]] = 100;
           limits["min_" + monitored[elem]] = 0;
           curr[monitored[elem]] = 50;
