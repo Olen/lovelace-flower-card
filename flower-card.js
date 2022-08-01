@@ -141,28 +141,29 @@ customElements.whenDefined("card-tools").then(() => {
       const species = this.stateObj.attributes.species;
       let limits = {};
       let curr = {};
-      const monitored = this.config.show_bars;
+      let monitored = [
+        "moisture",
+        "conductivity",
+        "temperature",
+        "illuminance",
+        "humidity",
+        "dli",
+      ];
+      if (this.config.show_bars) {
+        monitored = this.config.show_bars;
+      }
       let displayed = [];
-      // const monitored = ["moisture", "illuminance", "conductivity", "temperature", "humidity"]
-      // const tempvar = this._hass.states[
-      //  this.stateObj.attributes.meters["moisture"]
-      // ];
-      // console.log(tempvar)
-      // Special handling of DLI
 
       for (let elem in monitored) {
         try {
           if (monitored[elem] == "dli") {
-            // 1 ppfd / 1 HOUR = 0.0036 DLI
-            // https://www.ledtonic.com/blogs/guides/dli-daily-light-integral-chart-understand-your-plants-ppfd-photoperiod-requirements
-            const DLI_FACTOR = 0.0036;
             limits["max_dli"] =
               this._hass.states[
-                this.stateObj.attributes.thresholds["mol"].max
+                this.stateObj.attributes.thresholds["dli"].max
               ].state;
             limits["min_dli"] =
               this._hass.states[
-                this.stateObj.attributes.thresholds["mol"].min
+                this.stateObj.attributes.thresholds["dli"].min
               ].state;
             curr["dli"] =
               this._hass.states[this.stateObj.attributes.meters["dli"]].state;
