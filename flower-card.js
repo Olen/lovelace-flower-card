@@ -128,6 +128,11 @@ customElements.whenDefined("card-tools").then(() => {
         -webkit-transform: translateX(-50%) translateY(-200%);
                 transform: translateX(-50%) translateY(-200%);
       }
+      @media (max-width: 600px) {
+        .header > .unit {
+          display: none;
+        }
+      }
       `;
     }
 
@@ -259,7 +264,7 @@ customElements.whenDefined("card-tools").then(() => {
               aval ? (val > max ? 100 : 0) : "0"
             }%;"></span>
           </div>
-          <span class="header"> ${val} ${unit}</span>
+          <span class="header"><span class="value"> ${val}</span> <span class="unit">${unit}</span></span>
         </div>
         `;
       };
