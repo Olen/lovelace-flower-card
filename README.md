@@ -1,4 +1,4 @@
-# Release
+# Flower Card
 
 This fork of the flower-card depends on this patch to the internal Plant component:
 https://github.com/Olen/homeassistant-plant
@@ -16,31 +16,40 @@ You can also select what bars you want to show for each card
 ![image](https://user-images.githubusercontent.com/203184/181523597-a4b4e617-efad-421b-a157-813d15564c11.png)
 
 
+## Dependencies
+1. lovelace-card-tools (https://github.com/thomasloven/lovelace-card-tools)
+2. Patched Plant sensor (https://github.com/Olen/homeassistant-plant)
 
-### Dependencies
-* lovelace-card-tools (https://github.com/thomasloven/lovelace-card-tools)
-* Patched Plant sensor (https://github.com/Olen/homeassistant-plant)
+## Instructions
 
-### Instructions
-
-1: Install the card
-
-#### Install via HACS
-
-#### Install manually
+### Install via HACS
 
 
- 1a: Go to Configuration -> Lovelace Dashboards -> Resources -> press the + (lower right corner of screen) and add the following information:
+[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg?style=for-the-badge)](https://github.com/Olen/lovelace-flower-card/)
+
+* Add this repo as a "Custom repository" with type "Lovelace"
+* Click "Install" in the new "Home Assistant Plant" card in HACS
+
+### Install manually
+
+### Install manually
+1: Download the file flower-card.js and add it to your /config/www folder in HA 
+ 
+2: Click your profile picture in the bottom left corner -> Turn on Advanced Mode.
+ 
+3: Go to Configuration -> Lovelace Dashboards -> Resources -> press the + (lower right corner of screen) and add the following information:
 
 ```yaml
-  Url: /local/lovelace-flower-card/flower-card.js
+  Url: /local/flower-card.js
   Resource type: JavaScript Module
 ```
 ![image](https://user-images.githubusercontent.com/45675902/80322223-ebd41880-8823-11ea-992d-7070d4197f8b.png)
 
- 1b: Press *Create* afterwards to add the new resource.
+4: Press *Create* afterwards to add the new resource.
 
-2: Setup card
+### Setup card
+
+Add it as a custom card and select which bars you want to show on the card
 
 ```yaml
 type: custom:flower-card
@@ -51,7 +60,9 @@ show_bars:
 - moisture
 - conductivity
 - temperature
+- dli
 ```
+
 
 ### Disclaimer
 I looked into several forks of the original card https://github.com/thomasloven/lovelace-flower-card. Some forks were very interesting and I edited several of those source codes changes into my own new fork. Credits to those original authors.
