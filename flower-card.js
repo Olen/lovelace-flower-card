@@ -11,6 +11,7 @@ customElements.whenDefined("card-tools").then(() => {
   /
   */
   var cardTools = customElements.get("card-tools");
+
   class FlowerCard extends cardTools.LitElement {
     async setConfig(config) {
       this.config = config;
@@ -141,12 +142,13 @@ customElements.whenDefined("card-tools").then(() => {
         console.log("No plant found for entity " + this.config.entity);
         return cardTools.LitHtml``;
       }
+      const species = this.stateObj.attributes.species;
       var icons = {};
       var uom = {};
-      const species = this.stateObj.attributes.species;
-      let limits = {};
-      let curr = {};
-      let monitored = [
+      var limits = {};
+      var curr = {};
+      var displayed = [];
+      var monitored = this.config.show_bars || [
         "moisture",
         "conductivity",
         "temperature",
@@ -154,80 +156,28 @@ customElements.whenDefined("card-tools").then(() => {
         "humidity",
         "dli",
       ];
-      if (this.config.show_bars) {
-        monitored = this.config.show_bars;
-      }
-      let displayed = [];
 
-      for (let elem in monitored) {
-        try {
-          if (monitored[elem] == "dli") {
-            limits["max_dli"] =
-              this._hass.states[
-                this.stateObj.attributes.thresholds["dli"].max
-              ].state;
-            limits["min_dli"] =
-              this._hass.states[
-                this.stateObj.attributes.thresholds["dli"].min
-              ].state;
-            curr["dli"] =
-              this._hass.states[this.stateObj.attributes.meters["dli"]].state;
-            icons["dli"] =
-              this._hass.states[
-                this.stateObj.attributes.meters["dli"]
-              ].attributes.icon;
+      if (this.plantinfo && this.plantinfo["result"]) {
+        const result = this.plantinfo["result"];
+        for (var i = 0; i < monitored.length; i++) {
+          let elem = monitored[i];
+          limits["max_" + elem] = result[elem].max;
+          limits["min_" + elem] = result[elem].min;
+          curr[elem] = result[elem].current;
+          icons[elem] = result[elem].icon;
+          uom[elem] = result[elem].unit_of_measurement;
+          if (elem == "dli") {
             uom["dli"] = "mol/d⋅m²";
-            displayed.push(monitored[elem]);
-            continue;
           }
-          limits["max_" + monitored[elem]] =
-            this._hass.states[
-              this.stateObj.attributes.thresholds[monitored[elem]].max
-            ].state;
-          limits["min_" + monitored[elem]] =
-            this._hass.states[
-              this.stateObj.attributes.thresholds[monitored[elem]].min
-            ].state;
-          curr[monitored[elem]] =
-            this._hass.states[
-              this.stateObj.attributes.meters[monitored[elem]]
-            ].state;
-          icons[monitored[elem]] =
-            this._hass.states[
-              this.stateObj.attributes.meters[monitored[elem]]
-            ].attributes.icon;
-          uom[monitored[elem]] =
-            this._hass.states[
-              this.stateObj.attributes.meters[monitored[elem]]
-            ].attributes.unit_of_measurement;
-
-          displayed.push(monitored[elem]);
-        } catch (error) {
-          /**
-          console.log(
-            "No sensor for " +
-              monitored[elem] +
-              " found for " +
-              this.stateObj.attributes.friendly_name
-          );
-          **/
-          limits["max_" + monitored[elem]] = 100;
-          limits["min_" + monitored[elem]] = 0;
-          curr[monitored[elem]] = 50;
-          displayed.push(monitored[elem]);
+          displayed.push(elem);
         }
       }
-      // console.log(icons)
-      // console.log(monitored);
-      // console.log(displayed);
-      //  this.stateObj.attributes.limits;
       const attribute = (attr) => {
         const val = parseInt(curr[attr]);
         const min = parseInt(limits["min_" + attr]);
         const max = parseInt(limits["max_" + attr]);
         const unit = uom[attr];
-        const icon = icons[attr];
-        // const unit = this.stateObj.attributes.unit_of_measurement_dict[attr];
+        const icon = icons[attr] || "mdi:help-circle-outline";
         const aval = val !== "unavailable" ? true : false;
         const pct = 100 * Math.max(0, Math.min(1, (val - min) / (max - min)));
 
@@ -270,7 +220,7 @@ customElements.whenDefined("card-tools").then(() => {
       };
 
       return cardTools.LitHtml`
-      <ha-card>
+        <ha-card>
         <div class="header" @click="${() =>
           cardTools.moreInfo(this.stateObj.entity_id)}">
           <img src="${this.stateObj.attributes.entity_picture}">
@@ -280,7 +230,8 @@ customElements.whenDefined("card-tools").then(() => {
         this.stateObj.state.toLowerCase() == "problem"
           ? "alert-circle-outline"
           : ""
-      }"></ha-icon></span>
+      }"></ha-icon>
+          </span>
           <span id="species">${species} </span>
         </div>
         <div class="divider"></div>
@@ -296,16 +247,25 @@ customElements.whenDefined("card-tools").then(() => {
           ${displayed[4] == undefined ? void 0 : attribute(displayed[4])}
           ${displayed[5] == undefined ? void 0 : attribute(displayed[5])}
         </div>
+        </ha-card>
+        `;
+    }
 
-      </ha-card>
-      `;
+    async get_data(hass) {
+      try {
+        this.plantinfo = await hass.callWS({
+          type: "plant/get_info",
+          entity_id: this.config.entity,
+        });
+      } catch (err) {}
     }
 
     set hass(hass) {
       this._hass = hass;
       this.stateObj = hass.states[this.config.entity];
-      // console.log(this.stateObj)
-      this.requestUpdate();
+      this.get_data(hass).then(() => {
+        this.requestUpdate();
+      });
     }
   }
 
