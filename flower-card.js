@@ -161,15 +161,17 @@ customElements.whenDefined("card-tools").then(() => {
         const result = this.plantinfo["result"];
         for (var i = 0; i < monitored.length; i++) {
           let elem = monitored[i];
-          limits["max_" + elem] = result[elem].max;
-          limits["min_" + elem] = result[elem].min;
-          curr[elem] = result[elem].current;
-          icons[elem] = result[elem].icon;
-          uom[elem] = result[elem].unit_of_measurement;
-          if (elem == "dli") {
-            uom["dli"] = "mol/d⋅m²";
+          if (result[elem]) {
+            limits["max_" + elem] = result[elem].max;
+            limits["min_" + elem] = result[elem].min;
+            curr[elem] = result[elem].current;
+            icons[elem] = result[elem].icon;
+            uom[elem] = result[elem].unit_of_measurement;
+            if (elem == "dli") {
+              uom["dli"] = "mol/d⋅m²";
+            }
+            displayed.push(elem);
           }
-          displayed.push(elem);
         }
       }
       const attribute = (attr) => {
@@ -263,9 +265,16 @@ customElements.whenDefined("card-tools").then(() => {
     set hass(hass) {
       this._hass = hass;
       this.stateObj = hass.states[this.config.entity];
-      this.get_data(hass).then(() => {
-        this.requestUpdate();
-      });
+      if (!this.prev_fetch) {
+        this.prev_fetch = 0;
+      }
+      // Only fetch once every second at max.  HA is flooeded with websocket requests
+      if (Date.now() > this.prev_fetch + 1000) {
+        this.prev_fetch = Date.now();
+        this.get_data(hass).then(() => {
+          this.requestUpdate();
+        });
+      }
     }
   }
 
