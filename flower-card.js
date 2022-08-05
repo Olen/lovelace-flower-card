@@ -147,6 +147,7 @@ customElements.whenDefined("card-tools").then(() => {
       var uom = {};
       var limits = {};
       var curr = {};
+      var sensors = {};
       var displayed = [];
       var monitored = this.config.show_bars || [
         "moisture",
@@ -166,6 +167,7 @@ customElements.whenDefined("card-tools").then(() => {
             limits["min_" + elem] = result[elem].min;
             curr[elem] = result[elem].current;
             icons[elem] = result[elem].icon;
+            sensors[elem] = result[elem].sensor;
             uom[elem] = result[elem].unit_of_measurement;
             if (elem == "dli") {
               uom["dli"] = "mol/d⋅m²";
@@ -198,8 +200,7 @@ customElements.whenDefined("card-tools").then(() => {
               " " +
               unit
             : val
-        }" @click="${() =>
-          cardTools.moreInfo(this.stateObj.attributes.meters[attr])}">
+        }" @click="${() => cardTools.moreInfo(sensors[attr])}">
           <ha-icon .icon="${icon}"></ha-icon>
           <div class="meter red">
             <span class="${
