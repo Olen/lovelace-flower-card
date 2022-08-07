@@ -1,19 +1,39 @@
 # Flower Card
 
+# BREAKING CHANGES
+
+>**Warning**
+>
+> **This card is about to be completely rewritten.  Versions > 2.0.0 will *not* be compatible with the original plant integration in HA or with earlier releases of this integration.**
+
+
 This fork of the flower-card depends on this patch to the internal Plant component:
 https://github.com/Olen/homeassistant-plant
 
-Instead of reading the max/min-values from the huge data-file, it gets the values from the plant entity.  
+Instead of reading the max/min-values from the huge data-file, it gets the values from the plant entity, using a websocket connection.
 
-![image](https://user-images.githubusercontent.com/203184/181523876-4185c023-fd9a-4e1d-b415-7f98f40481ce.png)
+## Version 1 
 
-The card adapts to both °C and °F
+Version 1 of this card has been deprecated and requires Version 1 of https://github.com/Olen/homeassistant-plant
 
-![image](https://user-images.githubusercontent.com/203184/181524097-23e203bc-27bd-474b-9bcb-5d0525f3e6be.png)
+The rest of this readme describes Version 2 of this card
+
+## Version 2
+
+Several new sensors from the new version of the plant integration has been added to the card. 
+
+The card also now use websockets to retrieve extended information about the plants from the backend.
+
+![image](https://user-images.githubusercontent.com/203184/183286657-824a0e7f-a140-4d8e-8d6a-387070419dfd.png)
+
+
+* The flower card also handles both °C and °F
+
+![image](https://user-images.githubusercontent.com/203184/181259071-58622446-3e24-4f93-8334-293748958bd2.png)
 
 You can also select what bars you want to show for each card
 
-![image](https://user-images.githubusercontent.com/203184/181523597-a4b4e617-efad-421b-a157-813d15564c11.png)
+![image](https://user-images.githubusercontent.com/203184/183286691-02294d6b-84cf-46e6-9070-845d00f24a14.png)
 
 
 ## Dependencies
