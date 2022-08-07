@@ -6,7 +6,7 @@
 
 ## Breaking Changes
 
-This card will, from version 2.0.0, only work with version 2.0.0 or higher of https://github.com/Olen/homeassistant-plant/.  Please [read this](https://github.com/Olen/homeassistant-plant/Version%202.md) carefully before upgrading.
+This card will, from version 2.0.0, only work with version 2.0.0 or higher of https://github.com/Olen/homeassistant-plant/.  Please read the README from that repository carefully before upgrading.
 
 ## Requires
 1. [Lovelace card tools](https://github.com/thomasloven/lovelace-card-tools)
