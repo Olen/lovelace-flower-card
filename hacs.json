@@ -1,4 +1,5 @@
 {
     "name": "Flower Card",
-    "render_readme": true
-  }
+    "render_readme": true,
+    "filename": "flower-card.js"
+}

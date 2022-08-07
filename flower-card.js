@@ -1,7 +1,18 @@
-customElements.whenDefined('card-tools').then(() => {
-  var cardTools = customElements.get('card-tools');
-  class FlowerCard extends cardTools.LitElement {
+customElements.whenDefined("card-tools").then(() => {
+  /*
+  /
+  / Possible options for bars:
+  / - moisture
+  / - illuminance
+  / - conductivity
+  / - temperature
+  / - humidity
+  / - dli
+  /
+  */
+  var cardTools = customElements.get("card-tools");
 
+  class FlowerCard extends cardTools.LitElement {
     async setConfig(config) {
       this.config = config;
     }
@@ -32,6 +43,8 @@ customElements.whenDefined('card-tools').then(() => {
       .header > img {
         border-radius: 50%;
         width: 88px;
+        height: 88px;
+        object-fit: cover;
         margin-left: 16px;
         margin-right: 16px;
         margin-top: -32px;
@@ -61,10 +74,10 @@ customElements.whenDefined('card-tools').then(() => {
         overflow: hidden;
       }
       .meter.red {
-        width: 10%;
+        width: 5%;
       }
       .meter.green {
-        width: 50%;
+        width: 40%;
       }
       .meter > span {
         grid-row: 1;
@@ -116,73 +129,169 @@ customElements.whenDefined('card-tools').then(() => {
         -webkit-transform: translateX(-50%) translateY(-200%);
                 transform: translateX(-50%) translateY(-200%);
       }
+      @media (max-width: 600px) {
+        .header > .unit {
+          display: none;
+        }
+      }
       `;
     }
 
     render() {
-      if(!this.stateObj) {
-	console.log("No plant found for entity " + this.config.entity);
+      if (!this.stateObj) {
+        console.log("No plant found for entity " + this.config.entity);
         return cardTools.LitHtml``;
       }
       const species = this.stateObj.attributes.species;
-      const limits = this.stateObj.attributes.limits;
-      const attribute = (icon, attr, min, max) => {
-        const unit = this.stateObj.attributes.unit_of_measurement_dict[attr];
-        const val = this.stateObj.attributes[attr];
-        const aval = val !== 'unavailable' ? true : false;
-        const pct = 100*Math.max(0, Math.min(1, (val-min)/(max-min)));
+      var icons = {};
+      var uom = {};
+      var limits = {};
+      var curr = {};
+      var sensors = {};
+      var displayed = [];
+      var monitored = this.config.show_bars || [
+        "moisture",
+        "conductivity",
+        "temperature",
+        "illuminance",
+        "humidity",
+        "dli",
+      ];
+
+      if (this.plantinfo && this.plantinfo["result"]) {
+        const result = this.plantinfo["result"];
+        for (var i = 0; i < monitored.length; i++) {
+          let elem = monitored[i];
+          if (result[elem]) {
+            limits["max_" + elem] = result[elem].max;
+            limits["min_" + elem] = result[elem].min;
+            curr[elem] = result[elem].current;
+            icons[elem] = result[elem].icon;
+            sensors[elem] = result[elem].sensor;
+            uom[elem] = result[elem].unit_of_measurement;
+            if (elem == "dli") {
+              uom["dli"] = "mol/d⋅m²";
+            }
+            displayed.push(elem);
+          }
+        }
+      }
+      const attribute = (attr) => {
+        const val = parseInt(curr[attr]);
+        const min = parseInt(limits["min_" + attr]);
+        const max = parseInt(limits["max_" + attr]);
+        const unit = uom[attr];
+        const icon = icons[attr] || "mdi:help-circle-outline";
+        const aval = val !== "unavailable" ? true : false;
+        const pct = 100 * Math.max(0, Math.min(1, (val - min) / (max - min)));
+
         return cardTools.LitHtml`
-        <div class="attribute tooltip" data-tooltip="${aval ? val + " "+ unit + " | " + min + " ~ " + max + " " + unit : val}" @click="${() => cardTools.moreInfo(this.stateObj.attributes.sensors[attr])}">
+        <div class="attribute tooltip" data-tooltip="${
+          aval
+            ? attr +
+              ": " +
+              val +
+              " " +
+              unit +
+              " | " +
+              min +
+              " ~ " +
+              max +
+              " " +
+              unit
+            : val
+        }" @click="${() => cardTools.moreInfo(sensors[attr])}">
           <ha-icon .icon="${icon}"></ha-icon>
           <div class="meter red">
-            <span class="${aval ? (val < min || val > max ? 'bad' : 'good') : 'unavailable'}" style="width: 100%;"></span>
+            <span class="${
+              aval ? (val < min || val > max ? "bad" : "good") : "unavailable"
+            }" style="width: 100%;"></span>
           </div>
           <div class="meter green">
-            <span class="${aval ? (val > max ? 'bad' : 'good') : 'unavailable'}" style="width:${aval ? pct : '0'}%;"></span>
+            <span class="${
+              aval ? (val > max ? "bad" : "good") : "unavailable"
+            }" style="width:${aval ? pct : "0"}%;"></span>
           </div>
           <div class="meter red">
-            <span class="bad" style="width:${aval ? (val > max ? 100 : 0) : '0'}%;"></span>
+            <span class="bad" style="width:${
+              aval ? (val > max ? 100 : 0) : "0"
+            }%;"></span>
           </div>
+          <span class="header"><span class="value"> ${val}</span> <span class="unit">${unit}</span></span>
         </div>
         `;
-            // ${val} (${min}-${max})
-      }
+      };
 
       return cardTools.LitHtml`
-      <ha-card>
-        <div class="header" @click="${() => cardTools.moreInfo(this.stateObj.entity_id)}">
-          <img src="${this.stateObj.attributes.image}">
-          <span id="name"> ${this.stateObj.attributes.name} <ha-icon .icon="mdi:${this.stateObj.state == 'problem' ? 'alert-circle-outline' : ''}"></ha-icon></span>
+        <ha-card>
+        <div class="header" @click="${() =>
+          cardTools.moreInfo(this.stateObj.entity_id)}">
+          <img src="${this.stateObj.attributes.entity_picture}">
+          <span id="name"> ${
+            this.stateObj.attributes.friendly_name
+          } <ha-icon .icon="mdi:${
+        this.stateObj.state.toLowerCase() == "problem"
+          ? "alert-circle-outline"
+          : ""
+      }"></ha-icon>
+          </span>
           <span id="species">${species} </span>
         </div>
         <div class="divider"></div>
         <div class="attributes">
-          ${attribute('mdi:thermometer', 'temperature', limits['min_temperature'], limits['max_temperature'])}
-          ${attribute('mdi:white-balance-sunny', 'brightness', limits['min_brightness'], limits['max_brightness'])}
+          ${displayed[0] == undefined ? void 0 : attribute(displayed[0])}
+          ${displayed[1] == undefined ? void 0 : attribute(displayed[1])}
         </div>
         <div class="attributes">
-          ${attribute('mdi:water-percent', 'moisture', limits['min_moisture'], limits['max_moisture'])}
-          ${attribute('mdi:leaf', 'conductivity', limits['min_conductivity'], limits['max_conductivity'])}
+          ${displayed[2] == undefined ? void 0 : attribute(displayed[2])}
+          ${displayed[3] == undefined ? void 0 : attribute(displayed[3])}
         </div>
-      </ha-card>
-      `;
+        <div class="attributes">
+          ${displayed[4] == undefined ? void 0 : attribute(displayed[4])}
+          ${displayed[5] == undefined ? void 0 : attribute(displayed[5])}
+        </div>
+        </ha-card>
+        `;
+    }
+
+    async get_data(hass) {
+      try {
+        this.plantinfo = await hass.callWS({
+          type: "plant/get_info",
+          entity_id: this.config.entity,
+        });
+      } catch (err) {}
     }
 
     set hass(hass) {
       this._hass = hass;
       this.stateObj = hass.states[this.config.entity];
-      this.requestUpdate();
+      if (!this.prev_fetch) {
+        this.prev_fetch = 0;
+      }
+      // Only fetch once every second at max.  HA is flooeded with websocket requests
+      if (Date.now() > this.prev_fetch + 1000) {
+        this.prev_fetch = Date.now();
+        this.get_data(hass).then(() => {
+          this.requestUpdate();
+        });
+      }
     }
-
   }
 
-  customElements.define('flower-card', FlowerCard);
+  customElements.define("flower-card", FlowerCard);
 });
 
 window.setTimeout(() => {
-  if(customElements.get('card-tools')) return;
-  customElements.define('flower-card', class extends HTMLElement{
-    setConfig() { throw new Error("Can't find card-tools. See https://github.com/thomasloven/lovelace-card-tools");}
-});
-
+  if (customElements.get("card-tools")) return;
+  customElements.define(
+    "flower-card",
+    class extends HTMLElement {
+      setConfig() {
+        throw new Error(
+          "Can't find card-tools. See https://github.com/thomasloven/lovelace-card-tools"
+        );
+      }
+    }
+  );
 }, 2000);
