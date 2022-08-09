@@ -177,14 +177,16 @@ customElements.whenDefined("card-tools").then(() => {
         }
       }
       const attribute = (attr) => {
-        const val = parseInt(curr[attr]);
+        const aval = curr[attr] !== "unknown" ? true : false;
+        var val = parseInt(curr[attr]);
         const min = parseInt(limits["min_" + attr]);
         const max = parseInt(limits["max_" + attr]);
         const unit = uom[attr];
         const icon = icons[attr] || "mdi:help-circle-outline";
-        const aval = val !== "unavailable" ? true : false;
         const pct = 100 * Math.max(0, Math.min(1, (val - min) / (max - min)));
-
+        if (isNaN(val)) {
+          val = "";
+        }
         return cardTools.LitHtml`
         <div class="attribute tooltip" data-tooltip="${
           aval
