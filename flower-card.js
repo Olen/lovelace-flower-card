@@ -201,7 +201,7 @@ customElements.whenDefined("card-tools").then(() => {
               max +
               " " +
               unit
-            : val
+            : curr[attr]
         }" @click="${() => cardTools.moreInfo(sensors[attr])}">
           <ha-icon .icon="${icon}"></ha-icon>
           <div class="meter red">
