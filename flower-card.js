@@ -141,8 +141,11 @@ customElements.whenDefined("card-tools").then(() => {
 
     render() {
       if (!this.stateObj) {
-        console.log("No plant found for entity " + this.config.entity);
-        return cardTools.LitHtml``;
+        return cardTools.LitHtml`
+            <hui-warning>
+            Entity not available: ${this.config.entity}
+            </hui-warning>
+          `;
       }
       const species = this.stateObj.attributes.species;
       var icons = {};
