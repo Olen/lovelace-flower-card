@@ -4,21 +4,24 @@
 
 >**Warning**
 >
-> **This card is about to be completely rewritten.  Versions >= 2.0.0 will *not* be compatible with the original plant integration in HA or with earlier releases of this integration.**
+> **This card ha bean completely rewritten.  Versions >= 2.0.0 is *not* compatible with the original plant integration in HA or with earlier releases of this integration.**
 
-
-This fork of the flower-card depends on this Plant component:
-https://github.com/Olen/homeassistant-plant
-
-Instead of reading the max/min-values from the huge data-file, it gets the values from the plant entity, using a websocket connection.
+<details>
+  <summary>Version 1</summary>
 
 ## Version 1 
 
 Version 1 of this card has been deprecated and requires Version 1 of https://github.com/Olen/homeassistant-plant
 
 The rest of this readme describes Version 2 of this card.
+</details>
 
 ## Version 2
+
+This fork of the flower-card depends on this Plant component:
+https://github.com/Olen/homeassistant-plant
+
+Instead of reading the max/min-values from the huge data-file, it gets the values from the plant entity, using a websocket connection.
 
 Several new sensors from the new version of the plant integration has been added to the card. 
 
@@ -51,7 +54,6 @@ This can be installed manually or through HACS
   * Click the 3 dots in the top right corner and select "Custom Repositories"
   * Add the URL to this github repository and category "Lovelace"
 * Click "Install" in the new "Flower Card" card in HACS.
-* Select "Show beta versions" and select the latest beta
 * Wait for install to complete
 * You should not need to restart Home Assistant, but will probably need to refresh the frontend and/or "shift-reload" to refresh the browser cache.
 
@@ -80,7 +82,7 @@ Add it as a custom card and select which bars you want to show on the card
 type: custom:flower-card
 entity: plant.my_plant
 show_bars:
-- brigthness
+- illumination
 - humidity
 - moisture
 - conductivity
