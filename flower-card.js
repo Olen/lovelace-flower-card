@@ -238,41 +238,51 @@ customElements.whenDefined("card-tools").then(() => {
         `;
       };
       const battery = () => {
-        if (battery_sensor) {
+        if (battery_sensor && this._hass.states[battery_sensor]) {
           switch (true) {
             case this._hass.states[battery_sensor].state > 90:
               var icon = "mdi:battery";
+              var battery_color = "green";
               break;
             case this._hass.states[battery_sensor].state > 80:
               var icon = "mdi:battery-90";
+              var battery_color = "green";
               break;
             case this._hass.states[battery_sensor].state > 70:
               var icon = "mdi:battery-80";
+              var battery_color = "green";
               break;
             case this._hass.states[battery_sensor].state > 60:
               var icon = "mdi:battery-70";
+              var battery_color = "green";
               break;
             case this._hass.states[battery_sensor].state > 50:
               var icon = "mdi:battery-60";
+              var battery_color = "green";
               break;
             case this._hass.states[battery_sensor].state > 40:
               var icon = "mdi:battery-50";
+              var battery_color = "green";
               break;
             case this._hass.states[battery_sensor].state > 30:
               var icon = "mdi:battery-40";
+              var battery_color = "orange";
               break;
             case this._hass.states[battery_sensor].state > 20:
               var icon = "mdi:battery-30";
+              var battery_color = "orange";
               break;
             case this._hass.states[battery_sensor].state > 10:
               var icon = "mdi:battery-20";
+              var battery_color = "red";
               break;
             default:
               var icon = "mdi:battery-10";
+              var battery_color = "red";
           }
           return cardTools.LitHtml`
             <div class="battery tooltip" data-tooltip="${this._hass.states[battery_sensor].state}%">
-            <ha-icon .icon="${icon}"></ha-icon>
+            <ha-icon .icon="${icon}" style="color: ${battery_color}"></ha-icon>
           `;
         } else {
           return cardTools.LitHtml``;
