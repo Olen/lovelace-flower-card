@@ -38,6 +38,16 @@ You can also select what bars you want to show for each card
 
 ![image](https://user-images.githubusercontent.com/203184/183286691-02294d6b-84cf-46e6-9070-845d00f24a14.png)
 
+* Battery sensor
+
+You can optionally add a battery sensor to be displayed in the card.
+
+![image](https://user-images.githubusercontent.com/203184/190199923-6060efbf-7306-49e5-bbc4-26dc922d3180.png)
+
+The sensor will change color based on the state of the battery:
+* &gt;= 40%: Green
+* 20 - 39%: Orange
+* < 20%: Red
 
 ## Dependencies
 1. lovelace-card-tools (https://github.com/thomasloven/lovelace-card-tools)
@@ -88,6 +98,7 @@ show_bars:
 - conductivity
 - temperature
 - dli
+battery_sensor: sensor.xiaomi_abc1234_battery
 ```
 
 
