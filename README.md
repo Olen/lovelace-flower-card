@@ -36,7 +36,19 @@ The card also now use websockets to retrieve extended information about the plan
 
 You can also select what bars you want to show for each card
 
-![image](https://user-images.githubusercontent.com/203184/183286691-02294d6b-84cf-46e6-9070-845d00f24a14.png)
+```yaml
+type: custom:flower-card
+entity: plant.my_plant
+show_bars:
+- illumination
+- humidity
+- moisture
+- conductivity
+- temperature
+- dli
+battery_sensor: sensor.demo_battery
+```
+
 
 * Battery sensor
 
