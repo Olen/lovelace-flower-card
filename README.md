@@ -40,7 +40,7 @@ You can also select what bars you want to show for each card
 type: custom:flower-card
 entity: plant.my_plant
 show_bars:
-- illumination
+- illuminance
 - humidity
 - moisture
 - conductivity
@@ -104,7 +104,7 @@ Add it as a custom card and select which bars you want to show on the card
 type: custom:flower-card
 entity: plant.my_plant
 show_bars:
-- illumination
+- illuminance
 - humidity
 - moisture
 - conductivity
