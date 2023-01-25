@@ -191,11 +191,11 @@ customElements.whenDefined("card-tools").then(() => {
         }
       }
       const attribute = (attr) => {
-        const min = parseInt(limits["min_" + attr]);
-        const max = parseInt(limits["max_" + attr]);
+        const min = parseFloat(limits["min_" + attr]);
+        const max = parseFloat(limits["max_" + attr]);
         const unit = uom[attr];
         const icon = icons[attr] || "mdi:help-circle-outline";
-        var val = parseInt(curr[attr]);
+        var val = parseFloat(curr[attr]);
         if (isNaN(val)) {
           var aval = false;
           var pct = 0;
