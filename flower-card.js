@@ -1,3 +1,5 @@
+import {unsafeHTML} from 'https://unpkg.com/lit-html@latest/directives/unsafe-html.js?module';
+
 customElements.whenDefined("card-tools").then(() => {
   /*
   /
@@ -33,13 +35,15 @@ customElements.whenDefined("card-tools").then(() => {
         padding: 8px;
       }
       .attribute ha-icon {
-        float: left;
-        margin-right: 4px;
+        vertical-align: middle;
+        display: inline-grid;
       }
       .attribute {
         display: inline-block;
         width: 50%;
-        white-space: normal;
+        vertical-align: middle;
+        white-space: nowrap;
+        
       }
       #battery {
         float: right;
@@ -49,6 +53,9 @@ customElements.whenDefined("card-tools").then(() => {
       .header {
         padding-top: 8px;
         height: 72px;
+      }
+      .attribute .header {
+        height: auto;
       }
       .header > img {
         border-radius: 50%;
@@ -113,11 +120,10 @@ customElements.whenDefined("card-tools").then(() => {
       .tooltip {
         position: relative;
       }
-      .tooltip:after {
+      .tooltip .tip {
         opacity: 0;
         visibility: hidden;
         position: absolute;
-        content: attr(data-tooltip);
         padding: 6px 10px;
         top: 1.4em;
         left: 50%;
@@ -132,7 +138,7 @@ customElements.whenDefined("card-tools").then(() => {
         transition: opacity 0.2s cubic-bezier(0.64, 0.09, 0.08, 1), transform 0.2s cubic-bezier(0.64, 0.09, 0.08, 1);
         transition: opacity 0.2s cubic-bezier(0.64, 0.09, 0.08, 1), transform 0.2s cubic-bezier(0.64, 0.09, 0.08, 1), -webkit-transform 0.2s cubic-bezier(0.64, 0.09, 0.08, 1);
       }
-      .tooltip:hover:after, .tooltip:active:after {
+      .tooltip:hover .tip, .tooltip:active .tip {
         display: block;
         opacity: 1;
         visibility: visible;
@@ -158,6 +164,7 @@ customElements.whenDefined("card-tools").then(() => {
       const species = this.stateObj.attributes.species;
       var icons = {};
       var uom = {};
+      var uomt = {};
       var limits = {};
       var curr = {};
       var sensors = {};
@@ -182,9 +189,11 @@ customElements.whenDefined("card-tools").then(() => {
             curr[elem] = result[elem].current;
             icons[elem] = result[elem].icon;
             sensors[elem] = result[elem].sensor;
+            uomt[elem] = result[elem].unit_of_measurement;
             uom[elem] = result[elem].unit_of_measurement;
             if (elem == "dli") {
-              uom["dli"] = "mol/d⋅m²";
+              uomt["dli"] = "mol/d⋅m²";
+              uom["dli"] = '<math style="display: inline-grid;" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mfrac><mrow><mn>mol</mn></mrow><mrow><mn>d</mn><mn>⋅</mn><msup><mn>m</mn><mn>2</mn></msup></mrow></mfrac></mrow></math>';
             }
             displayed.push(elem);
           }
@@ -194,6 +203,7 @@ customElements.whenDefined("card-tools").then(() => {
         const min = parseFloat(limits["min_" + attr]);
         const max = parseFloat(limits["max_" + attr]);
         const unit = uom[attr];
+        const unitTooltip = uomt[attr];
         const icon = icons[attr] || "mdi:help-circle-outline";
         var val = parseFloat(curr[attr]);
         if (isNaN(val)) {
@@ -205,22 +215,12 @@ customElements.whenDefined("card-tools").then(() => {
           var pct = 100 * Math.max(0, Math.min(1, (val - min) / (max - min)));
         }
 
+        var toolTipText = aval ? attr + ": " + val + " " + unitTooltip + '<br>(' + min + " ~ " + max +" " + unitTooltip + ")"
+                               : this._hass.localize('state.default.unavailable');
+
         return cardTools.LitHtml`
-        <div class="attribute tooltip" data-tooltip="${
-          aval
-            ? attr +
-              ": " +
-              val +
-              " " +
-              unit +
-              " | " +
-              min +
-              " ~ " +
-              max +
-              " " +
-              unit
-            : curr[attr]
-        }" @click="${() => cardTools.moreInfo(sensors[attr])}">
+        <div class="attribute tooltip" @click="${() => cardTools.moreInfo(sensors[attr])}">
+          <div class="tip" style="text-align:center;">${unsafeHTML(toolTipText)}</div>
           <ha-icon .icon="${icon}"></ha-icon>
           <div class="meter red">
             <span class="${
@@ -237,7 +237,7 @@ customElements.whenDefined("card-tools").then(() => {
               aval ? (val > max ? 100 : 0) : "0"
             }%;"></span>
           </div>
-          <span class="header"><span class="value"> ${val}</span> <span class="unit">${unit}</span></span>
+          <span class="header"><span class="value">${val}</span>&nbsp;<span class="unit">${unsafeHTML(unit)}</span></span>
         </div>
         `;
       };
@@ -280,6 +280,10 @@ customElements.whenDefined("card-tools").then(() => {
               var icon = "mdi:battery-20";
               var battery_color = "red";
               break;
+            case this._hass.states[battery_sensor].state == 0:
+              var icon = "mdi:battery-alert-variant-outline";
+              var battery_color = "red";
+              break;
             default:
               var icon = "mdi:battery-10";
               var battery_color = "red";
@@ -309,7 +313,7 @@ customElements.whenDefined("card-tools").then(() => {
           : ""
       }"></ha-icon>
           </span>
-          <span id="battery">${battery(100)}</span>
+          <span id="battery">${battery()}</span>
           <span id="species">${species} </span>
         </div>
         <div class="divider"></div>
