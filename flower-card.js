@@ -125,7 +125,7 @@ customElements.whenDefined("card-tools").then(() => {
         visibility: hidden;
         position: absolute;
         padding: 6px 10px;
-        top: 1.4em;
+        top: 3.3em;
         left: 50%;
         -webkit-transform: translateX(-50%) translateY(-180%);
                 transform: translateX(-50%) translateY(-180%);
