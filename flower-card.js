@@ -1,3 +1,5 @@
+import {unsafeHTML} from 'https://unpkg.com/lit-html@latest/directives/unsafe-html.js?module';
+
 customElements.whenDefined("card-tools").then(() => {
   /*
   /
@@ -15,6 +17,10 @@ customElements.whenDefined("card-tools").then(() => {
     "data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHByZXNlcnZlQXNwZWN0UmF0aW89InhNaWRZTWlkIG1lZXQiIGZvY3VzYWJsZT0iZmFsc2UiIHJvbGU9ImltZyIgYXJpYS1oaWRkZW49InRydWUiIHZpZXdCb3g9IjAgMCAyNCAyNCI+CiAgICAgIDxnPgogICAgICA8IS0tP2xpdCQ0MTM0MjMxNjkkLS0+PHBhdGggZD0iTTMsMTNBOSw5IDAgMCwwIDEyLDIyQzEyLDE3IDcuOTcsMTMgMywxM00xMiw1LjVBMi41LDIuNSAwIDAsMSAxNC41LDhBMi41LDIuNSAwIDAsMSAxMiwxMC41QTIuNSwyLjUgMCAwLDEgOS41LDhBMi41LDIuNSAwIDAsMSAxMiw1LjVNNS42LDEwLjI1QTIuNSwyLjUgMCAwLDAgOC4xLDEyLjc1QzguNjMsMTIuNzUgOS4xMiwxMi41OCA5LjUsMTIuMzFDOS41LDEyLjM3IDkuNSwxMi40MyA5LjUsMTIuNUEyLjUsMi41IDAgMCwwIDEyLDE1QTIuNSwyLjUgMCAwLDAgMTQuNSwxMi41QzE0LjUsMTIuNDMgMTQuNSwxMi4zNyAxNC41LDEyLjMxQzE0Ljg4LDEyLjU4IDE1LjM3LDEyLjc1IDE1LjksMTIuNzVDMTcuMjgsMTIuNzUgMTguNCwxMS42MyAxOC40LDEwLjI1QzE4LjQsOS4yNSAxNy44MSw4LjQgMTYuOTcsOEMxNy44MSw3LjYgMTguNCw2Ljc0IDE4LjQsNS43NUMxOC40LDQuMzcgMTcuMjgsMy4yNSAxNS45LDMuMjVDMTUuMzcsMy4yNSAxNC44OCwzLjQxIDE0LjUsMy42OUMxNC41LDMuNjMgMTQuNSwzLjU2IDE0LjUsMy41QTIuNSwyLjUgMCAwLDAgMTIsMUEyLjUsMi41IDAgMCwwIDkuNSwzLjVDOS41LDMuNTYgOS41LDMuNjMgOS41LDMuNjlDOS4xMiwzLjQxIDguNjMsMy4yNSA4LjEsMy4yNUEyLjUsMi41IDAgMCwwIDUuNiw1Ljc1QzUuNiw2Ljc0IDYuMTksNy42IDcuMDMsOEM2LjE5LDguNCA1LjYsOS4yNSA1LjYsMTAuMjVNMTIsMjJBOSw5IDAgMCwwIDIxLDEzQzE2LDEzIDEyLDE3IDEyLDIyWiI+PC9wYXRoPgogICAgICA8L2c+Cjwvc3ZnPgo=";
 
   class FlowerCard extends cardTools.LitElement {
+    getCardSize() {
+      return 5;
+    }
+    
     async setConfig(config) {
       this.config = config;
     }
@@ -29,13 +35,15 @@ customElements.whenDefined("card-tools").then(() => {
         padding: 8px;
       }
       .attribute ha-icon {
-        float: left;
-        margin-right: 4px;
+        vertical-align: middle;
+        display: inline-grid;
       }
       .attribute {
         display: inline-block;
         width: 50%;
-        white-space: normal;
+        vertical-align: middle;
+        white-space: nowrap;
+        
       }
       #battery {
         float: right;
@@ -45,6 +53,9 @@ customElements.whenDefined("card-tools").then(() => {
       .header {
         padding-top: 8px;
         height: 72px;
+      }
+      .attribute .header {
+        height: auto;
       }
       .header > img {
         border-radius: 50%;
@@ -109,13 +120,12 @@ customElements.whenDefined("card-tools").then(() => {
       .tooltip {
         position: relative;
       }
-      .tooltip:after {
+      .tooltip .tip {
         opacity: 0;
         visibility: hidden;
         position: absolute;
-        content: attr(data-tooltip);
         padding: 6px 10px;
-        top: 1.4em;
+        top: 3.3em;
         left: 50%;
         -webkit-transform: translateX(-50%) translateY(-180%);
                 transform: translateX(-50%) translateY(-180%);
@@ -128,7 +138,10 @@ customElements.whenDefined("card-tools").then(() => {
         transition: opacity 0.2s cubic-bezier(0.64, 0.09, 0.08, 1), transform 0.2s cubic-bezier(0.64, 0.09, 0.08, 1);
         transition: opacity 0.2s cubic-bezier(0.64, 0.09, 0.08, 1), transform 0.2s cubic-bezier(0.64, 0.09, 0.08, 1), -webkit-transform 0.2s cubic-bezier(0.64, 0.09, 0.08, 1);
       }
-      .tooltip:hover:after, .tooltip:active:after {
+      .battery.tooltip .tip {
+        top: 2em;
+      }
+      .tooltip:hover .tip, .tooltip:active .tip {
         display: block;
         opacity: 1;
         visibility: visible;
@@ -154,6 +167,7 @@ customElements.whenDefined("card-tools").then(() => {
       const species = this.stateObj.attributes.species;
       var icons = {};
       var uom = {};
+      var uomt = {};
       var limits = {};
       var curr = {};
       var sensors = {};
@@ -178,20 +192,23 @@ customElements.whenDefined("card-tools").then(() => {
             curr[elem] = result[elem].current;
             icons[elem] = result[elem].icon;
             sensors[elem] = result[elem].sensor;
+            uomt[elem] = result[elem].unit_of_measurement;
             uom[elem] = result[elem].unit_of_measurement;
             if (elem == "dli") {
-              uom["dli"] = "mol/d⋅m²";
+              uomt["dli"] = "mol/d⋅m²";
+              uom["dli"] = '<math style="display: inline-grid;" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mfrac><mrow><mn>mol</mn></mrow><mrow><mn>d</mn><mn>⋅</mn><msup><mn>m</mn><mn>2</mn></msup></mrow></mfrac></mrow></math>';
             }
             displayed.push(elem);
           }
         }
       }
       const attribute = (attr) => {
-        const min = parseInt(limits["min_" + attr]);
-        const max = parseInt(limits["max_" + attr]);
+        const min = parseFloat(limits["min_" + attr]);
+        const max = parseFloat(limits["max_" + attr]);
         const unit = uom[attr];
+        const unitTooltip = uomt[attr];
         const icon = icons[attr] || "mdi:help-circle-outline";
-        var val = parseInt(curr[attr]);
+        var val = parseFloat(curr[attr]);
         if (isNaN(val)) {
           var aval = false;
           var pct = 0;
@@ -201,22 +218,12 @@ customElements.whenDefined("card-tools").then(() => {
           var pct = 100 * Math.max(0, Math.min(1, (val - min) / (max - min)));
         }
 
+        var toolTipText = aval ? attr + ": " + val + " " + unitTooltip + '<br>(' + min + " ~ " + max +" " + unitTooltip + ")"
+                               : this._hass.localize('state.default.unavailable');
+
         return cardTools.LitHtml`
-        <div class="attribute tooltip" data-tooltip="${
-          aval
-            ? attr +
-              ": " +
-              val +
-              " " +
-              unit +
-              " | " +
-              min +
-              " ~ " +
-              max +
-              " " +
-              unit
-            : curr[attr]
-        }" @click="${() => cardTools.moreInfo(sensors[attr])}">
+        <div class="attribute tooltip" @click="${() => cardTools.moreInfo(sensors[attr])}">
+          <div class="tip" style="text-align:center;">${unsafeHTML(toolTipText)}</div>
           <ha-icon .icon="${icon}"></ha-icon>
           <div class="meter red">
             <span class="${
@@ -233,56 +240,74 @@ customElements.whenDefined("card-tools").then(() => {
               aval ? (val > max ? 100 : 0) : "0"
             }%;"></span>
           </div>
-          <span class="header"><span class="value"> ${val}</span> <span class="unit">${unit}</span></span>
+          <span class="header"><span class="value">${val}</span>&nbsp;<span class="unit">${unsafeHTML(unit)}</span></span>
         </div>
         `;
       };
       const battery = () => {
-        if (battery_sensor && this._hass.states[battery_sensor]) {
-          switch (true) {
-            case this._hass.states[battery_sensor].state > 90:
-              var icon = "mdi:battery";
-              var battery_color = "green";
-              break;
-            case this._hass.states[battery_sensor].state > 80:
-              var icon = "mdi:battery-90";
-              var battery_color = "green";
-              break;
-            case this._hass.states[battery_sensor].state > 70:
-              var icon = "mdi:battery-80";
-              var battery_color = "green";
-              break;
-            case this._hass.states[battery_sensor].state > 60:
-              var icon = "mdi:battery-70";
-              var battery_color = "green";
-              break;
-            case this._hass.states[battery_sensor].state > 50:
-              var icon = "mdi:battery-60";
-              var battery_color = "green";
-              break;
-            case this._hass.states[battery_sensor].state > 40:
-              var icon = "mdi:battery-50";
-              var battery_color = "green";
-              break;
-            case this._hass.states[battery_sensor].state > 30:
-              var icon = "mdi:battery-40";
-              var battery_color = "orange";
-              break;
-            case this._hass.states[battery_sensor].state > 20:
-              var icon = "mdi:battery-30";
-              var battery_color = "orange";
-              break;
-            case this._hass.states[battery_sensor].state > 10:
-              var icon = "mdi:battery-20";
-              var battery_color = "red";
-              break;
-            default:
-              var icon = "mdi:battery-10";
-              var battery_color = "red";
+        if (battery_sensor) {
+          if (this._hass.states[battery_sensor]) {
+            var value = this._hass.states[battery_sensor].state + '%';
+            switch (true) {
+              case this._hass.states[battery_sensor].state > 90:
+                var icon = "mdi:battery";
+                var battery_color = "green";
+                break;
+              case this._hass.states[battery_sensor].state > 80:
+                var icon = "mdi:battery-90";
+                var battery_color = "green";
+                break;
+              case this._hass.states[battery_sensor].state > 70:
+                var icon = "mdi:battery-80";
+                var battery_color = "green";
+                break;
+              case this._hass.states[battery_sensor].state > 60:
+                var icon = "mdi:battery-70";
+                var battery_color = "green";
+                break;
+              case this._hass.states[battery_sensor].state > 50:
+                var icon = "mdi:battery-60";
+                var battery_color = "green";
+                break;
+              case this._hass.states[battery_sensor].state > 40:
+                var icon = "mdi:battery-50";
+                var battery_color = "green";
+                break;
+              case this._hass.states[battery_sensor].state > 30:
+                var icon = "mdi:battery-40";
+                var battery_color = "orange";
+                break;
+              case this._hass.states[battery_sensor].state > 20:
+                var icon = "mdi:battery-30";
+                var battery_color = "orange";
+                break;
+              case this._hass.states[battery_sensor].state > 10:
+                var icon = "mdi:battery-20";
+                var battery_color = "red";
+                break;
+              case this._hass.states[battery_sensor].state == 0:
+                var icon = "mdi:battery-alert-variant-outline";
+                var battery_color = "red";
+                break;
+              case this._hass.states[battery_sensor].state == 'unavailable':
+                var icon = "mdi:battery-off-outline";
+                var battery_color = "rgba(158,158,158,1)";
+                var value =  this._hass.localize('state.default.unavailable');
+                break;
+              default:
+                var icon = "mdi:battery-10";
+                var battery_color = "red";
+            }
+          } else {
+            var icon = "mdi:battery-off-outline";
+            var battery_color = "rgba(158,158,158,1)";
+            var value =  this._hass.localize('state.default.unavailable');
           }
           return cardTools.LitHtml`
-            <div class="battery tooltip" data-tooltip="${this._hass.states[battery_sensor].state}%">
-            <ha-icon .icon="${icon}" style="color: ${battery_color}"></ha-icon>
+          <div class="battery tooltip">
+          <div class="tip" style="text-align:center;">${value}</div>
+          <ha-icon .icon="${icon}" style="color: ${battery_color}"></ha-icon>
+          </div>
           `;
         } else {
           return cardTools.LitHtml``;
@@ -305,7 +330,7 @@ customElements.whenDefined("card-tools").then(() => {
           : ""
       }"></ha-icon>
           </span>
-          <span id="battery">${battery(100)}</span>
+          <span id="battery">${battery()}</span>
           <span id="species">${species} </span>
         </div>
         <div class="divider"></div>
