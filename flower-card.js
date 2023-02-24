@@ -1,5 +1,7 @@
 import {unsafeHTML} from 'https://unpkg.com/lit-html@latest/directives/unsafe-html.js?module';
 
+
+
 customElements.whenDefined("card-tools").then(() => {
   /*
   /
@@ -20,9 +22,27 @@ customElements.whenDefined("card-tools").then(() => {
     getCardSize() {
       return 5;
     }
-    
+
     async setConfig(config) {
+      if (!config.entity) {
+        throw new Error("You need to define an entity");
+      }
       this.config = config;
+    }
+    static getConfigElement() {
+      return document.createElement("flower-card-editor");
+    }
+
+    static getStubConfig(ha) {
+      const supportedEntities = Object.values(ha.states).filter(
+        (entity) => entity.entity_id.indexOf('plant.') === 0
+      );
+      const entity = supportedEntities.length > 0 ? supportedEntities[0].entity_id : 'plant.my_plant';
+
+      return {
+        entity: entity,
+	battery_sensor: "sensor.myflower_battery"
+      }
     }
 
     static get styles() {
@@ -374,8 +394,52 @@ customElements.whenDefined("card-tools").then(() => {
       }
     }
   }
+  class ContentCardEditor extends cardTools.LitElement {
+    setConfig(config) {
+      this._config = config;
+    }
 
+    configChanged(newConfig) {
+      const event = new Event("config-changed", {
+        bubbles: true,
+        composed: true,
+      });
+      event.detail = { config: newConfig };
+      this.dispatchEvent(event);
+    }
+    get _entity() {
+      return this._config?.entity || '';
+    }
+
+    _valueChanged(ev) {
+      console.log(ev);
+      if (!this._config || !this._hass) {
+        return;
+      }
+    }
+
+    render() {
+      const supportedEntities = Object.values(this._hass.states).filter(
+        (entity) => entity.entity_id.indexOf('plant.') === 0
+      );
+      console.log(supportedEntities);
+      return cardTools.LitHtml`
+      `;
+    }
+    set hass(hass) {
+      this._hass = hass;
+    }
+  }
   customElements.define("flower-card", FlowerCard);
+  customElements.define("flower-card-editor", ContentCardEditor);
+  window.customCards = window.customCards || [];
+  window.customCards.push({
+    type: "flower-card",
+    name: "Flower Card",
+    preview: true, // Optional - defaults to false
+    description: "Custom flower card for https://github.com/Olen/homeassistant-plant", // Optional
+  });
+
 });
 
 window.setTimeout(() => {
