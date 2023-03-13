@@ -75,7 +75,7 @@ Add it as a custom card and select which bars you want to show on the card
 type: custom:flower-card
 entity: plant.my_plant
 show_bars:
-- brigthness
+- illuminance
 - humidity
 - moisture
 - conductivity
