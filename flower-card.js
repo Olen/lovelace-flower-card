@@ -18,6 +18,15 @@ export const fireEvent = (node, type, detail) => {
   return event;
 };
 
+const default_show_bars = [
+  "moisture",
+  "conductivity",
+  "temperature",
+  "illuminance",
+  "humidity",
+  "dli",
+];
+
 class FlowerCard extends LitElement {
 
   static getConfigElement() {
@@ -32,7 +41,8 @@ class FlowerCard extends LitElement {
 
     return {
       entity: entity,
-      battery_sensor: "sensor.myflower_battery"
+      battery_sensor: "sensor.myflower_battery",
+      show_bars: default_show_bars
     }
   }
 
@@ -44,26 +54,9 @@ class FlowerCard extends LitElement {
     }
     this.config = config;
   }
-
-  // The height of your card. Home Assistant uses this to automatically
-  // distribute all cards over the available columns.
-  getCardSize() {
-    return 5;
-  }
-
-  async get_data(hass) {
-    try {
-      this.plantinfo = await hass.callWS({
-        type: "plant/get_info",
-        entity_id: this.config.entity,
-      });
-    } catch (err) {}
-  }
-
   set hass(hass) {
     this._hass = hass;
     this.stateObj = hass.states[this.config.entity];
-    // console.log(this.stateObj);
     if (!this.prev_fetch) {
       this.prev_fetch = 0;
     }
@@ -74,6 +67,22 @@ class FlowerCard extends LitElement {
         this.requestUpdate();
       });
     }
+  }
+
+  // The height of your card. Home Assistant uses this to automatically
+  // distribute all cards over the available columns.
+  getCardSize() {
+    return 5;
+  }
+
+  // Use websocket to get plant-data
+  async get_data(hass) {
+    try {
+      this.plantinfo = await hass.callWS({
+        type: "plant/get_info",
+        entity_id: this.config.entity,
+      });
+    } catch (err) {}
   }
 
   moreInfo(entityId = this.config.entity) {
@@ -249,14 +258,7 @@ class FlowerCard extends LitElement {
     var curr = {};
     var sensors = {};
     var displayed = [];
-    var monitored = this.config.show_bars || [
-      "moisture",
-      "conductivity",
-      "temperature",
-      "illuminance",
-      "humidity",
-      "dli",
-    ];
+    var monitored = this.config.show_bars || default_show_bars;
     const battery_sensor = this.config.battery_sensor || null;
 
     if (this.plantinfo && this.plantinfo["result"]) {
@@ -430,64 +432,73 @@ class FlowerCard extends LitElement {
 }
 
 class ContentCardEditor extends LitElement {
+
+  static get properties() {
+    return {
+      hass: {},
+      _config: {},
+    };
+  }
   setConfig(config) {
     this._config = config;
   }
-
-  configChanged(newConfig) {
-    const event = new Event("config-changed", {
-      bubbles: true,
-      composed: true,
-    });
-    event.detail = { config: newConfig };
-    this.dispatchEvent(event);
-  }
-  get _entity() {
-    return this._config?.entity || '';
-  }
-  getEntitiesByType(type) {
-    return Object.keys(this._hass.states).filter(
-      (eid) => eid.substr(0, eid.indexOf('.')) === type
-    );
+  set hass(hass) {
+    this._hass = hass;
   }
 
   _valueChanged(ev) {
-    console.log("VC");
-    console.log(ev);
+    // console.log("ValueChanged");
+    // console.log(ev);
     if (!this._config || !this._hass) {
       return;
     }
-    fireEvent(this, "config-changed", { config: ev.detail.value });
+    const _config = Object.assign({}, this._config);
+    _config.entity = ev.detail.value.entity;
+    _config.battery_sensor = ev.detail.value.battery_sensor;
+    _config.show_bars = ev.detail.value.show_bars;
+
+    this._config = _config;
+
+    const event = new CustomEvent("config-changed", {
+      detail: { config: _config },
+      bubbles: true,
+      composed: true,
+    });
+    this.dispatchEvent(event);
   }
 
   render() {
-    console.log("Foo");
-    console.log(this._config);
+    // console.log("Render");
+    // console.log(this._config);
+    if (!this._hass || !this._config) {
+      return html``;
+    }
+    if (!this._config.hasOwnProperty('show_bars')) {
+      // Enable all bars by default
+      this._config.show_bars = default_show_bars;
+    }
     return html`
-      <h1>Test</h1>
       <ha-form
       .hass=${this._hass}
       .data=${this._config}
       .schema=${[
-      	{name: "entity", selector: { entity: { domain: "plant" } }},
-      	{name: "battery_sensor", selector: { text: {} }}
+        {name: "entity", selector: { entity: { domain: "plant" } }},
+        {name: "battery_sensor", selector: { entity: { device_class: "battery" } }},
+        {name: "show_bars", selector: { select: { multiple: true, mode: "list", options: [
+	  {label: "Moisture", value: "moisture"},
+	  {label: "Conductivity", value: "conductivity"},
+	  {label: "Temperature", value: "temperature"},
+	  {label: "Illuminance", value: "illuminance"},
+	  {label: "Humidity", value: "humidity"},
+	  {label: "Daily Light Integral", value: "dli"}
+	  ]}
+	}}
       ]}
       .computeLabel=${this._computeLabel}
       @value-changed=${this._valueChanged} 
       ></ha-form>
     `;
-
   }
-  set hass(hass) {
-    this._hass = hass;
-  }
-  static styles = css`
-    mwc-select,
-    mwc-textfield {
-      margin-bottom: 16px;
-      display: block;
-    }
-  `;
 }
 
 
