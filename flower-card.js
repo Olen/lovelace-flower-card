@@ -365,18 +365,19 @@ class FlowerCard extends LitElement {
               var icon = "mdi:battery-20";
               var battery_color = "red";
               break;
+            case this._hass.states[battery_sensor].state > 0:
+              var icon = "mdi:battery-10";
+              var battery_color = "red";
+              break;
             case this._hass.states[battery_sensor].state == 0:
               var icon = "mdi:battery-alert-variant-outline";
               var battery_color = "red";
               break;
-            case this._hass.states[battery_sensor].state == 'unavailable':
+            default:
               var icon = "mdi:battery-off-outline";
               var battery_color = "rgba(158,158,158,1)";
               var value =  this._hass.localize('state.default.unavailable');
               break;
-            default:
-              var icon = "mdi:battery-10";
-              var battery_color = "red";
           }
         } else {
           var icon = "mdi:battery-off-outline";
