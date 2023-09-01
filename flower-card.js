@@ -45,6 +45,7 @@ class FlowerCard extends LitElement {
     return {
       entity: entity,
       battery_sensor: "sensor.myflower_battery",
+      water_automation: null,
       show_bars: default_show_bars
     }
   }
@@ -102,6 +103,12 @@ class FlowerCard extends LitElement {
     );
   }
 
+  runWaterAutomation() {
+    this._hass.callService("automation", "trigger", {
+      entity_id: this.config.water_automation,
+    });
+  }
+
   static get styles() {
     return css`
     ha-card {
@@ -122,7 +129,7 @@ class FlowerCard extends LitElement {
       white-space: nowrap;
       
     }
-    #battery {
+    #battery, #water {
       float: right;
       margin-right: 16px;
       margin-top: -15px;
@@ -263,6 +270,7 @@ class FlowerCard extends LitElement {
     var displayed = [];
     var monitored = this.config.show_bars || default_show_bars;
     const battery_sensor = this.config.battery_sensor || null;
+    const water_automation = this.config.water_automation || null;
 
     if (this.plantinfo && this.plantinfo["result"]) {
       const result = this.plantinfo["result"];
@@ -326,6 +334,21 @@ class FlowerCard extends LitElement {
         <span class="header"><span class="value">${val}</span>&nbsp;<span class="unit">${unsafeHTML(unit)}</span></span>
       </div>
       `;
+    };
+    const water = () => {
+      if (water_automation) {
+        var icon = "mdi:watering-can";
+        var water_color = "green";
+        var value = "Water this plant";
+        return html`
+        <div class="water tooltip">
+        <div class="tip" style="text-align:center;">${value}</div>
+        <ha-icon .icon="${icon}" style="color: ${water_color}"></ha-icon>
+        </div>
+        `;
+      } else {
+        return html``;
+      }
     };
     const battery = () => {
       if (battery_sensor) {
@@ -399,22 +422,24 @@ class FlowerCard extends LitElement {
     };
     return html`
       <ha-card>
-      <div class="header" @click="${() =>
-        this.moreInfo(this.stateObj.entity_id)}">
+      <div class="header">
+
         <img src="${
-          this.stateObj.attributes.entity_picture
-            ? this.stateObj.attributes.entity_picture
-            : missingImage
-        }">
-        <span id="name"> ${
-          this.stateObj.attributes.friendly_name
-        } <ha-icon .icon="mdi:${
-      this.stateObj.state.toLowerCase() == "problem"
+      this.stateObj.attributes.entity_picture
+        ? this.stateObj.attributes.entity_picture
+        : missingImage
+      }" @click="${() =>
+        this.moreInfo(this.stateObj.entity_id)}">
+        <span id="name" @click="${() =>
+        this.moreInfo(this.stateObj.entity_id)}"> ${this.stateObj.attributes.friendly_name
+      } <ha-icon .icon="mdi:${this.stateObj.state.toLowerCase() == "problem"
         ? "alert-circle-outline"
         : ""
-    }"></ha-icon>
+      }"></ha-icon>
         </span>
         <span id="battery">${battery()}</span>
+        <span id="water" @click="${() =>
+        this.runWaterAutomation()}">${water()}</span>
         <span id="species">${species} </span>
       </div>
       <div class="divider"></div>
@@ -488,6 +513,7 @@ class ContentCardEditor extends LitElement {
       .schema=${[
         {name: "entity", selector: { entity: { domain: "plant" } }},
         {name: "battery_sensor", selector: { entity: { device_class: "battery" } }},
+        {name: "water_automation", selector: { entity: { domain: "automation" } }},
         {name: "show_bars", selector: { select: { multiple: true, mode: "list", options: [
 	  {label: "Moisture", value: "moisture"},
 	  {label: "Conductivity", value: "conductivity"},
