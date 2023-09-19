@@ -262,7 +262,6 @@ class FlowerCard extends LitElement {
     var sensors = {};
     var displayed = [];
     var monitored = this.config.show_bars || default_show_bars;
-    const battery_sensor = this.config.battery_sensor || null;
 
     if (this.plantinfo && this.plantinfo["result"]) {
       const result = this.plantinfo["result"];
@@ -327,76 +326,7 @@ class FlowerCard extends LitElement {
       </div>
       `;
     };
-    const battery = () => {
-      if (battery_sensor) {
-        if (this._hass.states[battery_sensor]) {
-          var value = this._hass.states[battery_sensor].state + '%';
-          switch (true) {
-            case this._hass.states[battery_sensor].state > 90:
-              var icon = "mdi:battery";
-              var battery_color = "green";
-              break;
-            case this._hass.states[battery_sensor].state > 80:
-              var icon = "mdi:battery-90";
-              var battery_color = "green";
-              break;
-            case this._hass.states[battery_sensor].state > 70:
-              var icon = "mdi:battery-80";
-              var battery_color = "green";
-              break;
-            case this._hass.states[battery_sensor].state > 60:
-              var icon = "mdi:battery-70";
-              var battery_color = "green";
-              break;
-            case this._hass.states[battery_sensor].state > 50:
-              var icon = "mdi:battery-60";
-              var battery_color = "green";
-              break;
-            case this._hass.states[battery_sensor].state > 40:
-              var icon = "mdi:battery-50";
-              var battery_color = "green";
-              break;
-            case this._hass.states[battery_sensor].state > 30:
-              var icon = "mdi:battery-40";
-              var battery_color = "orange";
-              break;
-            case this._hass.states[battery_sensor].state > 20:
-              var icon = "mdi:battery-30";
-              var battery_color = "orange";
-              break;
-            case this._hass.states[battery_sensor].state > 10:
-              var icon = "mdi:battery-20";
-              var battery_color = "red";
-              break;
-            case this._hass.states[battery_sensor].state > 0:
-              var icon = "mdi:battery-10";
-              var battery_color = "red";
-              break;
-            case this._hass.states[battery_sensor].state == 0:
-              var icon = "mdi:battery-alert-variant-outline";
-              var battery_color = "red";
-              break;
-            default:
-              var icon = "mdi:battery-off-outline";
-              var battery_color = "rgba(158,158,158,1)";
-              var value =  this._hass.localize('state.default.unavailable');
-              break;
-          }
-        } else {
-          var icon = "mdi:battery-off-outline";
-          var battery_color = "rgba(158,158,158,1)";
-          var value =  this._hass.localize('state.default.unavailable');
-        }
-        return html`
-        <div class="battery tooltip">
-        <div class="tip" style="text-align:center;">${value}</div>
-        <ha-icon .icon="${icon}" style="color: ${battery_color}"></ha-icon>
-        </div>
-        `;
-      } else {
-        return html``;
-      }
-    };
+    
     return html`
       <ha-card>
       <div class="header" @click="${() =>
@@ -515,4 +445,3 @@ window.customCards.push({
     preview: true, // Optional - defaults to false
     description: "Custom flower card for https://github.com/Olen/homeassistant-plant", // Optional
 });
-

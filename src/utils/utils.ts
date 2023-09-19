@@ -1,0 +1,19 @@
+import { HomeAssistant } from "custom-card-helpers";
+import { default_show_bars } from "./constants";
+
+export const getConfigElement = (): HTMLElement => {
+    return document.createElement("flower-card-editor");
+}
+
+export const getStubConfig = (hass: HomeAssistant) => {
+    const supportedEntities = Object.values(hass.states).filter(
+      (entity) => entity.entity_id.indexOf('plant.') === 0
+    );
+    const entity = supportedEntities.length > 0 ? supportedEntities[0].entity_id : 'plant.my_plant';
+
+    return {
+      entity: entity,
+      battery_sensor: "sensor.myflower_battery",
+      show_bars: default_show_bars
+    }
+}
