@@ -116,9 +116,10 @@ export const getChunkedDisplayed = (displayed: DisplayedAttributes, attributesPe
 
 export const renderAttributeChunks = (card: FlowerCard, displayed: DisplayedAttributes): TemplateResult[] => {
     const chunkedDisplayed = getChunkedDisplayed(displayed, card.config.display_type === DisplayType.Compact ? 1 : 2);
+    const attributeCssClass = `attributes ${card.config.display_type === DisplayType.Compact ? 'width-100' : ''}`;
 
     return chunkedDisplayed.map((chunk) => {
-      return html`<div class="attributes">${chunk.map((item: DisplayedAttribute) => {
+      return html`<div class="${attributeCssClass}">${chunk.map((item: DisplayedAttribute) => {
         return item ? html`${renderAttribute(card, item)}` : '';
       })}</div>`;
     }).flat();

@@ -5,19 +5,17 @@ ha-card {
   margin-top: 32px;
 }
 .attributes {
+  display: flex;
   white-space: nowrap;
-  padding: 8px;
 }
 .attribute ha-icon {
-  vertical-align: middle;
-  display: inline-grid;
+  margin-right: 5px;
 }
 .attribute {
-  display: inline-block;
-  width: 50%;
-  vertical-align: middle;
   white-space: nowrap;
-  
+  display: flex;  
+  align-items: center;
+  width: 100%;
 }
 #battery {
   float: right;
@@ -99,13 +97,12 @@ ha-card {
   overflow: hidden;
 }
 .meter.red {
-  width: 5%;
-}
-.width-100 .meter.red {
-  width: 10%;
+  flex-grow: 1;
+  margin-right: 5px;
 }
 .meter.green {
-  width: 72%;
+  flex-grow: 10;
+  margin-right: 5px;
 }
 .meter > span {
   grid-row: 1;
@@ -160,7 +157,8 @@ ha-card {
           transform: translateX(-50%) translateY(-200%);
 }
 .width-100 {
-  width: 100%;
+  width: 100%;    
+  margin-bottom: 3px;
 }
 @media (max-width: 600px) {
   .header > .unit {

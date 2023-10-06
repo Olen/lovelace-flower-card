@@ -25,6 +25,7 @@ export class FlowerCardEditor extends LitElement {
         _config.entity = ev.detail.value.entity;
         _config.battery_sensor = ev.detail.value.battery_sensor;
         _config.show_bars = ev.detail.value.show_bars;
+        _config.display_type = ev.detail.value.display_type;
 
         this._config = _config;
 
