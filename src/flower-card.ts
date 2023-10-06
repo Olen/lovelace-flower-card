@@ -1,7 +1,7 @@
 import { CSSResult, HTMLTemplateResult, LitElement, customElement, html, property } from 'lit-element';
 import { HomeAssistant } from 'custom-card-helpers';
 import { style } from './styles';
-import { FlowerCardConfig, HomeAssistantEntity, PlantInfo } from './types/flower-card-types';
+import { DisplayType, FlowerCardConfig, HomeAssistantEntity, PlantInfo } from './types/flower-card-types';
 import * as packageJson from '../package.json';
 import { renderAttributes, renderBattery } from './utils/attributes';
 import { CARD_NAME, missingImage } from './utils/constants';
@@ -68,11 +68,12 @@ export default class FlowerCard extends LitElement {
         }
 
         const species = this.stateObj.attributes.species;
+        const headerCssClass = this.config.display_type === DisplayType.Compact ? "header-compact" : "header";
 
         return html`
             <ha-card>
-            <div class="header" @click="${() =>
-                        moreInfo(this.stateObj.entity_id)}">
+            <div class="${headerCssClass}" @click="${() =>
+                        moreInfo(this, this.stateObj.entity_id)}">
                 <img src="${this.stateObj.attributes.entity_picture
                         ? this.stateObj.attributes.entity_picture
                         : missingImage
@@ -87,7 +88,7 @@ export default class FlowerCard extends LitElement {
                 <span id="species">${species} </span>
             </div>
             <div class="divider"></div>
-            ${renderAttributes(this.plantinfo, this.config, this._hass)}
+            ${renderAttributes(this, this.plantinfo, this.config, this._hass)}
             </ha-card>
             `;
     }

@@ -1,9 +1,12 @@
 import { css } from 'lit';
 
 export const style = css`
+ha-card {
+  margin-top: 32px;
+}
 .attributes {
   white-space: nowrap;
-  padding: 4px 0px 4px 4px;
+  padding: 8px;
 }
 .attribute ha-icon {
   vertical-align: middle;
@@ -11,23 +14,39 @@ export const style = css`
 }
 .attribute {
   display: inline-block;
-  width: 100%;
+  width: 50%;
   vertical-align: middle;
   white-space: nowrap;
+  
 }
 #battery {
   float: right;
-  margin-right: 8px;
-  margin-top: -4px;
+  margin-right: 16px;
+  margin-top: -15px;
 }
 .header {
+  padding-top: 8px;
+  height: 72px;
+}
+.header-compact {
   padding-top: 4px;
   height: 55px;
 }
-.attribute .header {
+.attribute .header, .attribute .header-compact {
   height: auto;
 }
 .header > img {
+  border-radius: 50%;
+  width: 88px;
+  height: 88px;
+  object-fit: cover;
+  margin-left: 16px;
+  margin-right: 16px;
+  margin-top: -32px;
+  float: left;
+  box-shadow: var( --ha-card-box-shadow, 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2) );
+}
+.header-compact > img {
   border-radius: 50%;
   width: 50px;
   height: 50px;
@@ -35,23 +54,37 @@ export const style = css`
   margin-left: 8px;
   margin-right: 8px;
   margin-top: 4px;
-  margin-bottom: 0px;
+  margin-top: 0px;
   float: left;
   box-shadow: var( --ha-card-box-shadow, 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2) );
 }
 .header > #name {
   font-weight: bold;
   width: 100%;
+  margin-top: 16px;
+  text-transform: capitalize;
+  display: block;
+}
+.header-compact > #name {
+  font-weight: bold;
+  width: 100%;
   margin-top: 8px;
+  text-transform: capitalize;
   display: block;
   white-space: nowrap;
 }
 #name ha-icon {
-  color: rgb(240, 163, 163);
+    color: rgb(240, 163, 163);
 }
 .header > #species {
   text-transform: capitalize;
+  color: #8c96a5;
+  display: block;
+}
+.header-compact > #species {
+  text-transform: capitalize;
   line-height: 85%;
+  color: #8c96a5;
   font-size: 0.8em;
   margin-top: 0px;
   margin-right: 4px;
@@ -60,12 +93,15 @@ export const style = css`
 }
 .meter {
   height: 8px;
-  background-color: #88888855;
+  background-color: #f1f1f1;
   border-radius: 2px;
   display: inline-grid;
   overflow: hidden;
 }
 .meter.red {
+  width: 5%;
+}
+.width-100 .meter.red {
   width: 10%;
 }
 .meter.green {
@@ -80,7 +116,7 @@ export const style = css`
   background-color: rgba(43,194,83,1);
 }
 .meter > .bad {
-  background-color: rgba(241,139,130);
+  background-color: rgba(240,163,163);
 }
 .meter > .unavailable {
   background-color: rgba(158,158,158,1);
@@ -122,6 +158,9 @@ export const style = css`
   visibility: visible;
   -webkit-transform: translateX(-50%) translateY(-200%);
           transform: translateX(-50%) translateY(-200%);
+}
+.width-100 {
+  width: 100%;
 }
 @media (max-width: 600px) {
   .header > .unit {

@@ -1,9 +1,10 @@
 import { HomeAssistant } from "custom-card-helpers";
-import { DisplayedAttribute, DisplayedAttributes, FlowerCardConfig, Icons, Limits, PlantInfo, UOM, UOMT } from "../types/flower-card-types";
+import { DisplayType, DisplayedAttribute, DisplayedAttributes, FlowerCardConfig, Icons, Limits, PlantInfo, UOM, UOMT } from "../types/flower-card-types";
 import { TemplateResult, html } from "lit-element";
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { default_show_bars } from "./constants";
 import { moreInfo } from "./utils";
+import FlowerCard from "../flower-card";
 
 export const renderBattery = (config: FlowerCardConfig, hass: HomeAssistant) => {
     if(!config.battery_sensor) return html``;
@@ -36,9 +37,7 @@ export const renderBattery = (config: FlowerCardConfig, hass: HomeAssistant) => 
         </div>
     `;
 }
-
-
-export const renderAttributes = (plantinfo: PlantInfo, config: FlowerCardConfig, hass: HomeAssistant): TemplateResult[] => {
+export const renderAttributes = (card: FlowerCard, plantinfo: PlantInfo, config: FlowerCardConfig, hass: HomeAssistant): TemplateResult[] => {
     const icons: Icons = {};
     const uom: UOM = {};
     const uomt: UOMT = {};
@@ -68,50 +67,60 @@ export const renderAttributes = (plantinfo: PlantInfo, config: FlowerCardConfig,
         }
     }
 
-    const attribute = (attr: DisplayedAttribute) => {
-        const { max, min } = attr.limits;
-        const unitTooltip = attr.unit_of_measurement;
-        const icon = attr.icon || "mdi:help-circle-outline";
-        const val = attr.current || 0;
-        const aval = !isNaN(val);
-        const pct = 100 * Math.max(0, Math.min(1, (val - min) / (max - min)));
-        const toolTipText = aval ? `${attr.name}: ${val} ${unitTooltip}<br>(${min} ~ ${max} ${unitTooltip})` : hass.localize('state.default.unavailable');
+    return renderAttributeChunks(card, displayed, hass, config);
+}
 
-        return html`
-            <div class="attribute tooltip" @click="${() => moreInfo(attr.sensor)}">
-                <div class="tip" style="text-align:center;">${unsafeHTML(toolTipText)}</div>
-                <ha-icon .icon="${icon}"></ha-icon>
-                <div class="meter red">
-                    <span class="${
-                        aval ? (val < min || val > max ? "bad" : "good") : "unavailable"
-                    }" style="width: 100%;"></span>
-                </div>
-                <div class="meter green">
-                    <span class="${
-                        aval ? (val > max ? "bad" : "good") : "unavailable"
-                    }" style="width:${aval ? pct : "0"}%;"></span>
-                </div>
-                <div class="meter red">
-                    <span class="bad" style="width:${
-                        aval ? (val > max ? 100 : 0) : "0"
-                    }%;"></span>
-                </div>
+export const renderAttribute = (card: FlowerCard, attr: DisplayedAttribute, hass: HomeAssistant, config: FlowerCardConfig) => {
+    const { max, min } = attr.limits;
+    const unitTooltip = attr.unit_of_measurement;
+    const icon = attr.icon || "mdi:help-circle-outline";
+    const val = attr.current || 0;
+    const aval = !isNaN(val);
+    const pct = 100 * Math.max(0, Math.min(1, (val - min) / (max - min)));
+    const toolTipText = aval ? `${attr.name}: ${val} ${unitTooltip}<br>(${min} ~ ${max} ${unitTooltip})` : hass.localize('state.default.unavailable');
+    const attributeCssClass = `attribute tooltip ${config.display_type === DisplayType.Compact ? 'width-100' : ''}`;
+
+    return html`
+        <div class="${attributeCssClass}" @click="${() => moreInfo(card, attr.sensor)}">
+            <div class="tip" style="text-align:center;">${unsafeHTML(toolTipText)}</div>
+            <ha-icon .icon="${icon}"></ha-icon>
+            <div class="meter red">
+                <span class="${
+                    aval ? (val < min || val > max ? "bad" : "good") : "unavailable"
+                }" style="width: 100%;"></span>
             </div>
-        `;
-    };
+            <div class="meter green">
+                <span class="${
+                    aval ? (val > max ? "bad" : "good") : "unavailable"
+                }" style="width:${aval ? pct : "0"}%;"></span>
+            </div>
+            <div class="meter red">
+                <span class="bad" style="width:${
+                    aval ? (val > max ? 100 : 0) : "0"
+                }%;"></span>
+            </div>
+        </div>
+    `;
+};
 
-    const chunkedDisplayed = Object.values(displayed).reduce((acc, curr, i) => {
-        const index = Math.floor(i / 2);
-        if (!acc[index]) {
-            acc[index] = [];
-        }
-        acc[index].push(curr);
-        return acc;
+export const getChunkedDisplayed = (displayed: DisplayedAttributes, attributesPerRow: number) => {
+    return Object.values(displayed).reduce((acc, curr, i) => {
+      const index = Math.floor(i / attributesPerRow);
+      if (!acc[index]) {
+        acc[index] = [];
+      }
+      acc[index].push(curr);
+      return acc;
     }, []);
+}
+
+export const renderAttributeChunks = (card: FlowerCard, displayed: DisplayedAttributes, hass: HomeAssistant, config: FlowerCardConfig): TemplateResult[] => {
+    const chunkedDisplayed = getChunkedDisplayed(displayed, config.display_type === DisplayType.Compact ? 1 : 2);
 
     return chunkedDisplayed.map((chunk) => {
-        return chunk.map((item: DisplayedAttribute) => {
-            return item ? html`<div class="attributes">${attribute(item)}</div>` : '';
-        });
+      return html`<div class="attributes">${chunk.map((item: DisplayedAttribute) => {
+        return item ? html`${renderAttribute(card, item, hass, config)}` : '';
+      })}</div>`;
     }).flat();
-}
+  }
+

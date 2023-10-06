@@ -10,7 +10,7 @@ module.exports = {
         path: path.resolve(__dirname),
     },
     optimization: {
-        minimize: false
+        minimize: true
     },
     module: {
         rules: [
