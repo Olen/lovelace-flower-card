@@ -1,4 +1,4 @@
-import { HomeAssistant } from "custom-card-helpers";
+import { HomeAssistant, fireEvent } from "custom-card-helpers";
 import { default_show_bars } from "./constants";
 
 export const getConfigElement = (): HTMLElement => {
@@ -16,4 +16,13 @@ export const getStubConfig = (hass: HomeAssistant) => {
       battery_sensor: "sensor.myflower_battery",
       show_bars: default_show_bars
     }
+}
+
+export const moreInfo = (entityId: string): void => {
+    fireEvent(
+        this,
+        'hass-more-info',
+        { entityId },
+        { bubbles: false, composed: true }
+    );
 }

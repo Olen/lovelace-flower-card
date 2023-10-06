@@ -6,11 +6,11 @@ module.exports = {
     mode: 'production',
     entry: path.resolve(__dirname, 'src', 'flower-card.ts'),
     output: {
-        filename: 'formulaone-card.js',
+        filename: 'flower-card.js',
         path: path.resolve(__dirname),
     },
     optimization: {
-        minimize: true
+        minimize: false
     },
     module: {
         rules: [
@@ -23,7 +23,12 @@ module.exports = {
                         presets: ['@babel/preset-env'],
                     },
                 },
-            }
+            },
+            {
+                test: /\.tsx?$/,
+                use: 'ts-loader',
+                exclude: /node_modules/,
+              }
         ],
     },
     plugins: [

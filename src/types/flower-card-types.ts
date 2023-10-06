@@ -26,7 +26,6 @@ export interface PlantAttribute {
     unit_of_measurement: string;
 }
 
-
 export interface Limits {
     max: number;
     min: number;
@@ -41,6 +40,7 @@ export interface Attribute {
 export interface DisplayedAttribute extends Attribute {
     current: number;
     limits: Limits;
+    name: string;
 }
 
 export interface DisplayedAttributes {

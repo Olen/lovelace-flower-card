@@ -1,4 +1,4 @@
-export const CARD_NAME = "flower-card";
+export const CARD_NAME = "mini-flower-card";
 
 export const default_show_bars = [
     "moisture",
