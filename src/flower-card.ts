@@ -1,10 +1,10 @@
 import { CSSResult, HTMLTemplateResult, LitElement, customElement, html, property } from 'lit-element';
-import { HomeAssistant } from 'custom-card-helpers';
+import { HomeAssistant, LovelaceCardEditor } from 'custom-card-helpers';
 import { style } from './styles';
 import { DisplayType, FlowerCardConfig, HomeAssistantEntity, PlantInfo } from './types/flower-card-types';
 import * as packageJson from '../package.json';
 import { renderAttributes, renderBattery } from './utils/attributes';
-import { CARD_NAME, missingImage } from './utils/constants';
+import { CARD_EDITOR_NAME, CARD_NAME, default_show_bars, missingImage } from './utils/constants';
 import { moreInfo } from './utils/utils';
 
 console.info(
@@ -17,7 +17,7 @@ console.info(
 (window as any).customCards = (window as any).customCards || [];
 (window as any).customCards.push({
     type: CARD_NAME,
-    name: 'Mini Flower card',
+    name: 'Flower card',
     preview: true,
     description: 'Custom flower card for https://github.com/Olen/homeassistant-plant',
 });
@@ -29,9 +29,9 @@ export default class FlowerCard extends LitElement {
     @property() config?: FlowerCardConfig;
 
     private stateObj: HomeAssistantEntity | undefined;
-    private plantinfo: PlantInfo;
     private previousFetchDate: number;
 
+    plantinfo: PlantInfo;
     set hass(hass: HomeAssistant) {
         this._hass = hass;
         this.stateObj = this.config?.entity ? hass.states[this.config.entity] : undefined;
@@ -45,6 +45,24 @@ export default class FlowerCard extends LitElement {
             this.get_data(hass).then(() => {
                 this.requestUpdate();
             });
+        }
+    }
+
+    public static async getConfigElement(): Promise<LovelaceCardEditor> {
+        await import("./editor");
+        return document.createElement(CARD_EDITOR_NAME) as LovelaceCardEditor;
+    }
+
+    static getStubConfig(ha: HomeAssistant) {
+        const supportedEntities = Object.values(ha.states).filter(
+            (entity) => entity.entity_id.indexOf('plant.') === 0
+        );
+        const entity = supportedEntities.length > 0 ? supportedEntities[0].entity_id : 'plant.my_plant';
+
+        return {
+            entity: entity,
+            battery_sensor: "sensor.myflower_battery",
+            show_bars: default_show_bars
         }
     }
 
@@ -73,22 +91,22 @@ export default class FlowerCard extends LitElement {
         return html`
             <ha-card>
             <div class="${headerCssClass}" @click="${() =>
-                        moreInfo(this, this.stateObj.entity_id)}">
+                moreInfo(this, this.stateObj.entity_id)}">
                 <img src="${this.stateObj.attributes.entity_picture
-                        ? this.stateObj.attributes.entity_picture
-                        : missingImage
-                    }">
+                ? this.stateObj.attributes.entity_picture
+                : missingImage
+            }">
                 <span id="name"> ${this.stateObj.attributes.friendly_name
-                    } <ha-icon .icon="mdi:${this.stateObj.state.toLowerCase() == "problem"
-                        ? "alert-circle-outline"
-                        : ""
-                    }"></ha-icon>
+            } <ha-icon .icon="mdi:${this.stateObj.state.toLowerCase() == "problem"
+                ? "alert-circle-outline"
+                : ""
+            }"></ha-icon>
                 </span>
                 <span id="battery">${renderBattery(this.config, this._hass)}</span>
                 <span id="species">${species} </span>
             </div>
             <div class="divider"></div>
-            ${renderAttributes(this, this.plantinfo, this.config, this._hass)}
+            ${renderAttributes(this)}
             </ha-card>
             `;
     }
@@ -99,7 +117,7 @@ export default class FlowerCard extends LitElement {
                 type: "plant/get_info",
                 entity_id: this.config?.entity,
             });
-        } catch (err) { 
+        } catch (err) {
             this.plantinfo = { result: {} };
         }
     }

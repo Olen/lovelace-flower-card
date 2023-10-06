@@ -1,5 +1,5 @@
 import { HomeAssistant } from "custom-card-helpers";
-import { DisplayType, DisplayedAttribute, DisplayedAttributes, FlowerCardConfig, Icons, Limits, PlantInfo, UOM, UOMT } from "../types/flower-card-types";
+import { DisplayType, DisplayedAttribute, DisplayedAttributes, FlowerCardConfig, Icons, Limits, UOM, UOMT } from "../types/flower-card-types";
 import { TemplateResult, html } from "lit-element";
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { default_show_bars } from "./constants";
@@ -37,7 +37,7 @@ export const renderBattery = (config: FlowerCardConfig, hass: HomeAssistant) => 
         </div>
     `;
 }
-export const renderAttributes = (card: FlowerCard, plantinfo: PlantInfo, config: FlowerCardConfig, hass: HomeAssistant): TemplateResult[] => {
+export const renderAttributes = (card: FlowerCard): TemplateResult[] => {
     const icons: Icons = {};
     const uom: UOM = {};
     const uomt: UOMT = {};
@@ -45,10 +45,10 @@ export const renderAttributes = (card: FlowerCard, plantinfo: PlantInfo, config:
     const curr: Record<string, number> = {};
     const sensors: Record<string, string> = {};
     const displayed: DisplayedAttributes = {};
-    const monitored = config.show_bars || default_show_bars;
+    const monitored = card.config.show_bars || default_show_bars;
 
-    if (plantinfo && plantinfo.result) {
-        const result = plantinfo.result;
+    if (card.plantinfo && card.plantinfo.result) {
+        const result = card.plantinfo.result;
         for (const elem of monitored) {
             if (result[elem]) {
                 const { max, min, current, icon, sensor, unit_of_measurement } = result[elem];
@@ -67,18 +67,18 @@ export const renderAttributes = (card: FlowerCard, plantinfo: PlantInfo, config:
         }
     }
 
-    return renderAttributeChunks(card, displayed, hass, config);
+    return renderAttributeChunks(card, displayed);
 }
 
-export const renderAttribute = (card: FlowerCard, attr: DisplayedAttribute, hass: HomeAssistant, config: FlowerCardConfig) => {
+export const renderAttribute = (card: FlowerCard, attr: DisplayedAttribute) => {
     const { max, min } = attr.limits;
     const unitTooltip = attr.unit_of_measurement;
     const icon = attr.icon || "mdi:help-circle-outline";
     const val = attr.current || 0;
     const aval = !isNaN(val);
     const pct = 100 * Math.max(0, Math.min(1, (val - min) / (max - min)));
-    const toolTipText = aval ? `${attr.name}: ${val} ${unitTooltip}<br>(${min} ~ ${max} ${unitTooltip})` : hass.localize('state.default.unavailable');
-    const attributeCssClass = `attribute tooltip ${config.display_type === DisplayType.Compact ? 'width-100' : ''}`;
+    const toolTipText = aval ? `${attr.name}: ${val} ${unitTooltip}<br>(${min} ~ ${max} ${unitTooltip})` : card._hass.localize('state.default.unavailable');
+    const attributeCssClass = `attribute tooltip ${card.config.display_type === DisplayType.Compact ? 'width-100' : ''}`;
 
     return html`
         <div class="${attributeCssClass}" @click="${() => moreInfo(card, attr.sensor)}">
@@ -114,12 +114,12 @@ export const getChunkedDisplayed = (displayed: DisplayedAttributes, attributesPe
     }, []);
 }
 
-export const renderAttributeChunks = (card: FlowerCard, displayed: DisplayedAttributes, hass: HomeAssistant, config: FlowerCardConfig): TemplateResult[] => {
-    const chunkedDisplayed = getChunkedDisplayed(displayed, config.display_type === DisplayType.Compact ? 1 : 2);
+export const renderAttributeChunks = (card: FlowerCard, displayed: DisplayedAttributes): TemplateResult[] => {
+    const chunkedDisplayed = getChunkedDisplayed(displayed, card.config.display_type === DisplayType.Compact ? 1 : 2);
 
     return chunkedDisplayed.map((chunk) => {
       return html`<div class="attributes">${chunk.map((item: DisplayedAttribute) => {
-        return item ? html`${renderAttribute(card, item, hass, config)}` : '';
+        return item ? html`${renderAttribute(card, item)}` : '';
       })}</div>`;
     }).flat();
   }
