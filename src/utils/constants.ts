@@ -1,4 +1,4 @@
-import { DropdownOption } from "../types/flower-card-types";
+import { DropdownOption } from "../editor-form";
 
 export const CARD_NAME = "flower-card";
 export const CARD_EDITOR_NAME = `${CARD_NAME}-editor`;

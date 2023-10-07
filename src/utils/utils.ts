@@ -1,7 +1,6 @@
 import { HomeAssistant, fireEvent } from "custom-card-helpers";
 import { default_show_bars } from "./constants";
 import FlowerCard from "../flower-card";
-import { DropdownOption } from "../types/flower-card-types";
 
 export const getConfigElement = (): HTMLElement => {
     return document.createElement("flower-card-editor");
@@ -28,8 +27,3 @@ export const moreInfo = (card: FlowerCard, entityId: string): void => {
         { bubbles: false, composed: true }
     );
 }
-
-export const formatList = (entity: string, hass: HomeAssistant): DropdownOption => ({
-  label: hass.states[entity].attributes.friendly_name,
-  value: entity
-});
