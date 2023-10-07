@@ -64,3 +64,26 @@ export interface UOM {
 export interface UOMT {
     [key: string]: string;
 }
+
+export interface DropdownOption {
+    label: string;
+    value: string;
+}
+
+export interface ValueChangedEvent {
+    detail: {
+        value: {
+            itemValue: string;
+            parentElement: {
+                configValue: string;
+            };
+        }
+    };
+    target: {
+        value: string;
+        configValue: string;
+        checked?: boolean;
+        tagName?: string;
+    };
+    
+}
