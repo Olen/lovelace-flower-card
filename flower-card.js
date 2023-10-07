@@ -11,8 +11,8 @@
                 <hui-warning>
                 Entity not available: ${this.config.entity}
                 </hui-warning>
-              `;const t=this.stateObj.attributes.species,e=this.config.display_type===s.DisplayType.Compact?"header-compact":"header";return o.html`
-            <ha-card>
+              `;const t=this.stateObj.attributes.species,e=this.config.display_type===s.DisplayType.Compact?"header-compact":"header",i=this.config.display_type===s.DisplayType.Compact?"":"card-margin-top";return o.html`
+            <ha-card class="${i}">
             <div class="${e}" @click="${()=>(0,d.moreInfo)(this,this.stateObj.entity_id)}">
                 <img src="${this.stateObj.attributes.entity_picture?this.stateObj.attributes.entity_picture:u.missingImage}">
                 <span id="name"> ${this.stateObj.attributes.friendly_name} <ha-icon .icon="mdi:${"problem"==this.stateObj.state.toLowerCase()?"alert-circle-outline":""}"></ha-icon>
@@ -24,7 +24,7 @@
             ${(0,c.renderAttributes)(this)}
             </ha-card>
             `}get_data(t){var e;return n(this,void 0,void 0,(function*(){try{this.plantinfo=yield t.callWS({type:"plant/get_info",entity_id:null===(e=this.config)||void 0===e?void 0:e.entity})}catch(t){this.plantinfo={result:{}}}}))}getCardSize(){return 5}static get styles(){return a.style}};r([(0,o.property)()],h.prototype,"_hass",void 0),r([(0,o.property)()],h.prototype,"config",void 0),h=r([(0,o.customElement)(u.CARD_NAME)],h),e.default=h},299:(t,e,i)=>{Object.defineProperty(e,"__esModule",{value:!0}),e.style=void 0;const r=i(370);e.style=r.css`
-ha-card {
+.card-margin-top {
   margin-top: 32px;
 }
 .attributes {

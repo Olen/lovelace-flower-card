@@ -1,7 +1,7 @@
 import { css } from 'lit';
 
 export const style = css`
-ha-card {
+.card-margin-top {
   margin-top: 32px;
 }
 .attributes {
