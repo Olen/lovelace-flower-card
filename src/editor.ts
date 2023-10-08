@@ -1,7 +1,8 @@
 import { customElement, html } from "lit-element";
 import { DisplayType } from "./types/flower-card-types";
 import { default_show_bars, plantAttributes } from "./utils/constants";
-import { EditorForm, FormControlType } from "./editor-form";
+import EditorForm from "@marcokreeft/ha-editor-formbuilder";
+import { FormControlType } from "@marcokreeft/ha-editor-formbuilder/dist/interfaces";
 
 @customElement('flower-card-editor')
 export class FlowerCardEditor extends EditorForm {
@@ -20,13 +21,13 @@ export class FlowerCardEditor extends EditorForm {
         const batteryList = this.getEntitiesByDeviceClass("sensor", "battery");
 
         return this.renderForm([
-            { label: "Display Type", configValue: "display_type", type: FormControlType.Radio, items: [
+            { controls: [{ label: "Display Type", configValue: "display_type", type: FormControlType.Radio, items: [
                 { label: 'Full', value: DisplayType.Full },
                 { label: 'Compact', value: DisplayType.Compact },
-            ]},
-            { label: "Entity", configValue: "entity", type: FormControlType.Dropdown, items: plantsList },
-            { label: "Battery Sensor", configValue: "battery_sensor", type: FormControlType.Dropdown, items: batteryList },
-            { label: "Show Bars", configValue: "show_bars", type: FormControlType.Checkbox, items: plantAttributes },
+            ] }] },
+            { controls: [{ label: "Entity", configValue: "entity", type: FormControlType.Dropdown, items: plantsList }] },
+            { controls: [{ label: "Battery Sensor", configValue: "battery_sensor", type: FormControlType.Dropdown, items: batteryList }] },
+            { controls: [{ label: "Show Bars", configValue: "show_bars", type: FormControlType.Checkboxes, items: plantAttributes }] }
         ]);
     }    
 }
