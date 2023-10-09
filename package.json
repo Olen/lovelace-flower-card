@@ -8,7 +8,7 @@
     "lovelace",
     "custom-cards"
   ],
-  "module": "room-card.js",
+  "module": "flower-card.js",
   "license": "MIT",
   "dependencies": {
     "@marcokreeft/ha-editor-formbuilder": "^2023.10.6",
