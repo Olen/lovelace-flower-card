@@ -45,6 +45,11 @@ jobs:
       - run: npm ci
       - run: npm run build --if-present
 
+      - uses: actions/upload-artifact@v3
+        with:
+          name: flower-card
+          path: flower-card.js
+
       - name: "🗝️ Get previous release version"
         id: last_release
         uses: InsonusK/get-latest-release@v1.1.0
