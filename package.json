@@ -1,6 +1,6 @@
 {
   "name": "flower-card",
-  "version": "2023.10.0",
+  "version": "2023.10.1",
   "description": "Custom flower card for https://github.com/Olen/homeassistant-plant",
   "keywords": [
     "home-assistant",
