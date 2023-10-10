@@ -8,7 +8,7 @@ import { CARD_EDITOR_NAME, CARD_NAME, default_show_bars, missingImage } from './
 import { moreInfo } from './utils/utils';
 
 console.info(
-    `%c MINI-FLOWER-CARD %c ${packageJson.version}`,
+    `%c FLOWER-CARD %c ${packageJson.version}`,
     'color: cyan; background: black; font-weight: bold;',
     'color: darkblue; background: white; font-weight: bold;'
 );
