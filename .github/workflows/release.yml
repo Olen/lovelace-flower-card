@@ -56,13 +56,6 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: flower-card
-          path: flower-card.js
-
       - name: "🗝️ Get previous release version"
         id: last_release
         uses: InsonusK/get-latest-release@v1.1.0
