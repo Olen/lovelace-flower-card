@@ -3,8 +3,7 @@ import {
   html,
   css,
 } from "https://unpkg.com/lit-element@3.0.1/lit-element.js?module";
-import {unsafeHTML} from 'https://unpkg.com/lit-html@latest/directives/unsafe-html.js?module';
-
+import {unsafeHTML} from 'https://unpkg.com/lit-html@2.8.0/directives/unsafe-html.js?module';
 
 export const fireEvent = (node, type, detail) => {
   detail = detail === null || detail === undefined ? {} : detail;
