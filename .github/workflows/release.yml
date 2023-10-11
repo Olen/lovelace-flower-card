@@ -109,5 +109,4 @@ jobs:
           files: |
             flower-card.js
             flower-card.js.gz
-
         if: contains(env.COMPONENT_VERSION, 'beta') == true
