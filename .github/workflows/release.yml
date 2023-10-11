@@ -65,6 +65,8 @@ jobs:
         with: 
           fetch-depth: 0
           path: './'
+      - run: git checkout HEAD^
+
       - name: "🏷️ Get version tag"
         id: set_var
         run: echo "COMPONENT_VERSION=$(grep version package.json | cut -d ":" -f 2 | sed -e 's/[^0-9\.beta\-]//g')" >> $GITHUB_ENV
