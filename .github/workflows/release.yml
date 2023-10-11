@@ -101,7 +101,7 @@ jobs:
         id: "tag_create"
         with:
           tag: "v${{ env.COMPONENT_VERSION }}"
-          commit_sha: ${{ env.CURRENT_SHA }}
+          commit_sha: "${{ env.CURRENT_SHA }}"
           tag_exists_error: false
           message: "Version ${{ env.COMPONENT_VERSION }}"
 
@@ -121,9 +121,7 @@ jobs:
           body: "${{ steps.changelog.outputs.changelog }}"
           name: "Version ${{ env.COMPONENT_VERSION }}"
           tag_name: "v${{ env.COMPONENT_VERSION }}"
-          files: |
-            flower-card.js
-            flower-card.js.gz
+          target_commitish: "${{ env.CURRENT_SHA }}"
         if: contains(env.COMPONENT_VERSION, 'beta') == false
 
       - name: 🤞 Create Beta release
@@ -133,7 +131,5 @@ jobs:
           body: "${{ steps.changelog.outputs.changelog }}"
           name: "Version ${{ env.COMPONENT_VERSION }}"
           tag_name: "v${{ env.COMPONENT_VERSION }}"
-          files: |
-            flower-card.js
-            flower-card.js.gz
+          target_commitish: "${{ env.CURRENT_SHA }}"
         if: contains(env.COMPONENT_VERSION, 'beta') == true
