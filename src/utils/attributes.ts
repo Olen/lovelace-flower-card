@@ -28,7 +28,7 @@ export const renderBattery = (config: FlowerCardConfig, hass: HomeAssistant) => 
         { threshold: -Infinity, icon: "mdi:battery-alert-variant-outline", color: "red" },
     ];
 
-    const { icon, color } = levels.find(({ threshold }) => state > threshold) ||  { "mdi:battery-alert-variant-outline", "red" };
+    const { icon, color } = levels.find(({ threshold }) => state > threshold) ||  { icon: "mdi:battery-alert-variant-outline", color: "red" };
 
     return html`
         <div class="battery tooltip">
