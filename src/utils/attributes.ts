@@ -78,7 +78,7 @@ export const renderAttribute = (card: FlowerCard, attr: DisplayedAttribute) => {
     const aval = !isNaN(val);
     const pct = 100 * Math.max(0, Math.min(1, (val - min) / (max - min)));
     const toolTipText = aval ? `${attr.name}: ${val} ${unitTooltip}<br>(${min} ~ ${max} ${unitTooltip})` : card._hass.localize('state.default.unavailable');
-    const label = attr.name == 'dli' ? '<math style="display: inline-grid;" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mfrac><mrow><mn>mol</mn></mrow><mrow><mn>d</mn><mn>⋅</mn><msup><mn>m</mn><mn>2</mn></msup></mrow></mfrac></mrow></math>' : unitTooltip
+    const label = attr.name === 'dli' ? '<math style="display: inline-grid;" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mfrac><mrow><mn>mol</mn></mrow><mrow><mn>d</mn><mn>⋅</mn><msup><mn>m</mn><mn>2</mn></msup></mrow></mfrac></mrow></math>' : unitTooltip
     const attributeCssClass = `attribute tooltip ${card.config.display_type === DisplayType.Compact ? 'width-100' : ''}`;
 
     return html`
@@ -100,7 +100,7 @@ export const renderAttribute = (card: FlowerCard, attr: DisplayedAttribute) => {
                     aval ? (val > max ? 100 : 0) : "0"
                 }%;"></span>
             </div>
-            ${ card.config.display_type === DisplayType.Compact ? "" : `<span class="header"><span class="value">${val}</span>&nbsp;<span class="unit">${unsafeHTML(label)}</span></span>`}
+            ${ card.config.display_type === DisplayType.Compact ? "" : "<span class='header'><span class='value'>${val}</span>&nbsp;<span class='unit'>${unsafeHTML(label)}</span></span>"}
         </div>
     `;
 };
