@@ -37,6 +37,7 @@ export const style = css`
 }
 .attribute .header, .attribute .header-compact {
   height: auto;
+  padding-top: 0px;
 }
 .header > img {
   border-radius: 50%;
