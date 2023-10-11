@@ -70,6 +70,10 @@ jobs:
         id: set_var
         run: echo "COMPONENT_VERSION=$(grep version package.json | cut -d ":" -f 2 | sed -e 's/[^0-9\.beta\-]//g')" >> $GITHUB_ENV
 
+      - name: "🏷️ Get git sha"
+        id: set_var_2
+        run: echo "CURRENT_SHA=$(git log -1 --format='%H')" >> $GITHUB_ENV
+
       - name: "🏷️ Check if tag exists already"
         uses: mukunku/tag-exists-action@v1.4.0
         id: "check_tag"
@@ -97,6 +101,7 @@ jobs:
         id: "tag_create"
         with:
           tag: "v${{ env.COMPONENT_VERSION }}"
+          commit_sha: ${{ env.CURRENT_SHA }}
           tag_exists_error: false
           message: "Version ${{ env.COMPONENT_VERSION }}"
 
