@@ -21,7 +21,7 @@ jobs:
 
       - name: "🏷️ Get version tag"
         id: set_var
-        run: echo "COMPONENT_VERSION=$(grep version package.json | cut -d ":" -f 2 | sed -e 's/[^0-9\.beta]//g')" >> $GITHUB_ENV
+        run: echo "COMPONENT_VERSION=$(grep version package.json | cut -d ":" -f 2 | sed -e 's/[^0-9\.beta\-]//g')" >> $GITHUB_ENV
 
       - name: "🏷️ Check if tag exists already"
         uses: mukunku/tag-exists-action@v1.4.0
