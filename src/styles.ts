@@ -7,6 +7,11 @@ export const style = css`
 .attributes {
   display: flex;
   white-space: nowrap;
+  padding: 8px;
+}
+.attributes.width-100 {
+  padding: 2px;
+
 }
 .attribute ha-icon {
   margin-right: 5px;
@@ -99,11 +104,20 @@ export const style = css`
 .meter.red {
   flex-grow: 1;
   margin-right: 5px;
+  max-width: 5%
 }
 .meter.green {
   flex-grow: 10;
   margin-right: 5px;
+  max-width: 40%
 }
+.attribute.tooltip.width-100 .meter.green {
+  max-width: 90%;
+}
+.attribute.tooltip.width-100 .header {
+  display: none;
+}
+
 .meter > span {
   grid-row: 1;
   grid-column: 1;
@@ -159,6 +173,9 @@ export const style = css`
 .width-100 {
   width: 100%;    
   margin-bottom: 3px;
+}
+.width-100 .header {
+  display: none;
 }
 @media (max-width: 600px) {
   .header > .unit {
