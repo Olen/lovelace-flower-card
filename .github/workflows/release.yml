@@ -94,6 +94,9 @@ jobs:
           body: "${{ steps.changelog.outputs.changelog }}"
           name: "Version ${{ env.COMPONENT_VERSION }}"
           tag_name: "v${{ env.COMPONENT_VERSION }}"
+          files: |
+            flower-card.js
+            flower-card.js.gz
         if: contains(env.COMPONENT_VERSION, 'beta') == false
 
       - name: 🤞 Create Beta release
@@ -103,4 +106,8 @@ jobs:
           body: "${{ steps.changelog.outputs.changelog }}"
           name: "Version ${{ env.COMPONENT_VERSION }}"
           tag_name: "v${{ env.COMPONENT_VERSION }}"
+          files: |
+            flower-card.js
+            flower-card.js.gz
+
         if: contains(env.COMPONENT_VERSION, 'beta') == true
