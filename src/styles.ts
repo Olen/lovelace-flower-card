@@ -20,7 +20,7 @@ export const style = css`
   white-space: nowrap;
   display: flex;  
   align-items: center;
-  width: 100%;
+  width: 50%;
 }
 #battery {
   float: right;
