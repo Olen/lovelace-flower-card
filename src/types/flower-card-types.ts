@@ -4,7 +4,7 @@ import { HassEntity } from "home-assistant-js-websocket";
 export interface FlowerCardConfig extends LovelaceCardConfig {
     entity?: string;
     battery_sensor?: string;
-    display_type?: DisplayType
+    display_type?: DisplayType;
 }
 
 export enum DisplayType {

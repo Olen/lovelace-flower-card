@@ -14,7 +14,8 @@ export const style = css`
 
 }
 .attribute ha-icon {
-  margin-right: 5px;
+  margin-right: 10px;
+  margin-left: 5px;
 }
 .attribute {
   white-space: nowrap;
@@ -118,7 +119,6 @@ export const style = css`
 .attribute.tooltip.width-100 .header {
   display: none;
 }
-
 .meter > span {
   grid-row: 1;
   grid-column: 1;
