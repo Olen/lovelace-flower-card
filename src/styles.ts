@@ -174,6 +174,7 @@ export const style = css`
 .width-100 {
   width: 100%;    
   margin-bottom: 3px;
+  margin-right: 5px;
 }
 .width-100 .header {
   display: none;
