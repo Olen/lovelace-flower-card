@@ -51,9 +51,9 @@ export const renderAttributes = (card: FlowerCard): TemplateResult[] => {
         const result = card.plantinfo.result;
         for (const elem of monitored) {
             if (result[elem]) {
-                const { max: number, min: number, current: number, icon: string, sensor: string, unit_of_measurement: string } = result[elem];
-                limits[`max_${elem}`] = { max, min };
-                curr[elem] = current;
+                const { max, min, current, icon, sensor, unit_of_measurement } = result[elem];
+                limits[`max_${elem}`] = { Number(max), Number(min) };
+                curr[elem] = Number(current);
                 icons[elem] = icon;
                 sensors[elem] = sensor;
                 uomt[elem] = unit_of_measurement;
