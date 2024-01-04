@@ -87,11 +87,11 @@ export const renderAttribute = (card: FlowerCard, attr: DisplayedAttribute) => {
     const label = attr.name === 'dli' ? '<math style="display: inline-grid;" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mfrac><mrow><mn>mol</mn></mrow><mrow><mn>d</mn><mn>⋅</mn><msup><mn>m</mn><mn>2</mn></msup></mrow></mfrac></mrow></math>' : unitTooltip
     const attributeCssClass = `attribute tooltip ${card.config.display_type === DisplayType.Compact ? 'width-100' : ''}`;
 
-    console.info(
-        `%c FLOWER-CARD %c Attr: ${attr.name} Val: ${val} Max: ${max} Min: ${min} Available: ${aval}`,
-        'color: cyan; background: black; font-weight: bold;',
-        'color: darkblue; background: white; font-weight: bold;'
-    );
+    // console.debug(
+    //    `%c FLOWER-CARD %c Attr: ${attr.name} Val: ${val} (${typeof(val)}), Max: ${max} (${typeof(max)}), Min: ${min} (${typeof(min)}), Available: ${aval}`,
+    //    'color: cyan; background: black; font-weight: bold;',
+    //    'color: darkblue; background: white; font-weight: bold;'
+    // );
     return html`
         <div class="${attributeCssClass}" @click="${() => moreInfo(card, attr.sensor)}">
             <div class="tip" style="text-align:center;">${unsafeHTML(toolTipText)}</div>
