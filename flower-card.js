@@ -108,7 +108,7 @@
                 <span id="name"> ${this.stateObj.attributes.friendly_name} <ha-icon .icon="mdi:${"problem"==this.stateObj.state.toLowerCase()?"alert-circle-outline":""}"></ha-icon>
                 </span>
                 <span id="battery">${(0,c.renderBattery)(this.config,this._hass)}</span>
-                ${e?o.html`<span id="species">${t} </span>`:""}
+                ${e?"":o.html`<span id="species">${t} </span>`}
             </div>
             <div class="divider"></div>
             ${(0,c.renderAttributes)(this)}

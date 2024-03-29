@@ -90,7 +90,7 @@ export default class FlowerCard extends LitElement {
         }
 
         const species = this.stateObj.attributes.species;
-        const showSpecies = this.config.hide_species !== undefined ? this.config.hide_species : false;
+        const hideSpecies = this.config.hide_species !== undefined ? this.config.hide_species : false;
         const headerCssClass = this.config.display_type === DisplayType.Compact ? "header-compact" : "header";
         const haCardCssClass = this.config.display_type === DisplayType.Compact ? "" : "card-margin-top";
 
@@ -109,7 +109,7 @@ export default class FlowerCard extends LitElement {
             }"></ha-icon>
                 </span>
                 <span id="battery">${renderBattery(this.config, this._hass)}</span>
-                ${showSpecies ? html`<span id="species">${species} </span>` : ''}
+                ${!hideSpecies ? html`<span id="species">${species} </span>` : ''}
             </div>
             <div class="divider"></div>
             ${renderAttributes(this)}
