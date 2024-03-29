@@ -90,7 +90,7 @@ export default class FlowerCard extends LitElement {
         }
 
         const species = this.stateObj.attributes.species;
-        const showSpecies = this.config.showSpecies !== undefined ? this.config.showSpecies : true;
+        const showSpecies = this.config.hide_species !== undefined ? this.config.hide_species : false;
         const headerCssClass = this.config.display_type === DisplayType.Compact ? "header-compact" : "header";
         const haCardCssClass = this.config.display_type === DisplayType.Compact ? "" : "card-margin-top";
 
