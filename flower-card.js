@@ -230,7 +230,7 @@
   max-width: 90%;
 }
 .attribute.tooltip.width-100 .header {
-  display: none;
+  
 }
 .meter > span {
   grid-row: 1;
@@ -290,7 +290,7 @@
   margin-right: 5px;
 }
 .width-100 .header {
-  display: none;
+  
 }
 @media (max-width: 600px) {
   .header > .unit {
