@@ -111,7 +111,7 @@ export const renderAttribute = (card: FlowerCard, attr: DisplayedAttribute) => {
                     aval ? (val > max ? 100 : 0) : "0"
                 }%;"></span>
             </div>
-            ${card.config.display_type === DisplayType.Compact ? '': html`<div class="header"><span class="value">${val}</span>&nbsp;<span class='unit'>${unsafeHTML(label)}</span></div>`}
+            <div class="header"><span class="value">${val}</span>&nbsp;<span class='unit'>${unsafeHTML(label)}</span></div>
         </div>
     `;
 };
