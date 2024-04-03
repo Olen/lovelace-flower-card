@@ -54,9 +54,10 @@ export const renderAttributes = (card: FlowerCard): TemplateResult[] => {
                 let { max, min, current, icon, sensor, unit_of_measurement } = result[elem];
                 max = Number(max);
                 min = Number(min);
-                current = Number(current);
                 icon = String(icon);
                 sensor = String(sensor);
+                // current = Number(current);
+                current = card._hass.formatEntityState(card._hass.states[sensor]);
                 unit_of_measurement = String(unit_of_measurement);
                 limits[`max_${elem}`] = { max, min };
                 curr[elem] = current;
