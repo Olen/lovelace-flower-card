@@ -57,7 +57,8 @@ export const renderAttributes = (card: FlowerCard): TemplateResult[] => {
                 icon = String(icon);
                 sensor = String(sensor);
                 current = Number(current);
-                display_state = card._hass.formatEntityState(card._hass.states[sensor]).replace(/[^\d\,\.]/, "");
+                display_state = card._hass.formatEntityState(card._hass.states[sensor]).replace(/[^\d,.]/, "");
+                console.log(display_state);
                 unit_of_measurement = String(unit_of_measurement);
                 limits[`max_${elem}`] = { max, min };
                 curr[elem] = current;
@@ -68,7 +69,6 @@ export const renderAttributes = (card: FlowerCard): TemplateResult[] => {
                 if (elem === "dli") {
                     uomt["dli"] = "mol/d⋅m²";
                     uom["dli"] = '<math style="display: inline-grid;" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mfrac><mrow><mn>mol</mn></mrow><mrow><mn>d</mn><mn>⋅</mn><msup><mn>m</mn><mn>2</mn></msup></mrow></mfrac></mrow></math>';
-                    display_state = display_state.replace(uomt["dli"], uom["dli"])
                 }
                 displayed[elem] = { name: elem, current, limits: limits[`max_${elem}`], icon, sensor, unit_of_measurement, display_state };
             }
