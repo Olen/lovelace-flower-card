@@ -24,7 +24,9 @@
   "scripts": {
     "lint": "eslint src/**/*.ts",
     "dev": "webpack -c webpack.config.js",
-    "build": "yarn lint && webpack -c webpack.config.js"
+    "build": "yarn lint && webpack -c webpack.config.js",
+    "start:hass": "docker run --rm -p8123:8123 -v ${PWD}/.hass_dev:/config homeassistant/home-assistant:beta",
+    "start:hass-cmd": "docker run --rm -p8123:8123 -v  %cd%/.hass_dev:/config homeassistant/home-assistant:beta"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^6.7.2",

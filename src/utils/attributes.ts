@@ -37,7 +37,7 @@ export const renderBattery = (config: FlowerCardConfig, hass: HomeAssistant) => 
         </div>
     `;
 }
-export const renderAttributes = (card: FlowerCard, hass: HomeAssistant): TemplateResult[] => {
+export const renderAttributes = (card: FlowerCard): TemplateResult[] => {
     const icons: Icons = {};
     const uom: UOM = {};
     const uomt: UOMT = {};
@@ -57,7 +57,7 @@ export const renderAttributes = (card: FlowerCard, hass: HomeAssistant): Templat
                 icon = String(icon);
                 sensor = String(sensor);
                 // current = Number(current);
-                current = hass.formatEntityState(hass.states[sensor]);
+                current = card._hass.formatEntityState(card._hass.states[sensor]);
                 unit_of_measurement = String(unit_of_measurement);
                 limits[`max_${elem}`] = { max, min };
                 curr[elem] = current;
