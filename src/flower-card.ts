@@ -25,7 +25,7 @@ console.info(
 
 @customElement(CARD_NAME)
 export default class FlowerCard extends LitElement {
-    @property() _hass?: HomeAssistant;
+    @property() _hass?: any;
     @property() config?: FlowerCardConfig;
 
     private stateObj: HomeAssistantEntity | undefined;
