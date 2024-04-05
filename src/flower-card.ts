@@ -103,7 +103,7 @@ export default class FlowerCard extends LitElement {
                 ? this.stateObj.attributes.entity_picture
                 : missingImage
             }">
-                <span id="name"> ${this.stateObj.attributes.namefr
+                <span id="name"> ${this.stateObj.attributes.name
             } <ha-icon .icon="mdi:${this.stateObj.state.toLowerCase() == "problem"
                 ? "alert-circle-outline"
                 : ""
