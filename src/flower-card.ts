@@ -25,7 +25,7 @@ console.info(
 
 @customElement(CARD_NAME)
 export default class FlowerCard extends LitElement {
-    @property() _hass?: any;
+    @property() _hass?: HomeAssistant;
     @property() config?: FlowerCardConfig;
 
     private stateObj: HomeAssistantEntity | undefined;
@@ -38,7 +38,10 @@ export default class FlowerCard extends LitElement {
 
         // if config.name is not set, set it to friendly_name
         if (!this.config?.name && this.stateObj) {
-            this.config.name = this.stateObj.attributes.friendly_name;
+            this.config = {
+                ...this.config,
+                name: this.stateObj.attributes.friendly_name
+            };
         }
 
         if (!this.previousFetchDate) {
@@ -103,8 +106,7 @@ export default class FlowerCard extends LitElement {
                 ? this.stateObj.attributes.entity_picture
                 : missingImage
             }">
-                <span id="name"> ${this.stateObj.attributes.name
-            } <ha-icon .icon="mdi:${this.stateObj.state.toLowerCase() == "problem"
+                <span id="name"> ${this.config.name} <ha-icon .icon="mdi:${this.stateObj.state.toLowerCase() == "problem" 
                 ? "alert-circle-outline"
                 : ""
             }"></ha-icon>
