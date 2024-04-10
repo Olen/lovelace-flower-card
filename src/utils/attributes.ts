@@ -54,10 +54,9 @@ export const renderAttributes = (card: FlowerCard): TemplateResult[] => {
                 let { max, min, current, icon, sensor, unit_of_measurement } = result[elem];
                 max = Number(max);
                 min = Number(min);
+                current = Number(current);
                 icon = String(icon);
                 sensor = String(sensor);
-                current = Number(current);
-                const display_state = card._hass.formatEntityState(card._hass.states[sensor]).replace(/[^\d,.]/g, "");
                 unit_of_measurement = String(unit_of_measurement);
                 limits[`max_${elem}`] = { max, min };
                 curr[elem] = current;
@@ -69,7 +68,7 @@ export const renderAttributes = (card: FlowerCard): TemplateResult[] => {
                     uomt["dli"] = "mol/d⋅m²";
                     uom["dli"] = '<math style="display: inline-grid;" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mfrac><mrow><mn>mol</mn></mrow><mrow><mn>d</mn><mn>⋅</mn><msup><mn>m</mn><mn>2</mn></msup></mrow></mfrac></mrow></math>';
                 }
-                displayed[elem] = { name: elem, current, limits: limits[`max_${elem}`], icon, sensor, unit_of_measurement, display_state };
+                displayed[elem] = { name: elem, current, limits: limits[`max_${elem}`], icon, sensor, unit_of_measurement };
             }
         }
     }
@@ -83,7 +82,6 @@ export const renderAttribute = (card: FlowerCard, attr: DisplayedAttribute) => {
     const icon = attr.icon || "mdi:help-circle-outline";
     const val = attr.current || 0;
     const aval = !isNaN(val);
-    const display_val = attr.display_state;
     const pct = 100 * Math.max(0, Math.min(1, (val - min) / (max - min)));
     const toolTipText = aval ? `${attr.name}: ${val} ${unitTooltip}<br>(${min} ~ ${max} ${unitTooltip})` : card._hass.localize('state.default.unavailable');
     const label = attr.name === 'dli' ? '<math style="display: inline-grid;" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mfrac><mrow><mn>mol</mn></mrow><mrow><mn>d</mn><mn>⋅</mn><msup><mn>m</mn><mn>2</mn></msup></mrow></mfrac></mrow></math>' : unitTooltip
@@ -113,7 +111,7 @@ export const renderAttribute = (card: FlowerCard, attr: DisplayedAttribute) => {
                     aval ? (val > max ? 100 : 0) : "0"
                 }%;"></span>
             </div>
-            ${card.config.display_type === DisplayType.Compact ? '': html`<div class="header"><span class="value">${display_val}</span>&nbsp;<span class='unit'>${unsafeHTML(label)}</span></div>`}
+            ${card.config.display_type === DisplayType.Compact ? '': html`<div class="header"><span class="value">${val}</span>&nbsp;<span class='unit'>${unsafeHTML(label)}</span></div>`}
         </div>
     `;
 };

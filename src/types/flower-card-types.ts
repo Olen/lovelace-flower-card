@@ -43,7 +43,6 @@ export interface Attribute {
     icon: string;
     sensor: string;
     unit_of_measurement: string;
-    display_state: string;
 }
 
 export interface DisplayedAttribute extends Attribute {
