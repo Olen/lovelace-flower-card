@@ -20,10 +20,12 @@ export const getStubConfig = (hass: HomeAssistant) => {
 }
 
 export const moreInfo = (card: FlowerCard, entityId: string): void => {
+    console.log("Event", this.prop);
     fireEvent(
         card,
         'hass-more-info',
         { entityId },
         { bubbles: false, composed: true }
     );
+
 }
