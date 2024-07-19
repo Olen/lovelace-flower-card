@@ -30,6 +30,7 @@ export const renderBattery = (card: FlowerCard) => {
     ];
 
     const { icon, color } = levels.find(({ threshold }) => state > threshold) ||  { icon: "mdi:battery-alert-variant-outline", color: "red" };
+    console.log("battery:", card.config.battery_sensor);
 
     return html`
         <div class="battery tooltip" @click="${() => moreInfo(card, card.config.battery_sensor)}">
