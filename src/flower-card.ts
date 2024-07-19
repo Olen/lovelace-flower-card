@@ -103,7 +103,7 @@ export default class FlowerCard extends LitElement {
                 : ""
             }"></ha-icon>
                 </span>
-                <span id="battery">${renderBattery(this.config, this._hass)}</span>
+                <span id="battery">${renderBattery(this)}</span>
                 <span id="species">${species} </span>
             </div>
             <div class="divider"></div>

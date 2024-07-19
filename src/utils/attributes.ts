@@ -6,10 +6,11 @@ import { default_show_bars } from "./constants";
 import { moreInfo } from "./utils";
 import FlowerCard from "../flower-card";
 
-export const renderBattery = (config: FlowerCardConfig, hass: HomeAssistant) => {
-    if(!config.battery_sensor) return html``;
+// export const renderBattery = (config: FlowerCardConfig, hass: HomeAssistant) => {
+export const renderBattery = (card: FlowerCard) => {
+    if(!card.config.battery_sensor) return html``;
 
-    const battery_sensor = hass.states[config.battery_sensor];
+    const battery_sensor = card._hass.states[card.config.battery_sensor];
     if(!battery_sensor) return html``;
 
     const state = parseInt(battery_sensor.state);
@@ -31,7 +32,7 @@ export const renderBattery = (config: FlowerCardConfig, hass: HomeAssistant) => 
     const { icon, color } = levels.find(({ threshold }) => state > threshold) ||  { icon: "mdi:battery-alert-variant-outline", color: "red" };
 
     return html`
-        <div class="battery tooltip">
+        <div class="battery tooltip" @click="${() => moreInfo(card, battery_sensor)}">
             <div class="tip" style="text-align:center;">${state}%</div>
             <ha-icon .icon="${icon}" style="color: ${color}"></ha-icon>
         </div>
