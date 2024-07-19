@@ -32,7 +32,7 @@ export const renderBattery = (card: FlowerCard) => {
     const { icon, color } = levels.find(({ threshold }) => state > threshold) ||  { icon: "mdi:battery-alert-variant-outline", color: "red" };
 
     return html`
-        <div class="battery tooltip" @click="${(e) => { e.stopPropagation(); moreInfo(card, card.config.battery_sensor)}}">
+        <div class="battery tooltip" @click="${(e: Event) => { e.stopPropagation(); moreInfo(card, card.config.battery_sensor)}}">
             <div class="tip" style="text-align:center;">${state}%</div>
             <ha-icon .icon="${icon}" style="color: ${color}"></ha-icon>
         </div>
