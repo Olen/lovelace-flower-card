@@ -1,7 +1,6 @@
 import { HomeAssistant, fireEvent } from "custom-card-helpers";
 import { default_show_bars } from "./constants";
 import FlowerCard from "../flower-card";
-import eventOptions from 'lit-element';
 
 export const getConfigElement = (): HTMLElement => {
     return document.createElement("flower-card-editor");
