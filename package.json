@@ -19,7 +19,7 @@
     "lit": "^2.8.0",
     "lit-element": "^3.3.3",
     "lit-html": "^2.8.0",
-    "webpack": "^5.88.2",
+    "webpack": ">=5.94.0",
     "yarn": "^1.22.19"
   },
   "scripts": {
