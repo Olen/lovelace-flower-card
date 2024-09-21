@@ -54,9 +54,9 @@ export default class FlowerCard extends LitElement {
     }
 
     static getStubConfig(ha: HomeAssistant) {
-        let supportedEntities = [];
+        let supportedEntities: Array<string> = [];
         try {
-            const supportedEntities = Object.values(ha.states).filter(
+            supportedEntities = Object.values(ha.states).filter(
                 (entity) => entity.entity_id.indexOf('plant.') === 0
             );
         }
