@@ -19,8 +19,8 @@ export class FlowerCardEditor extends EditorForm {
             this._config.show_bars = default_show_bars;
         }
 
-        const plantsList = getEntitiesByDomain('plant');
-        const batteryList = getEntitiesByDeviceClass("sensor", "battery");
+        const plantsList = getEntitiesByDomain(this._hass, 'plant');
+        const batteryList = getEntitiesByDeviceClass(this._hass, "sensor", "battery");
 
         return this.renderForm([
             { controls: [{ label: "Display Type", configValue: "display_type", type: FormControlType.Radio, items: [
