@@ -1,6 +1,7 @@
 import { HomeAssistant, fireEvent } from "custom-card-helpers";
 import { default_show_bars } from "./constants";
 import FlowerCard from "../flower-card";
+import { HomeAssistantEntity } from "../types/flower-card-types";
 
 export const getConfigElement = (): HTMLElement => {
     return document.createElement("flower-card-editor");
@@ -10,7 +11,9 @@ export const getConfigElement = (): HTMLElement => {
 
 export const getStubConfig = (hass: HomeAssistant) => {
     const isPlant = (entity: HomeAssistantEntity | unknown): entity is HomeAssistantEntity => {
-        if (entity.entity_id.indexOf('plant.') === 0) {
+        console.log(typeof entity);
+        console.log(entity)
+        if (entity != 'unknown' && entity.entity_id.indexOf('plant.') === 0) {
             return !!entity;
         }
     }

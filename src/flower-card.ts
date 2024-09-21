@@ -55,7 +55,9 @@ export default class FlowerCard extends LitElement {
 
     static getStubConfig(ha: HomeAssistant) {
         const isPlant = (entity: HomeAssistantEntity | unknown): entity is HomeAssistantEntity => {
-            if (entity.entity_id.indexOf('plant.') === 0) {
+            console.log(typeof entity);
+            console.log(entity);
+            if (entity != "unknown" && entity.entity_id.indexOf('plant.') === 0) {
                 return !!entity;
             }
         }

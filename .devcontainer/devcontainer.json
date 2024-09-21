@@ -1,0 +1,19 @@
+{
+    "name": "FLowercard Dev Container",
+    "dockerFile": "Dockerfile",
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "terminal.integrated.shell.linux": "/bin/bash"
+            },
+            "extensions": [
+                "dbaeumer.vscode-eslint"
+            ]
+        }
+    },
+
+    "forwardPorts": [3000, 3001],
+    "postCreateCommand": "npm install",
+    "remoteUser": "node"
+}
+
