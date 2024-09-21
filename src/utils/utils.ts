@@ -9,11 +9,16 @@ export const getConfigElement = (): HTMLElement => {
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 export const getStubConfig = (hass: HomeAssistant) => {
+    const isPlant = (entity: HomeAssistantEntity | unknown): entity is HomeAssistantEntity => {
+        if (entity.entity_id.indexOf('plant.') === 0) {
+            return !!entity;
+        }
+    }
     let supportedEntities: Array<any> = [];
     try {
-        supportedEntities = Object.values(hass.states).filter(
-            (entity) => entity.entity_id.indexOf('plant.') === 0
-        );
+        supportedEntities = Object.values(hass.states).filter(isPlant);
+        //    (entity) => entity.entity_id.indexOf('plant.') === 0
+        // );
     }
     catch(e) {
         console.info("Unable to get ha-data");
