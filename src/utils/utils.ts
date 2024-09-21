@@ -7,7 +7,7 @@ export const getConfigElement = (): HTMLElement => {
 }
 
 export const getStubConfig = (hass: HomeAssistant) => {
-    let supportedEntities: Array<string> = [];
+    let supportedEntities: Array<any> = [];
     try {
         supportedEntities = Object.values(hass.states).filter(
             (entity) => entity.entity_id.indexOf('plant.') === 0
