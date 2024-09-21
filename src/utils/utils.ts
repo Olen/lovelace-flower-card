@@ -7,19 +7,21 @@ export const getConfigElement = (): HTMLElement => {
 }
 
 export const getStubConfig = (hass: HomeAssistant) => {
-    var supportedEntities = [];
+    let supportedEntities = [];
     try {
         supportedEntities = Object.values(hass.states).filter(
-          (entity) => entity.entity_id.indexOf('plant.') === 0
+            (entity) => entity.entity_id.indexOf('plant.') === 0
         );
     }
-    catch(e) {}
+    catch(e) {
+        console.info("Unable to get ha-data");
+    }
     const entity = supportedEntities.length > 0 ? supportedEntities[0].entity_id : 'plant.my_plant';
 
     return {
-      entity: entity,
-      battery_sensor: "sensor.myflower_battery",
-      show_bars: default_show_bars
+        entity: entity,
+        battery_sensor: "sensor.myflower_battery",
+        show_bars: default_show_bars
     }
 }
 
