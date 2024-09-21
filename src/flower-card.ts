@@ -21,7 +21,7 @@ console.info(
     preview: true,
     description: 'Custom flower card for https://github.com/Olen/homeassistant-plant',
 });
-/* eslint-enable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 @customElement(CARD_NAME)
 export default class FlowerCard extends LitElement {

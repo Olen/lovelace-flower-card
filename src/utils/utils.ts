@@ -6,6 +6,8 @@ export const getConfigElement = (): HTMLElement => {
     return document.createElement("flower-card-editor");
 }
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 export const getStubConfig = (hass: HomeAssistant) => {
     let supportedEntities: Array<any> = [];
     try {
