@@ -54,11 +54,16 @@ export default class FlowerCard extends LitElement {
     }
 
     static getStubConfig(ha: HomeAssistant) {
+        const isPlant = (entity: HomeAssistantEntity | unknown): entity is HomeAssistantEntity => {
+            if (entity.entity_id.indexOf('plant.') === 0) {
+                return !!entity;
+            }
+        }
         let supportedEntities: Array<any> = [];
         try {
-            supportedEntities = Object.values(ha.states).filter(
-                (entity) => entity.entity_id.indexOf('plant.') === 0
-            );
+            supportedEntities = Object.values(ha.states).filter(isPlant);
+                // (entity) => entity.entity_id.indexOf('plant.') === 0
+            // );
         }
         catch(e) {
             console.info("Unable to get ha-data");
