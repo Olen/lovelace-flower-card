@@ -11,6 +11,7 @@ export const getStubConfig = (hass: HomeAssistant) => {
         const supportedEntities = Object.values(hass.states).filter(
           (entity) => entity.entity_id.indexOf('plant.') === 0
         );
+    }
     catch(e) {
         const supportedEntities = [];
     }
