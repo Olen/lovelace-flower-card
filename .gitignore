@@ -28,7 +28,7 @@ share/python-wheels/
 MANIFEST
 release.sh
 flower-card.js
-flower-card.js.tgz
+flower-card.js.gz
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
