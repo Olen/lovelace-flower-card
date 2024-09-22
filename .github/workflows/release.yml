@@ -49,6 +49,8 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
+          git add flower-card.js
+          git add flower-card.js.gz
           git status
           git commit -m "Add new build" -a
       - name: "⬆️ Push changes"
