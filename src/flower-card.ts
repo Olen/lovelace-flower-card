@@ -67,7 +67,7 @@ export default class FlowerCard extends LitElement {
             // );
         }
         catch(e) {
-            console.info("Unable to get ha-data");
+            console.info(`Unable to get ha-data: ${e}`);
         }
         const entity = supportedEntities.length > 0 ? supportedEntities[0].entity_id : 'plant.my_plant';
 
