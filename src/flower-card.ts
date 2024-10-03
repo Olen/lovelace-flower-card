@@ -1,4 +1,5 @@
-import { CSSResult, HTMLTemplateResult, LitElement, customElement, html, property } from 'lit-element';
+import { CSSResult, HTMLTemplateResult, LitElement, html } from 'lit';
+import {customElement, property } from 'lit/decorators.js';
 import { HomeAssistant, LovelaceCardEditor } from 'custom-card-helpers';
 import { style } from './styles';
 import { DisplayType, FlowerCardConfig, HomeAssistantEntity, PlantInfo } from './types/flower-card-types';
