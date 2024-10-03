@@ -17,8 +17,6 @@
     "custom-card-helpers": "^1.9.0",
     "home-assistant-js-websocket": "^8.0.1",
     "lit": "^2.8.0",
-    "lit-element": "^3.3.3",
-    "lit-html": "^2.8.0",
     "webpack": ">=5.94.0",
     "yarn": "^1.22.19"
   },

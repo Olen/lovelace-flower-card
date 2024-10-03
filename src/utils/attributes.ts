@@ -1,6 +1,6 @@
 // import { HomeAssistant } from "custom-card-helpers";
 import { DisplayType, DisplayedAttribute, DisplayedAttributes, Icons, Limits, UOM, UOMT } from "../types/flower-card-types";
-import { TemplateResult, html } from "lit-element";
+import { TemplateResult, html } from "lit";
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { default_show_bars } from "./constants";
 import { moreInfo } from "./utils";

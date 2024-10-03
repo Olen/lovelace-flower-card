@@ -1,4 +1,5 @@
-import { customElement, html } from "lit-element";
+import { html } from 'lit';
+import { customElement } from "lit/decorators.js";
 import { DisplayType } from "./types/flower-card-types";
 import { default_show_bars, plantAttributes } from "./utils/constants";
 import EditorForm from "@marcokreeft/ha-editor-formbuilder";
