@@ -98,7 +98,7 @@ export const style = css`
 }
 .meter {
   height: 8px;
-  background-color: #f1f1f1;
+  background-color: var(--primary-background-color);
   border-radius: 2px;
   display: inline-grid;
   overflow: hidden;
