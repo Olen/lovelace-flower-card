@@ -121,6 +121,44 @@ export default class FlowerCard extends LitElement {
             </div>
             <div class="divider"></div>
             ${renderAttributes(this)}
+            ${(() => {
+                console.debug('Notes debug:', {
+                    hasNotes: 'notes' in this.stateObj.attributes,
+                    notesValue: this.stateObj.attributes.notes,
+                    allAttributes: this.stateObj.attributes
+                });
+                
+                if (!this.config?.show_bars?.includes('notes')) {
+                    return html`
+                        <div class="divider"></div>
+                        <div class="notes notes-disabled">
+                            Notes display is disabled. Enable it in card options.
+                        </div>
+                    `;
+                }
+                if (!('notes' in this.stateObj.attributes)) {
+                    return html`
+                        <div class="divider"></div>
+                        <div class="notes notes-empty">
+                            No notes found for this plant.
+                        </div>
+                    `;
+                }
+                if (this.stateObj.attributes.notes === null || this.stateObj.attributes.notes.trim() === '') {
+                    return html`
+                        <div class="divider"></div>
+                        <div class="notes notes-empty">
+                            Notes attribute is empty.
+                        </div>
+                    `;
+                }
+                return html`
+                    <div class="divider"></div>
+                    <div class="notes">
+                        ${this.stateObj.attributes.notes}
+                    </div>
+                `;
+            })()}
             </ha-card>
             `;
     }
