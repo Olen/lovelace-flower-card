@@ -123,27 +123,7 @@
             </div>
             <div class="divider"></div>
             ${(0,u.renderAttributes)(this)}
-            ${(()=>{var t,e;return console.debug("Notes debug:",{hasNotes:"notes"in this.stateObj.attributes,notesValue:this.stateObj.attributes.notes,allAttributes:this.stateObj.attributes}),(null===(e=null===(t=this.config)||void 0===t?void 0:t.show_info)||void 0===e?void 0:e.includes("notes"))?"notes"in this.stateObj.attributes?null===this.stateObj.attributes.notes||""===this.stateObj.attributes.notes.trim()?o.html`
-                        <div class="divider"></div>
-                        <div class="notes notes-empty">
-                            Notes attribute is empty.
-                        </div>
-                    `:o.html`
-                    <div class="divider"></div>
-                    <div class="notes">
-                        ${this.stateObj.attributes.notes}
-                    </div>
-                `:o.html`
-                        <div class="divider"></div>
-                        <div class="notes notes-empty">
-                            No notes found for this plant.
-                        </div>
-                    `:o.html`
-                        <div class="divider"></div>
-                        <div class="notes notes-disabled">
-                            Notes display is disabled. Enable it in card options.
-                        </div>
-                    `})()}
+            ${(()=>{var t,e;return(null===(e=null===(t=this.config)||void 0===t?void 0:t.show_info)||void 0===e?void 0:e.includes("notes"))?"notes"in this.stateObj.attributes?null===this.stateObj.attributes.notes||""===this.stateObj.attributes.notes.trim()?o.html`<div class="divider"></div><div class="notes notes-empty">Plant has no notes, add one in the device's configuration. Edit this card and uncheck "Notes" if you want to hide this.</div>`:o.html`<div class="divider"></div><div class="notes">${this.stateObj.attributes.notes}</div>`:o.html`<div class="divider"></div><div class="notes notes-empty">Plant has no notes, add one in the device's configuration. Edit this card and uncheck "Notes" if you want to hide this.</div>`:""})()}
             </ha-card>
             `}get_data(t){return n(this,void 0,void 0,(function*(){var e;try{this.plantinfo=yield t.callWS({type:"plant/get_info",entity_id:null===(e=this.config)||void 0===e?void 0:e.entity})}catch(t){this.plantinfo={result:{}}}}))}getCardSize(){return 5}static get styles(){return a.style}};r([(0,s.property)()],m.prototype,"_hass",void 0),r([(0,s.property)()],m.prototype,"config",void 0),m=r([(0,s.customElement)(d.CARD_NAME)],m),e.default=m},800:(t,e,i)=>{Object.defineProperty(e,"__esModule",{value:!0}),e.style=void 0;const r=i(161);e.style=r.css`
 .card-margin-top {
@@ -169,13 +149,9 @@
   width: 50%;
 }
 .notes {
-  padding: 5px;
+  padding: 15px;
   color: var(--primary-text-color);
-}
-.notes-disabled {
-  color: var(--secondary-text-color);
-  font-style: italic;
-  opacity: 0.8;
+  white-space: pre-wrap;
 }
 .notes-empty {
   color: var(--secondary-text-color);
