@@ -5,7 +5,7 @@ import { style } from './styles';
 import { DisplayType, FlowerCardConfig, HomeAssistantEntity, PlantInfo } from './types/flower-card-types';
 import * as packageJson from '../package.json';
 import { renderAttributes, renderBattery } from './utils/attributes';
-import { CARD_EDITOR_NAME, CARD_NAME, default_show_bars, missingImage } from './utils/constants';
+import { CARD_EDITOR_NAME, CARD_NAME, default_show_info, missingImage } from './utils/constants';
 import { moreInfo } from './utils/utils';
 
 console.info(
@@ -75,7 +75,7 @@ export default class FlowerCard extends LitElement {
         return {
             entity: entity,
             battery_sensor: "sensor.myflower_battery",
-            show_bars: default_show_bars
+            show_info: default_show_info
         }
     }
 
@@ -128,7 +128,7 @@ export default class FlowerCard extends LitElement {
                     allAttributes: this.stateObj.attributes
                 });
                 
-                if (!this.config?.show_bars?.includes('notes')) {
+                if (!this.config?.show_info?.includes('notes')) {
                     return html`
                         <div class="divider"></div>
                         <div class="notes notes-disabled">

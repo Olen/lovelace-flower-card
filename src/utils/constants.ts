@@ -3,7 +3,7 @@ import { DropdownOption } from "@marcokreeft/ha-editor-formbuilder/dist/interfac
 export const CARD_NAME = "flower-card";
 export const CARD_EDITOR_NAME = `${CARD_NAME}-editor`;
 
-export const default_show_bars = [
+export const default_show_info = [
     "moisture",
     "conductivity",
     "temperature",

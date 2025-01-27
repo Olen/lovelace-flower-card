@@ -1,7 +1,7 @@
 import { html } from 'lit';
 import { customElement } from "lit/decorators.js";
 import { DisplayType } from "./types/flower-card-types";
-import { default_show_bars, plantAttributes } from "./utils/constants";
+import { default_show_info, plantAttributes } from "./utils/constants";
 import EditorForm from "@marcokreeft/ha-editor-formbuilder";
 import { FormControlType } from "@marcokreeft/ha-editor-formbuilder/dist/interfaces";
 import { getEntitiesByDomain } from "@marcokreeft/ha-editor-formbuilder/dist/utils/entities";
@@ -15,9 +15,9 @@ export class FlowerCardEditor extends EditorForm {
             return html``;
         }
 
-        if (!Object.prototype.hasOwnProperty.call(this._config, 'show_bars')) {
-            // Enable all bars by default
-            this._config.show_bars = default_show_bars;
+        if (!Object.prototype.hasOwnProperty.call(this._config, 'show_info')) {
+            // Enable all info by default
+            this._config.show_info = default_show_info;
         }
 
         const plantsList = getEntitiesByDomain(this._hass, 'plant');
@@ -30,7 +30,7 @@ export class FlowerCardEditor extends EditorForm {
             ] }] },
             { controls: [{ label: "Entity", configValue: "entity", type: FormControlType.Dropdown, items: plantsList }] },
             { controls: [{ label: "Battery Sensor", configValue: "battery_sensor", type: FormControlType.Dropdown, items: batteryList }] },
-            { controls: [{ label: "Show Bars", configValue: "show_bars", type: FormControlType.Checkboxes, items: plantAttributes }] }
+            { controls: [{ label: "Show Info", configValue: "show_info", type: FormControlType.Checkboxes, items: plantAttributes }] }
         ]);
     }    
 }
