@@ -24,13 +24,8 @@ export const style = css`
   width: 50%;
 }
 .notes {
-  padding: 5px;
+  padding: 15px;
   color: var(--primary-text-color);
-}
-.notes-disabled {
-  color: var(--secondary-text-color);
-  font-style: italic;
-  opacity: 0.8;
 }
 .notes-empty {
   color: var(--secondary-text-color);

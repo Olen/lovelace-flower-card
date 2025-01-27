@@ -122,25 +122,14 @@ export default class FlowerCard extends LitElement {
             <div class="divider"></div>
             ${renderAttributes(this)}
             ${(() => {
-                console.debug('Notes debug:', {
-                    hasNotes: 'notes' in this.stateObj.attributes,
-                    notesValue: this.stateObj.attributes.notes,
-                    allAttributes: this.stateObj.attributes
-                });
-                
                 if (!this.config?.show_info?.includes('notes')) {
-                    return html`
-                        <div class="divider"></div>
-                        <div class="notes notes-disabled">
-                            Notes display is disabled. Enable it in card options.
-                        </div>
-                    `;
+                    return '';
                 }
                 if (!('notes' in this.stateObj.attributes)) {
                     return html`
                         <div class="divider"></div>
                         <div class="notes notes-empty">
-                            No notes found for this plant.
+                            Plant has no notes, add one in the device's configuration. Edit this card and uncheck "Notes" if you want to hide this.
                         </div>
                     `;
                 }
@@ -148,7 +137,7 @@ export default class FlowerCard extends LitElement {
                     return html`
                         <div class="divider"></div>
                         <div class="notes notes-empty">
-                            Notes attribute is empty.
+                            Plant has no notes, add one in the device's configuration. Edit this card and uncheck "Notes" if you want to hide this.
                         </div>
                     `;
                 }
