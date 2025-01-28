@@ -1,5 +1,5 @@
 import { HomeAssistant, fireEvent } from "custom-card-helpers";
-import { default_show_bars } from "./constants";
+import { default_show_info } from "./constants";
 import FlowerCard from "../flower-card";
 import { HomeAssistantEntity } from "../types/flower-card-types";
 
@@ -30,7 +30,7 @@ export const getStubConfig = (hass: HomeAssistant) => {
     return {
         entity: entity,
         battery_sensor: "sensor.myflower_battery",
-        show_bars: default_show_bars
+        show_info: default_show_info
     }
 }
 

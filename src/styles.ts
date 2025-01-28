@@ -23,6 +23,16 @@ export const style = css`
   align-items: center;
   width: 50%;
 }
+.notes {
+  padding: 15px;
+  color: var(--primary-text-color);
+  white-space: pre-wrap;
+}
+.notes-empty {
+  color: var(--secondary-text-color);
+  font-style: italic;
+  opacity: 0.8;
+}
 #battery {
   float: right;
   margin-right: 16px;
