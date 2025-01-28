@@ -131,7 +131,7 @@ export default class FlowerCard extends LitElement {
                 if (this.stateObj.attributes.notes === null || this.stateObj.attributes.notes.trim() === '') {
                     return html`<div class="divider"></div><div class="notes notes-empty">Plant has no notes, add one in the device's configuration. Edit this card and uncheck "Notes" if you want to hide this.</div>`;
                 }
-                return html`<div class="divider"></div><div class="notes">${this.stateObj.attributes.notes}</div>`;
+                return html`<div class="divider"></div><div class="notes"><ha-markdown .content=${this.stateObj.attributes.notes} allow-svg></ha-markdown></div>`;
             })()}
             </ha-card>
             `;
