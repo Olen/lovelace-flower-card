@@ -26,6 +26,7 @@ export const style = css`
 .notes {
   padding: 15px;
   color: var(--primary-text-color);
+  white-space: pre-wrap;
 }
 .notes-empty {
   color: var(--secondary-text-color);

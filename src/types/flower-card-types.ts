@@ -6,7 +6,6 @@ export interface FlowerCardConfig extends LovelaceCardConfig {
     battery_sensor?: string;
     display_type?: DisplayType;
     show_info?: string[];
-    markdown?: string;
 }
 
 export enum DisplayType {
