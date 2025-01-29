@@ -14,10 +14,17 @@ export class FlowerCardEditor extends EditorForm {
         if (!this._hass || !this._config) {
             return html``;
         }
-
-        if (!Object.prototype.hasOwnProperty.call(this._config, 'show_info')) {
+        
+        if (
+            !Object.prototype.hasOwnProperty.call(this._config, 'show_info') &&
+            !Object.prototype.hasOwnProperty.call(this._config, 'show_bars')
+        ) {
             // Enable all info by default
             this._config.show_info = default_show_info;
+        } else if (Object.prototype.hasOwnProperty.call(this._config, 'show_bars')) {
+            // Migrate from show_bars to show_info
+            this._config.show_info = this._config.show_bars;
+            delete this._config.show_bars;
         }
 
         const plantsList = getEntitiesByDomain(this._hass, 'plant');

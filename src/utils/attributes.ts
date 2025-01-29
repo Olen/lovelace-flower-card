@@ -46,7 +46,7 @@ export const renderAttributes = (card: FlowerCard): TemplateResult[] => {
     const curr: Record<string, number> = {};
     const sensors: Record<string, string> = {};
     const displayed: DisplayedAttributes = {};
-    const monitored = (card.config.show_info || default_show_info).filter(attr => attr !== 'notes');
+    const monitored = (card.config.show_info || card.config.show_bars || default_show_info).filter(attr => attr !== 'notes');
 
     if (card.plantinfo && card.plantinfo.result) {
         const result = card.plantinfo.result;

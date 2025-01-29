@@ -6,6 +6,8 @@ export interface FlowerCardConfig extends LovelaceCardConfig {
     battery_sensor?: string;
     display_type?: DisplayType;
     show_info?: string[];
+    /** @deprecated Use show_info instead */
+    show_bars?: string[];
 }
 
 export enum DisplayType {

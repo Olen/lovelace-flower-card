@@ -83,6 +83,13 @@ export default class FlowerCard extends LitElement {
         if (!config.entity) {
             throw new Error("You need to define an entity");
         }
+        
+        // Migrate from show_bars to show_info
+        if (config.show_bars) {
+            console.warn('FlowerCard: "show_bars" is deprecated, please use "show_info" instead');
+            config.show_info = config.show_bars;
+            delete config.show_bars;
+        }
 
         this.config = config;
     }
@@ -125,12 +132,15 @@ export default class FlowerCard extends LitElement {
                 if (!this.config?.show_info?.includes('notes')) {
                     return '';
                 }
-                if (!('notes' in this.stateObj.attributes)) {
-                    return html`<div class="divider"></div><div class="notes notes-empty">Plant has no notes, add one in the device's configuration. Edit this card and uncheck "Notes" if you want to hide this.</div>`;
+                
+                const emptyNotesMessage = html`<div class="divider"></div><div class="notes notes-empty">Plant has no notes, add one in the device's configuration. Edit this card and uncheck "Notes" if you want to hide this.</div>`;
+                
+                if (!('notes' in this.stateObj.attributes) || 
+                    this.stateObj.attributes.notes === null || 
+                    this.stateObj.attributes.notes.trim() === '') {
+                    return emptyNotesMessage;
                 }
-                if (this.stateObj.attributes.notes === null || this.stateObj.attributes.notes.trim() === '') {
-                    return html`<div class="divider"></div><div class="notes notes-empty">Plant has no notes, add one in the device's configuration. Edit this card and uncheck "Notes" if you want to hide this.</div>`;
-                }
+                
                 return html`<div class="divider"></div><div class="notes">${this.stateObj.attributes.notes}</div>`;
             })()}
             </ha-card>
