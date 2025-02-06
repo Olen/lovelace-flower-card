@@ -47,7 +47,7 @@ You can also select what bars you want to show for each card
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg?style=for-the-badge)](https://github.com/Olen/lovelace-flower-card/)
 
-* Add this repo as a "Custom repository" with type "Lovelace"
+* Add this repo as a "Custom repository" with type "Dashboard"
 * Click "Install" in the new "Home Assistant Plant" card in HACS
 
 ### Install manually
