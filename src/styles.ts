@@ -27,6 +27,15 @@ export const style = css`
   float: right;
   margin-right: 16px;
   margin-top: -15px;
+} 
+#sensorname {
+  float: right;
+  margin-right: 6px;
+  margin-top: -19px;
+  background-color: #e0f2f7;
+  color: #000000;
+  border-radius: 20px;
+  padding: 4px 9px;
 }
 .header {
   padding-top: 8px;
