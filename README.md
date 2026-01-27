@@ -123,7 +123,7 @@ hide_image: true
 ### Battery Sensor
 
 Add a battery sensor icon to the card header. The icon changes color based on battery level:
-- >= 40%: Green
+- \>= 40%: Green
 - 20-39%: Orange
 - < 20%: Red
 
@@ -280,6 +280,7 @@ extra_badges:
   - text: Kitchen
     icon: mdi:silverware-fork-knife
     color: var(--secondary-text-color)
+```
 
 ## Dependencies
 1. Custom Plant integration (https://github.com/Olen/homeassistant-plant)
