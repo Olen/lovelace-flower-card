@@ -3,11 +3,6 @@ name: "Test & Lint"
 
 on:
   push:
-  pull_request:
-    types: [opened, synchronize, reopened]
-    branches:
-      - 'main'
-      - 'master'
 
 jobs:
   test:
