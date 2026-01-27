@@ -5,6 +5,16 @@ import { default_show_bars } from "./constants";
 import { moreInfo } from "./utils";
 import FlowerCard from "../flower-card";
 
+/**
+ * Check if a unit indicates PPFD (not lux).
+ * Covers: µmol/s⋅m², μmol/s⋅m², mol/s⋅m², etc.
+ */
+export const isPpfdUnit = (unit: string | undefined | null): boolean => {
+    if (!unit) return false;
+    const lowerUnit = unit.toLowerCase();
+    return lowerUnit.includes('mol');
+};
+
 export const renderBattery = (card: FlowerCard) => {
     if(!card.config.battery_sensor) return html``;
 

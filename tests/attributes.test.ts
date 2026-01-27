@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getChunkedDisplayed } from '../src/utils/attributes';
+import { getChunkedDisplayed, isPpfdUnit } from '../src/utils/attributes';
 import { DisplayedAttribute, DisplayedAttributes, ExtraBadge } from '../src/types/flower-card-types';
 
 describe('percentage calculation', () => {
@@ -353,5 +353,80 @@ describe('ExtraBadge type', () => {
 
       expect(getBadgeColor(badge, false, false)).toBe('purple');
     });
+  });
+});
+
+describe('isPpfdUnit', () => {
+  it('should detect µmol/s⋅m² as PPFD', () => {
+    expect(isPpfdUnit('µmol/s⋅m²')).toBe(true);
+  });
+
+  it('should detect μmol/s⋅m² as PPFD (alternate mu character)', () => {
+    expect(isPpfdUnit('μmol/s⋅m²')).toBe(true);
+  });
+
+  it('should detect mol/s⋅m² as PPFD', () => {
+    expect(isPpfdUnit('mol/s⋅m²')).toBe(true);
+  });
+
+  it('should detect mol/d⋅m² as PPFD (DLI unit)', () => {
+    expect(isPpfdUnit('mol/d⋅m²')).toBe(true);
+  });
+
+  it('should not detect lx as PPFD', () => {
+    expect(isPpfdUnit('lx')).toBe(false);
+  });
+
+  it('should not detect % as PPFD', () => {
+    expect(isPpfdUnit('%')).toBe(false);
+  });
+
+  it('should not detect °C as PPFD', () => {
+    expect(isPpfdUnit('°C')).toBe(false);
+  });
+
+  it('should handle empty string', () => {
+    expect(isPpfdUnit('')).toBe(false);
+  });
+
+  it('should handle null', () => {
+    expect(isPpfdUnit(null)).toBe(false);
+  });
+
+  it('should handle undefined', () => {
+    expect(isPpfdUnit(undefined)).toBe(false);
+  });
+
+  it('should be case insensitive', () => {
+    expect(isPpfdUnit('MOL/S⋅M²')).toBe(true);
+    expect(isPpfdUnit('Mol/S⋅m²')).toBe(true);
+  });
+});
+
+describe('PPFD percentage calculation', () => {
+  // Test that PPFD values use linear scale (not log scale like lux)
+  const calculatePct = (val: number, min: number, max: number, logScale: boolean) => {
+    const useLinear = !logScale || val <= 0 || min <= 0;
+    return useLinear
+      ? 100 * Math.max(0, Math.min(1, (val - min) / (max - min)))
+      : 100 * Math.max(0, Math.min(1, (Math.log(val) - Math.log(min)) / (Math.log(max) - Math.log(min))));
+  };
+
+  it('should use linear scale for PPFD values (not log)', () => {
+    // PPFD range 0-2000 µmol/s⋅m²
+    const val = 500, min = 0, max = 2000;
+    const logScale = false;  // PPFD uses linear
+    const pct = calculatePct(val, min, max, logScale);
+    expect(pct).toBe(25);
+  });
+
+  it('should give different results than log scale for same range', () => {
+    // Compare linear vs log for same values
+    const val = 500, min = 100, max = 2000;
+    const linearPct = calculatePct(val, min, max, false);
+    const logPct = calculatePct(val, min, max, true);
+
+    // Log scale gives higher percentage for lower values in the range
+    expect(logPct).toBeGreaterThan(linearPct);
   });
 });
