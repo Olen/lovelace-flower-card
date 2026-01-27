@@ -90,4 +90,100 @@ describe('FlowerCardConfig', () => {
       expect(config.display_type).toBe('compact');
     });
   });
+
+  describe('show_units option', () => {
+    it('should allow explicit show_units setting', () => {
+      const config: FlowerCardConfig = {
+        type: 'flower-card',
+        entity: 'plant.my_plant',
+        show_units: false,
+      };
+
+      expect(config.show_units).toBe(false);
+    });
+
+    it('should default based on display_type when not set', () => {
+      const fullConfig: FlowerCardConfig = {
+        type: 'flower-card',
+        entity: 'plant.my_plant',
+        display_type: DisplayType.Full,
+      };
+      const compactConfig: FlowerCardConfig = {
+        type: 'flower-card',
+        entity: 'plant.my_plant',
+        display_type: DisplayType.Compact,
+      };
+
+      // Default: true for full, false for compact
+      const isCompactFull = fullConfig.display_type === DisplayType.Compact;
+      const showUnitsFull = fullConfig.show_units ?? !isCompactFull;
+      expect(showUnitsFull).toBe(true);
+
+      const isCompactCompact = compactConfig.display_type === DisplayType.Compact;
+      const showUnitsCompact = compactConfig.show_units ?? !isCompactCompact;
+      expect(showUnitsCompact).toBe(false);
+    });
+
+    it('should allow overriding default for compact mode', () => {
+      const config: FlowerCardConfig = {
+        type: 'flower-card',
+        entity: 'plant.my_plant',
+        display_type: DisplayType.Compact,
+        show_units: true,
+      };
+
+      // Explicit show_units should override the compact default
+      const isCompact = config.display_type === DisplayType.Compact;
+      const showUnits = config.show_units ?? !isCompact;
+      expect(showUnits).toBe(true);
+    });
+  });
+
+  describe('bars_per_row option', () => {
+    it('should allow setting bars_per_row', () => {
+      const config: FlowerCardConfig = {
+        type: 'flower-card',
+        entity: 'plant.my_plant',
+        bars_per_row: 1,
+      };
+
+      expect(config.bars_per_row).toBe(1);
+    });
+
+    it('should default based on display_type when not set', () => {
+      const fullConfig: FlowerCardConfig = {
+        type: 'flower-card',
+        entity: 'plant.my_plant',
+        display_type: DisplayType.Full,
+      };
+      const compactConfig: FlowerCardConfig = {
+        type: 'flower-card',
+        entity: 'plant.my_plant',
+        display_type: DisplayType.Compact,
+      };
+
+      // Default: 2 for full, 1 for compact
+      const isCompactFull = fullConfig.display_type === DisplayType.Compact;
+      const barsPerRowFull = fullConfig.bars_per_row ?? (isCompactFull ? 1 : 2);
+      expect(barsPerRowFull).toBe(2);
+
+      const isCompactCompact = compactConfig.display_type === DisplayType.Compact;
+      const barsPerRowCompact = compactConfig.bars_per_row ?? (isCompactCompact ? 1 : 2);
+      expect(barsPerRowCompact).toBe(1);
+    });
+
+    it('should allow overriding default for full mode', () => {
+      const config: FlowerCardConfig = {
+        type: 'flower-card',
+        entity: 'plant.my_plant',
+        display_type: DisplayType.Full,
+        bars_per_row: 1,
+      };
+
+      // Explicit bars_per_row should override the full default
+      const isCompact = config.display_type === DisplayType.Compact;
+      const barsPerRow = config.bars_per_row ?? (isCompact ? 1 : 2);
+      expect(barsPerRow).toBe(1);
+    });
+  });
 });

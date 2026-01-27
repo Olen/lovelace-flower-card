@@ -16,6 +16,8 @@ export interface FlowerCardConfig extends LovelaceCardConfig {
     entity?: string;
     battery_sensor?: string;
     display_type?: DisplayType;
+    show_units?: boolean;      // Show value/unit next to bars (default: true for full, false for compact)
+    bars_per_row?: number;     // Number of bars per row: 1 or 2 (default: 2 for full, 1 for compact)
     name?: string;
     hide_species?: boolean;
     hide_image?: boolean;
