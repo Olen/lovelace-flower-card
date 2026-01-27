@@ -2,6 +2,35 @@ import { describe, it, expect } from 'vitest';
 import { getChunkedDisplayed } from '../src/utils/attributes';
 import { DisplayedAttribute, DisplayedAttributes } from '../src/types/flower-card-types';
 
+describe('display_state regex', () => {
+  // Test the regex pattern used for extracting numeric values
+  const regex = /[^\d,.+-]/g;
+
+  it('should preserve negative numbers', () => {
+    const input = '-5.2 °C';
+    const result = input.replace(regex, '');
+    expect(result).toBe('-5.2');
+  });
+
+  it('should preserve positive numbers', () => {
+    const input = '25.5 °C';
+    const result = input.replace(regex, '');
+    expect(result).toBe('25.5');
+  });
+
+  it('should preserve zero', () => {
+    const input = '0 lx';
+    const result = input.replace(regex, '');
+    expect(result).toBe('0');
+  });
+
+  it('should handle comma decimal separators', () => {
+    const input = '1.234,56 µS/cm';
+    const result = input.replace(regex, '');
+    expect(result).toBe('1.234,56');
+  });
+});
+
 const createMockAttribute = (name: string): DisplayedAttribute => ({
   name,
   current: 50,
