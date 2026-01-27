@@ -284,6 +284,30 @@ describe('ExtraBadge type', () => {
       expect(badge.color_on).toBe('red');
       expect(badge.color_off).toBe('green');
     });
+
+    it('should support attribute display', () => {
+      const badge: ExtraBadge = {
+        entity: 'sensor.plant_moisture',
+        attribute: 'last_changed',
+        icon: 'mdi:clock',
+      };
+
+      expect(badge.entity).toBe('sensor.plant_moisture');
+      expect(badge.attribute).toBe('last_changed');
+      expect(badge.icon).toBe('mdi:clock');
+    });
+
+    it('should support custom attribute display', () => {
+      const badge: ExtraBadge = {
+        entity: 'sensor.plant_moisture',
+        attribute: 'battery_level',
+        icon: 'mdi:battery',
+        show_state: true,
+      };
+
+      expect(badge.attribute).toBe('battery_level');
+      expect(badge.show_state).toBe(true);
+    });
   });
 
   describe('badge color logic', () => {

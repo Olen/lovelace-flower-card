@@ -76,7 +76,7 @@ export const renderExtraBadge = (card: FlowerCard, badge: ExtraBadge) => {
 
     // Determine color based on entity type
     let color: string;
-    if (isBinarySensor) {
+    if (isBinarySensor && !badge.attribute) {
         const isOn = state === 'on';
         color = isOn
             ? (badge.color_on || "var(--primary-color)")
@@ -85,16 +85,48 @@ export const renderExtraBadge = (card: FlowerCard, badge: ExtraBadge) => {
         color = badge.color || "var(--secondary-text-color)";
     }
 
+    // Get display value - either attribute or state
+    let displayValue: string;
+    let tooltipLabel: string;
+
+    if (badge.attribute) {
+        // Handle attribute display
+        const attrValue = entity.attributes[badge.attribute];
+        tooltipLabel = badge.attribute;
+
+        if (attrValue === undefined || attrValue === null) {
+            displayValue = "N/A";
+        } else if (badge.attribute === 'last_changed' || badge.attribute === 'last_updated') {
+            // Format date/time attributes from entity root (not attributes object)
+            const dateValue = badge.attribute === 'last_changed' ? entity.last_changed : entity.last_updated;
+            if (dateValue) {
+                const date = new Date(dateValue);
+                displayValue = date.toLocaleString();
+            } else {
+                displayValue = String(attrValue);
+            }
+        } else {
+            // Use formatEntityAttributeValue if available, otherwise stringify
+            if (card._hass.formatEntityAttributeValue) {
+                displayValue = card._hass.formatEntityAttributeValue(entity, badge.attribute);
+            } else {
+                displayValue = String(attrValue);
+            }
+        }
+    } else {
+        // Handle state display
+        tooltipLabel = friendlyName;
+        displayValue = isBinarySensor ? state : card._hass.formatEntityState(entity);
+    }
+
     // Build tooltip text
-    const tooltipText = isBinarySensor
-        ? `${friendlyName}: ${state}`
-        : `${friendlyName}: ${card._hass.formatEntityState(entity)}`;
+    const tooltipText = `${tooltipLabel}: ${displayValue}`;
 
     return html`
         <div class="extra-badge tooltip" @click="${(e: Event) => { e.stopPropagation(); moreInfo(card, badge.entity)}}">
             <div class="tip" style="text-align:center;">${tooltipText}</div>
             <ha-icon .icon="${icon}" style="color: ${color}"></ha-icon>
-            ${badge.show_state ? html`<span class="badge-text">${isBinarySensor ? '' : card._hass.formatEntityState(entity)}</span>` : ''}
+            ${badge.show_state ? html`<span class="badge-text">${displayValue}</span>` : ''}
         </div>
     `;
 }

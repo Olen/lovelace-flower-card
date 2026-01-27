@@ -124,6 +124,7 @@ By default, only the icon is displayed. Hovering over the icon shows a tooltip w
 | Option | Type | Description |
 |--------|------|-------------|
 | `entity` | string | Entity ID of a sensor or binary_sensor |
+| `attribute` | string | Entity attribute to display instead of state (e.g., `last_changed`) |
 | `text` | string | Static text to display (alternative to entity) |
 | `icon` | string | Icon to display (default: entity's icon or `mdi:information`) |
 | `color` | string | Icon color for sensors/text |
@@ -164,6 +165,37 @@ extra_badges:
     icon: mdi:water-alert
     color_on: red
     color_off: green
+```
+
+#### Attribute Badge
+
+Display an entity attribute instead of its state. Useful for showing `last_changed`, `last_updated`, or any custom attribute:
+
+```yaml
+extra_badges:
+  - entity: sensor.plant_moisture
+    attribute: last_changed
+    icon: mdi:clock
+```
+
+Display the attribute value next to the icon:
+
+```yaml
+extra_badges:
+  - entity: sensor.plant_moisture
+    attribute: last_changed
+    icon: mdi:clock
+    show_state: true
+```
+
+Display a custom attribute (e.g., battery level from a sensor's attributes):
+
+```yaml
+extra_badges:
+  - entity: sensor.plant_moisture
+    attribute: battery_level
+    icon: mdi:battery
+    show_state: true
 ```
 
 #### Static Icon/Text Badge

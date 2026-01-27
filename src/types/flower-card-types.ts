@@ -3,6 +3,7 @@ import { HassEntity } from "home-assistant-js-websocket";
 
 export interface ExtraBadge {
     entity?: string;      // Entity ID for sensor/binary_sensor
+    attribute?: string;   // Entity attribute to display instead of state (e.g., "last_changed")
     icon?: string;        // Icon to display (default: entity's icon or mdi:information)
     color?: string;       // Color for regular sensors/text
     color_on?: string;    // Color when binary_sensor is "on" (default: green)
