@@ -117,6 +117,8 @@ Available bars: `moisture`, `temperature`, `conductivity`, `illuminance`, `humid
 
 Add additional icons next to the battery icon. Useful for displaying room sensors, binary states, or static labels.
 
+By default, only the icon is displayed. Hovering over the icon shows a tooltip with the entity name and state. Set `show_state: true` to display the state value next to the icon.
+
 #### Extra Badge Options
 
 | Option | Type | Description |
@@ -127,16 +129,22 @@ Add additional icons next to the battery icon. Useful for displaying room sensor
 | `color` | string | Icon color for sensors/text |
 | `color_on` | string | Icon color when binary_sensor is "on" (default: primary color) |
 | `color_off` | string | Icon color when binary_sensor is "off" (default: disabled color) |
-| `show_state` | boolean | Show the entity's state value next to the icon |
+| `show_state` | boolean | Show the entity's state value next to the icon (default: `false`) |
 
 #### Entity-based Badge
 
-Display a sensor value with tooltip:
+Display a sensor with an icon (tooltip shows state on hover):
 
 ```yaml
 extra_badges:
   - entity: sensor.room_temperature
     icon: mdi:thermometer
+```
+
+Display a sensor with icon and state value visible:
+
+```yaml
+extra_badges:
   - entity: sensor.room_humidity
     icon: mdi:water-percent
     show_state: true
@@ -158,18 +166,25 @@ extra_badges:
     color_off: green
 ```
 
-#### Static Text Badge
+#### Static Icon/Text Badge
 
-Display a static label:
+Display a static icon (tooltip shows text on hover):
 
 ```yaml
 extra_badges:
   - text: Indoor
     icon: mdi:home
     color: blue
+```
+
+Display a static icon with text visible next to it:
+
+```yaml
+extra_badges:
   - text: Zone A
     icon: mdi:map-marker
     color: green
+    show_state: true
 ```
 
 #### Combined Example
