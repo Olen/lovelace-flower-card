@@ -42,7 +42,7 @@ The sensor will change color based on the state of the battery:
 This can be installed manually or through HACS
 ### Via HACS
 * Add this repo as a "Custom repository" with type "Dashboard"
-  * Click HACS in your Home Assistnat
+  * Click HACS in your Home Assistant
   * Click Frontend
   * Click the 3 dots in the top right corner and select "Custom Repositories"
   * Add the URL to this github repository and type "Dashboard"

@@ -1,12 +1,10 @@
-// import { HomeAssistant } from "custom-card-helpers";
-import { DisplayType, DisplayedAttribute, DisplayedAttributes, Icons, Limits, UOM, UOMT } from "../types/flower-card-types";
+import { DisplayType, DisplayedAttribute, DisplayedAttributes, Limits } from "../types/flower-card-types";
 import { TemplateResult, html } from "lit";
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { default_show_bars } from "./constants";
 import { moreInfo } from "./utils";
 import FlowerCard from "../flower-card";
 
-// export const renderBattery = (config: FlowerCardConfig, hass: HomeAssistant) => {
 export const renderBattery = (card: FlowerCard) => {
     if(!card.config.battery_sensor) return html``;
 
@@ -39,12 +37,6 @@ export const renderBattery = (card: FlowerCard) => {
     `;
 }
 export const renderAttributes = (card: FlowerCard): TemplateResult[] => {
-    const icons: Icons = {};
-    const uom: UOM = {};
-    const uomt: UOMT = {};
-    const limits: Record<string, Limits> = {};
-    const curr: Record<string, number> = {};
-    const sensors: Record<string, string> = {};
     const displayed: DisplayedAttributes = {};
     const monitored = card.config.show_bars || default_show_bars;
 
@@ -52,25 +44,18 @@ export const renderAttributes = (card: FlowerCard): TemplateResult[] => {
         const result = card.plantinfo.result;
         for (const elem of monitored) {
             if (result[elem]) {
-                let { max, min, current, icon, sensor, unit_of_measurement } = result[elem];
-                max = Number(max);
-                min = Number(min);
-                icon = String(icon);
-                sensor = String(sensor);
-                current = Number(current);
+                const { max, min, current, icon, sensor, unit_of_measurement } = result[elem];
                 const display_state = card._hass.formatEntityState(card._hass.states[sensor]).replace(/[^\d,.+-]/g, "");
-                unit_of_measurement = String(unit_of_measurement);
-                limits[`max_${elem}`] = { max, min };
-                curr[elem] = current;
-                icons[elem] = icon;
-                sensors[elem] = sensor;
-                uomt[elem] = unit_of_measurement;
-                uom[elem] = unit_of_measurement;
-                if (elem === "dli") {
-                    uomt["dli"] = "mol/d⋅m²";
-                    uom["dli"] = '<math style="display: inline-grid;" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mfrac><mrow><mn>mol</mn></mrow><mrow><mn>d</mn><mn>⋅</mn><msup><mn>m</mn><mn>2</mn></msup></mrow></mfrac></mrow></math>';
-                }
-                displayed[elem] = { name: elem, current, limits: limits[`max_${elem}`], icon, sensor, unit_of_measurement, display_state };
+                const limits: Limits = { max: Number(max), min: Number(min) };
+                displayed[elem] = {
+                    name: elem,
+                    current: Number(current),
+                    limits,
+                    icon: String(icon),
+                    sensor: String(sensor),
+                    unit_of_measurement: String(unit_of_measurement),
+                    display_state
+                };
             }
         }
     }
@@ -95,11 +80,6 @@ export const renderAttribute = (card: FlowerCard, attr: DisplayedAttribute) => {
     const label = attr.name === 'dli' ? '<math style="display: inline-grid;" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mfrac><mrow><mn>mol</mn></mrow><mrow><mn>d</mn><mn>⋅</mn><msup><mn>m</mn><mn>2</mn></msup></mrow></mfrac></mrow></math>' : unitTooltip
     const attributeCssClass = `attribute tooltip ${card.config.display_type === DisplayType.Compact ? 'width-100' : ''}`;
 
-    // console.debug(
-    //    `%c FLOWER-CARD %c Attr: ${attr.name} Val: ${val} (${typeof(val)}), Max: ${max} (${typeof(max)}), Min: ${min} (${typeof(min)}), Available: ${aval}`,
-    //    'color: cyan; background: black; font-weight: bold;',
-    //    'color: darkblue; background: white; font-weight: bold;'
-    // );
     return html`
         <div class="${attributeCssClass}" @click="${() => moreInfo(card, attr.sensor)}">
             <div class="tip" style="text-align:center;">${unsafeHTML(toolTipText)}</div>

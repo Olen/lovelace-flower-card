@@ -1,5 +1,5 @@
 import { CSSResult, HTMLTemplateResult, LitElement, html } from 'lit';
-import {customElement, property } from 'lit/decorators.js';
+import { customElement, property } from 'lit/decorators.js';
 import { HomeAssistant, LovelaceCardEditor } from 'custom-card-helpers';
 import { style } from './styles';
 import { DisplayType, FlowerCardConfig, HomeAssistantEntity, PlantInfo } from './types/flower-card-types';
@@ -40,7 +40,7 @@ export default class FlowerCard extends LitElement {
         if (!this.previousFetchDate) {
             this.previousFetchDate = 0;
         }
-        // Only fetch once every second at max.  HA is flooeded with websocket requests
+        // Only fetch once every second at max. HA is flooded with websocket requests
         if (Date.now() > this.previousFetchDate + 1000) {
             this.previousFetchDate = Date.now();
             this.get_data(hass).then(() => {
@@ -55,19 +55,17 @@ export default class FlowerCard extends LitElement {
     }
 
     static getStubConfig(ha: HomeAssistant) {
-        // There must be an easier way to do this
-        const isPlant = (entity: HomeAssistantEntity | unknown): entity is HomeAssistantEntity => {
-            if (typeof entity == 'object' && 'entity_id' in entity && typeof entity.entity_id == 'string' && entity.entity_id.indexOf('plant.') === 0) {
-                return !!entity;
-            }
-        }
-        let supportedEntities: Array<any> = [];
+        const isPlant = (entity: unknown): entity is HomeAssistantEntity => {
+            return typeof entity === 'object' && entity !== null &&
+                'entity_id' in entity &&
+                typeof (entity as HomeAssistantEntity).entity_id === 'string' &&
+                (entity as HomeAssistantEntity).entity_id.startsWith('plant.');
+        };
+        let supportedEntities: HomeAssistantEntity[] = [];
         try {
             supportedEntities = Object.values(ha.states).filter(isPlant);
-                // (entity) => entity.entity_id.indexOf('plant.') === 0
-            // );
         }
-        catch(e) {
+        catch (e) {
             console.info(`Unable to get ha-data: ${e}`);
         }
         const entity = supportedEntities.length > 0 ? supportedEntities[0].entity_id : 'plant.my_plant';
