@@ -81,12 +81,10 @@ export const style = css`
     color: rgb(240, 163, 163);
 }
 .header > #species {
-  text-transform: capitalize;
   color: #8c96a5;
   display: block;
 }
 .header-compact > #species {
-  text-transform: capitalize;
   line-height: 85%;
   color: #8c96a5;
   font-size: 0.8em;
