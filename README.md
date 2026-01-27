@@ -14,6 +14,8 @@ The card can be set up from the GUI (requires version 3.0.0)
 | `entity` | string | **Required** | The plant entity ID |
 | `name` | string | Entity name | Custom display name for the plant |
 | `display_type` | string | `full` | Display mode: `full` or `compact` |
+| `show_units` | boolean | Based on display_type | Show value/unit next to bars |
+| `bars_per_row` | number | Based on display_type | Number of bars per row (1 or 2) |
 | `battery_sensor` | string | - | Entity ID of a battery sensor to display |
 | `show_bars` | list | All | List of measurement bars to show |
 | `hide_species` | boolean | `false` | Hide the species name |
@@ -60,6 +62,41 @@ Set `display_type` to `compact` for a smaller card layout:
 type: custom:flower-card
 entity: plant.my_plant
 display_type: compact
+```
+
+### Fine-grained Display Settings
+
+The `display_type` sets defaults for several display options. You can override these individually:
+
+| Setting | Full (default) | Compact |
+|---------|----------------|---------|
+| `show_units` | `true` | `false` |
+| `bars_per_row` | `2` | `1` |
+
+Mix and match settings to customize the layout:
+
+```yaml
+# Compact header but show 2 bars per row with units
+type: custom:flower-card
+entity: plant.my_plant
+display_type: compact
+bars_per_row: 2
+show_units: true
+```
+
+```yaml
+# Full header but hide units
+type: custom:flower-card
+entity: plant.my_plant
+display_type: full
+show_units: false
+```
+
+```yaml
+# Full header with 1 bar per row (vertical layout)
+type: custom:flower-card
+entity: plant.my_plant
+bars_per_row: 1
 ```
 
 ### Custom Name

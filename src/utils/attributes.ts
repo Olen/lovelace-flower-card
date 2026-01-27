@@ -184,7 +184,13 @@ export const renderAttribute = (card: FlowerCard, attr: DisplayedAttribute) => {
         : 100 * Math.max(0, Math.min(1, (Math.log(val) - Math.log(min)) / (Math.log(max) - Math.log(min))));
     const toolTipText = aval ? `${attr.name}: ${val} ${unitTooltip}<br>(${min} ~ ${max} ${unitTooltip})` : card._hass.localize('state.default.unavailable');
     const label = attr.name === 'dli' ? '<math style="display: inline-grid;" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mfrac><mrow><mn>mol</mn></mrow><mrow><mn>d</mn><mn>⋅</mn><msup><mn>m</mn><mn>2</mn></msup></mrow></mfrac></mrow></math>' : unitTooltip
-    const attributeCssClass = `attribute tooltip ${card.config.display_type === DisplayType.Compact ? 'width-100' : ''}`;
+    // Determine settings with explicit overrides taking precedence over display_type defaults
+    const isCompact = card.config.display_type === DisplayType.Compact;
+    const barsPerRow = card.config.bars_per_row ?? (isCompact ? 1 : 2);
+    const showUnits = card.config.show_units ?? !isCompact;
+    const useFullWidth = barsPerRow === 1;
+
+    const attributeCssClass = `attribute tooltip ${useFullWidth ? 'width-100' : ''}`;
 
     return html`
         <div class="${attributeCssClass}" @click="${() => moreInfo(card, attr.sensor)}">
@@ -205,7 +211,7 @@ export const renderAttribute = (card: FlowerCard, attr: DisplayedAttribute) => {
                     aval ? (val > max ? 100 : 0) : "0"
                 }%;"></span>
             </div>
-            ${card.config.display_type === DisplayType.Compact ? '': html`<div class="header"><span class="value">${display_val}</span>&nbsp;<span class='unit'>${unsafeHTML(label)}</span></div>`}
+            ${showUnits ? html`<div class="header"><span class="value">${display_val}</span>&nbsp;<span class='unit'>${unsafeHTML(label)}</span></div>` : ''}
         </div>
     `;
 };
@@ -222,8 +228,12 @@ export const getChunkedDisplayed = (displayed: DisplayedAttributes, attributesPe
 }
 
 export const renderAttributeChunks = (card: FlowerCard, displayed: DisplayedAttributes): TemplateResult[] => {
-    const chunkedDisplayed = getChunkedDisplayed(displayed, card.config.display_type === DisplayType.Compact ? 1 : 2);
-    const attributeCssClass = `attributes ${card.config.display_type === DisplayType.Compact ? 'width-100' : ''}`;
+    const isCompact = card.config.display_type === DisplayType.Compact;
+    const barsPerRow = card.config.bars_per_row ?? (isCompact ? 1 : 2);
+    const useFullWidth = barsPerRow === 1;
+
+    const chunkedDisplayed = getChunkedDisplayed(displayed, barsPerRow);
+    const attributeCssClass = `attributes ${useFullWidth ? 'width-100' : ''}`;
 
     return chunkedDisplayed.map((chunk) => {
       return html`<div class="${attributeCssClass}">${chunk.map((item: DisplayedAttribute) => {
