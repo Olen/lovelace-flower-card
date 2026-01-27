@@ -3,9 +3,6 @@ name: "Test & Lint"
 
 on:
   push:
-    branches:
-      - 'main'
-      - 'master'
   pull_request:
     types: [opened, synchronize, reopened]
     branches:
