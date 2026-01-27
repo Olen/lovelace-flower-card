@@ -1,11 +1,11 @@
 import { CSSResult, HTMLTemplateResult, LitElement, html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { HomeAssistant, LovelaceCardEditor } from 'custom-card-helpers';
+import { HomeAssistant } from 'custom-card-helpers';
 import { style } from './styles';
 import { DisplayType, FlowerCardConfig, HomeAssistantEntity, PlantInfo } from './types/flower-card-types';
 import * as packageJson from '../package.json';
 import { renderAttributes, renderBattery, renderExtraBadges } from './utils/attributes';
-import { CARD_EDITOR_NAME, CARD_NAME, default_show_bars, missingImage } from './utils/constants';
+import { CARD_NAME, default_show_bars, missingImage } from './utils/constants';
 import { moreInfo } from './utils/utils';
 
 console.info(
@@ -47,11 +47,6 @@ export default class FlowerCard extends LitElement {
                 this.requestUpdate();
             });
         }
-    }
-
-    public static async getConfigElement(): Promise<LovelaceCardEditor> {
-        await import("./editor");
-        return document.createElement(CARD_EDITOR_NAME) as LovelaceCardEditor;
     }
 
     static getConfigForm() {
