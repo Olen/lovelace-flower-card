@@ -54,6 +54,61 @@ export default class FlowerCard extends LitElement {
         return document.createElement(CARD_EDITOR_NAME) as LovelaceCardEditor;
     }
 
+    static getConfigForm() {
+        return {
+            schema: [
+                {
+                    name: "entity",
+                    required: true,
+                    selector: { entity: { domain: "plant" } }
+                },
+                {
+                    name: "name",
+                    selector: { text: {} }
+                },
+                {
+                    name: "display_type",
+                    selector: {
+                        select: {
+                            options: [
+                                { value: "full", label: "Full" },
+                                { value: "compact", label: "Compact" }
+                            ]
+                        }
+                    }
+                },
+                {
+                    name: "battery_sensor",
+                    selector: { entity: { domain: "sensor", device_class: "battery" } }
+                },
+                {
+                    name: "hide_species",
+                    selector: { boolean: {} }
+                },
+                {
+                    name: "hide_image",
+                    selector: { boolean: {} }
+                },
+                {
+                    name: "hide_units",
+                    selector: { boolean: {} }
+                }
+            ],
+            computeLabel: (schema: { name: string }) => {
+                const labels: Record<string, string> = {
+                    entity: "Entity",
+                    name: "Name",
+                    display_type: "Display Type",
+                    battery_sensor: "Battery Sensor",
+                    hide_species: "Hide Species",
+                    hide_image: "Hide Image",
+                    hide_units: "Hide Units"
+                };
+                return labels[schema.name] || schema.name;
+            }
+        };
+    }
+
     static getStubConfig(ha: HomeAssistant) {
         const isPlant = (entity: unknown): entity is HomeAssistantEntity => {
             return typeof entity === 'object' && entity !== null &&
