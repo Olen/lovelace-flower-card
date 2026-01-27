@@ -293,6 +293,49 @@ extra_badges:
     icon: mdi:silverware-fork-knife
 ```
 
+#### Triggering Automations with Input Button
+
+You can use an `input_button` entity with extra_badges to trigger scripts or automations directly from the plant card. When clicked, the button press triggers your automation.
+
+**Step 1:** Create an input_button helper in Home Assistant:
+
+```yaml
+# configuration.yaml or via UI: Settings → Devices & Services → Helpers
+input_button:
+  water_plant:
+    name: Water Plant
+    icon: mdi:watering-can
+```
+
+**Step 2:** Add the button to your plant card:
+
+```yaml
+type: custom:flower-card
+entity: plant.my_plant
+extra_badges:
+  - entity: input_button.water_plant
+```
+
+**Step 3:** Create an automation that triggers when the button is pressed:
+
+```yaml
+automation:
+  - alias: "Water plant when button pressed"
+    triggers:
+      - trigger: state
+        entity_id: input_button.water_plant
+    actions:
+      - action: switch.turn_on
+        target:
+          entity_id: switch.plant_water_pump
+      - delay: "00:00:30"
+      - action: switch.turn_off
+        target:
+          entity_id: switch.plant_water_pump
+```
+
+This allows you to control plant-related devices (pumps, grow lights, etc.) directly from the flower card.
+
 ## Dependencies
 1. Custom Plant integration (https://github.com/Olen/homeassistant-plant)
 
