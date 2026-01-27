@@ -154,6 +154,8 @@ Available bars: `moisture`, `temperature`, `conductivity`, `illuminance`, `humid
 
 Add additional icons next to the battery icon. Useful for displaying room sensors, binary states, or static labels.
 
+**Note:** Extra badges must be configured via YAML. GUI configuration is not currently supported for this option.
+
 By default, only the icon is displayed. Hovering over the icon shows a tooltip with the entity name and state. Set `show_state: true` to display the state value next to the icon.
 
 #### Extra Badge Options
