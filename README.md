@@ -266,6 +266,16 @@ extra_badges:
     show_state: true
 ```
 
+Display text only (no icon) by setting `icon: none`:
+
+```yaml
+extra_badges:
+  - text: Kitchen
+    icon: none
+    color: blue
+    show_state: true
+```
+
 #### Combined Example
 
 ```yaml
@@ -281,7 +291,6 @@ extra_badges:
     color_off: grey
   - text: Kitchen
     icon: mdi:silverware-fork-knife
-    color: var(--secondary-text-color)
 ```
 
 ## Dependencies

@@ -40,12 +40,24 @@ export const renderBattery = (card: FlowerCard) => {
 export const renderExtraBadge = (card: FlowerCard, badge: ExtraBadge) => {
     // Handle static text badge
     if (badge.text) {
-        const icon = badge.icon || "mdi:information";
+        const hideIcon = badge.icon?.toLowerCase() === 'none';
         const color = badge.color || "var(--secondary-text-color)";
+
+        // If icon is "none" and show_state is true, show text only (no icon space)
+        if (hideIcon && badge.show_state) {
+            return html`
+                <div class="extra-badge tooltip">
+                    <div class="tip" style="text-align:center;">${badge.text}</div>
+                    <span class="badge-text" style="color: ${color}">${badge.text}</span>
+                </div>
+            `;
+        }
+
+        const icon = hideIcon ? "" : (badge.icon || "mdi:information");
         return html`
             <div class="extra-badge tooltip">
                 <div class="tip" style="text-align:center;">${badge.text}</div>
-                <ha-icon .icon="${icon}" style="color: ${color}"></ha-icon>
+                ${!hideIcon ? html`<ha-icon .icon="${icon}" style="color: ${color}"></ha-icon>` : ''}
                 ${badge.show_state ? html`<span class="badge-text">${badge.text}</span>` : ''}
             </div>
         `;
@@ -71,8 +83,51 @@ export const renderExtraBadge = (card: FlowerCard, badge: ExtraBadge) => {
     const state = entity.state;
     const friendlyName = entity.attributes.friendly_name || badge.entity;
 
-    // Determine icon
-    const icon = badge.icon || entity.attributes.icon || "mdi:information";
+    // Determine icon - use provided icon, entity's custom icon, or derive from device_class
+    let icon = badge.icon || entity.attributes.icon;
+    if (!icon) {
+        if (isBinarySensor) {
+            // Default icons based on device_class for binary sensors
+            const deviceClass = entity.attributes.device_class;
+            const isOn = state === 'on';
+            const binaryIcons: Record<string, [string, string]> = {
+                battery: ['mdi:battery', 'mdi:battery-outline'],
+                battery_charging: ['mdi:battery-charging', 'mdi:battery'],
+                cold: ['mdi:snowflake', 'mdi:snowflake-off'],
+                connectivity: ['mdi:check-network-outline', 'mdi:close-network-outline'],
+                door: ['mdi:door-open', 'mdi:door-closed'],
+                garage_door: ['mdi:garage-open', 'mdi:garage'],
+                gas: ['mdi:alert-circle', 'mdi:check-circle'],
+                heat: ['mdi:fire', 'mdi:fire-off'],
+                light: ['mdi:brightness-7', 'mdi:brightness-5'],
+                lock: ['mdi:lock-open', 'mdi:lock'],
+                moisture: ['mdi:water', 'mdi:water-off'],
+                motion: ['mdi:motion-sensor', 'mdi:motion-sensor-off'],
+                moving: ['mdi:motion', 'mdi:motion-off'],
+                occupancy: ['mdi:home', 'mdi:home-outline'],
+                opening: ['mdi:square-outline', 'mdi:square'],
+                plug: ['mdi:power-plug', 'mdi:power-plug-off'],
+                power: ['mdi:power', 'mdi:power-off'],
+                presence: ['mdi:home', 'mdi:home-outline'],
+                problem: ['mdi:alert-circle', 'mdi:check-circle'],
+                running: ['mdi:play', 'mdi:stop'],
+                safety: ['mdi:alert-circle', 'mdi:check-circle'],
+                smoke: ['mdi:smoke-detector-alert', 'mdi:smoke-detector'],
+                sound: ['mdi:music-note', 'mdi:music-note-off'],
+                tamper: ['mdi:alert-circle', 'mdi:check-circle'],
+                update: ['mdi:package-up', 'mdi:package'],
+                vibration: ['mdi:vibrate', 'mdi:vibrate-off'],
+                window: ['mdi:window-open', 'mdi:window-closed'],
+            };
+            if (deviceClass && binaryIcons[deviceClass]) {
+                icon = isOn ? binaryIcons[deviceClass][0] : binaryIcons[deviceClass][1];
+            } else {
+                icon = isOn ? 'mdi:checkbox-marked-circle' : 'mdi:checkbox-blank-circle-outline';
+            }
+        } else {
+            icon = 'mdi:information';
+        }
+    }
 
     // Determine color based on entity type
     let color: string;
