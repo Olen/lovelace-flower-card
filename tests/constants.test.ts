@@ -22,10 +22,12 @@ describe('constants', () => {
       expect(default_show_bars).toContain('illuminance');
       expect(default_show_bars).toContain('humidity');
       expect(default_show_bars).toContain('dli');
+      expect(default_show_bars).toContain('co2');
+      expect(default_show_bars).toContain('soil_temperature');
     });
 
-    it('should have 6 default attributes', () => {
-      expect(default_show_bars).toHaveLength(6);
+    it('should have 8 default attributes', () => {
+      expect(default_show_bars).toHaveLength(8);
     });
   });
 
