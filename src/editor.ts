@@ -1,20 +1,25 @@
 import { html, css, LitElement, TemplateResult } from 'lit';
-import { customElement, property, state } from "lit/decorators.js";
+import { customElement, state } from "lit/decorators.js";
 import { DisplayType, FlowerCardConfig } from "./types/flower-card-types";
 import { default_show_bars, plantAttributes } from "./utils/constants";
 import { HomeAssistant } from "custom-card-helpers";
 
 @customElement('flower-card-editor')
 export class FlowerCardEditor extends LitElement {
-    @property({ attribute: false }) public hass?: HomeAssistant;
+    @state() private _hass?: HomeAssistant;
     @state() private _config?: FlowerCardConfig;
+
+    set hass(hass: HomeAssistant) {
+        this._hass = hass;
+        this.requestUpdate();
+    }
 
     setConfig(config: FlowerCardConfig): void {
         this._config = config;
     }
 
     private _valueChanged(ev: CustomEvent): void {
-        if (!this._config || !this.hass) {
+        if (!this._config || !this._hass) {
             return;
         }
 
@@ -69,7 +74,7 @@ export class FlowerCardEditor extends LitElement {
     }
 
     protected render(): TemplateResult {
-        if (!this.hass || !this._config) {
+        if (!this._hass || !this._config) {
             return html``;
         }
 
@@ -106,11 +111,11 @@ export class FlowerCardEditor extends LitElement {
                 <div class="form-row">
                     <ha-entity-picker
                         label="Entity"
-                        .hass="${this.hass}"
-                        .value="${this._config.entity || ''}"
-                        .configValue="${'entity'}"
-                        .includeDomains="${['plant']}"
-                        @value-changed="${this._valueChanged}"
+                        .hass=${this._hass}
+                        .value=${this._config.entity || ''}
+                        .configValue=${'entity'}
+                        .includeDomains=${['plant']}
+                        @value-changed=${this._valueChanged}
                         allow-custom-entity
                     ></ha-entity-picker>
                 </div>
@@ -129,12 +134,12 @@ export class FlowerCardEditor extends LitElement {
                 <div class="form-row">
                     <ha-entity-picker
                         label="Battery Sensor"
-                        .hass="${this.hass}"
-                        .value="${this._config.battery_sensor || ''}"
-                        .configValue="${'battery_sensor'}"
-                        .includeDomains="${['sensor']}"
-                        .includeDeviceClasses="${['battery']}"
-                        @value-changed="${this._valueChanged}"
+                        .hass=${this._hass}
+                        .value=${this._config.battery_sensor || ''}
+                        .configValue=${'battery_sensor'}
+                        .includeDomains=${['sensor']}
+                        .includeDeviceClasses=${['battery']}
+                        @value-changed=${this._valueChanged}
                         allow-custom-entity
                     ></ha-entity-picker>
                 </div>
