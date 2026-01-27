@@ -99,17 +99,19 @@ export default class FlowerCard extends LitElement {
         const species = this.stateObj.attributes.species;
         const displayName = this.config.name || this.stateObj.attributes.friendly_name;
         const hideSpecies = this.config.hide_species ?? false;
+        const hideImage = this.config.hide_image ?? false;
         const headerCssClass = this.config.display_type === DisplayType.Compact ? "header-compact" : "header";
-        const haCardCssClass = this.config.display_type === DisplayType.Compact ? "" : "card-margin-top";
+        const haCardCssClass = (this.config.display_type === DisplayType.Compact || hideImage) ? "" : "card-margin-top";
+        const noImageClass = hideImage ? " no-image" : "";
 
         return html`
             <ha-card class="${haCardCssClass}">
-            <div class="${headerCssClass}" @click="${() =>
+            <div class="${headerCssClass}${noImageClass}" @click="${() =>
                 moreInfo(this, this.stateObj.entity_id)}">
-                <img src="${this.stateObj.attributes.entity_picture
+                ${!hideImage ? html`<img src="${this.stateObj.attributes.entity_picture
                 ? this.stateObj.attributes.entity_picture
                 : missingImage
-            }">
+            }">` : ''}
                 <span id="name"> ${displayName} <ha-icon .icon="mdi:${this.stateObj.state.toLowerCase() == "problem"
                 ? "alert-circle-outline"
                 : ""

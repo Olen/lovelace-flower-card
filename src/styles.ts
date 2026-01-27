@@ -62,6 +62,22 @@ export const style = css`
   float: left;
   box-shadow: var( --ha-card-box-shadow, 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2) );
 }
+.header.no-image {
+  height: auto;
+  padding: 16px;
+}
+.header.no-image + .divider {
+  margin-top: 0;
+}
+.header-compact.no-image {
+  height: auto;
+  padding: 8px 16px;
+}
+.header.no-image > #name,
+.header-compact.no-image > #name {
+  margin-top: 0;
+  margin-left: 0;
+}
 .header > #name {
   font-weight: bold;
   width: 100%;
