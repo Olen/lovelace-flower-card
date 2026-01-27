@@ -1,4 +1,4 @@
-import { DisplayType, DisplayedAttribute, DisplayedAttributes, Limits } from "../types/flower-card-types";
+import { DisplayType, DisplayedAttribute, DisplayedAttributes, ExtraBadge, Limits } from "../types/flower-card-types";
 import { TemplateResult, html } from "lit";
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { default_show_bars } from "./constants";
@@ -36,6 +36,67 @@ export const renderBattery = (card: FlowerCard) => {
         </div>
     `;
 }
+
+export const renderExtraBadge = (card: FlowerCard, badge: ExtraBadge) => {
+    // Handle static text badge
+    if (badge.text) {
+        const icon = badge.icon || "mdi:information";
+        const color = badge.color || "var(--secondary-text-color)";
+        return html`
+            <div class="extra-badge tooltip">
+                <div class="tip" style="text-align:center;">${badge.text}</div>
+                <ha-icon .icon="${icon}" style="color: ${color}"></ha-icon>
+                ${badge.show_state ? html`<span class="badge-text">${badge.text}</span>` : ''}
+            </div>
+        `;
+    }
+
+    // Handle entity-based badge
+    if (!badge.entity) return html``;
+
+    const entity = card._hass.states[badge.entity];
+    if (!entity) return html``;
+
+    const isBinarySensor = badge.entity.startsWith('binary_sensor.');
+    const state = entity.state;
+    const friendlyName = entity.attributes.friendly_name || badge.entity;
+
+    // Determine icon
+    const icon = badge.icon || entity.attributes.icon || "mdi:information";
+
+    // Determine color based on entity type
+    let color: string;
+    if (isBinarySensor) {
+        const isOn = state === 'on';
+        color = isOn
+            ? (badge.color_on || "var(--primary-color)")
+            : (badge.color_off || "var(--disabled-text-color)");
+    } else {
+        color = badge.color || "var(--secondary-text-color)";
+    }
+
+    // Build tooltip text
+    const tooltipText = isBinarySensor
+        ? `${friendlyName}: ${state}`
+        : `${friendlyName}: ${card._hass.formatEntityState(entity)}`;
+
+    return html`
+        <div class="extra-badge tooltip" @click="${(e: Event) => { e.stopPropagation(); moreInfo(card, badge.entity)}}">
+            <div class="tip" style="text-align:center;">${tooltipText}</div>
+            <ha-icon .icon="${icon}" style="color: ${color}"></ha-icon>
+            ${badge.show_state ? html`<span class="badge-text">${isBinarySensor ? '' : card._hass.formatEntityState(entity)}</span>` : ''}
+        </div>
+    `;
+}
+
+export const renderExtraBadges = (card: FlowerCard) => {
+    if (!card.config.extra_badges || card.config.extra_badges.length === 0) {
+        return html``;
+    }
+
+    return card.config.extra_badges.map(badge => renderExtraBadge(card, badge));
+}
+
 export const renderAttributes = (card: FlowerCard): TemplateResult[] => {
     const displayed: DisplayedAttributes = {};
     const monitored = card.config.show_bars || default_show_bars;

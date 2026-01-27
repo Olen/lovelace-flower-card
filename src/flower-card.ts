@@ -4,7 +4,7 @@ import { HomeAssistant, LovelaceCardEditor } from 'custom-card-helpers';
 import { style } from './styles';
 import { DisplayType, FlowerCardConfig, HomeAssistantEntity, PlantInfo } from './types/flower-card-types';
 import * as packageJson from '../package.json';
-import { renderAttributes, renderBattery } from './utils/attributes';
+import { renderAttributes, renderBattery, renderExtraBadges } from './utils/attributes';
 import { CARD_EDITOR_NAME, CARD_NAME, default_show_bars, missingImage } from './utils/constants';
 import { moreInfo } from './utils/utils';
 
@@ -117,7 +117,7 @@ export default class FlowerCard extends LitElement {
                 : ""
             }"></ha-icon>
                 </span>
-                <span id="battery">${renderBattery(this)}</span>
+                <span id="battery">${renderExtraBadges(this)}${renderBattery(this)}</span>
                 ${!hideSpecies ? html`<span id="species">${species}</span>` : ''}
             </div>
             <div class="divider"></div>
