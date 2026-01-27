@@ -15,19 +15,22 @@ describe('constants', () => {
   });
 
   describe('default_show_bars', () => {
-    it('should contain expected plant attributes', () => {
+    it('should contain common plant attributes', () => {
       expect(default_show_bars).toContain('moisture');
       expect(default_show_bars).toContain('conductivity');
       expect(default_show_bars).toContain('temperature');
       expect(default_show_bars).toContain('illuminance');
       expect(default_show_bars).toContain('humidity');
       expect(default_show_bars).toContain('dli');
-      expect(default_show_bars).toContain('co2');
-      expect(default_show_bars).toContain('soil_temperature');
     });
 
-    it('should have 8 default attributes', () => {
-      expect(default_show_bars).toHaveLength(8);
+    it('should not include uncommon sensors by default', () => {
+      expect(default_show_bars).not.toContain('co2');
+      expect(default_show_bars).not.toContain('soil_temperature');
+    });
+
+    it('should have 6 default attributes', () => {
+      expect(default_show_bars).toHaveLength(6);
     });
   });
 
@@ -45,6 +48,12 @@ describe('constants', () => {
         expect(typeof attr.label).toBe('string');
         expect(typeof attr.value).toBe('string');
       });
+    });
+
+    it('should include all sensors including uncommon ones', () => {
+      const values = plantAttributes.map(a => a.value);
+      expect(values).toContain('co2');
+      expect(values).toContain('soil_temperature');
     });
 
     it('should have matching values with default_show_bars', () => {
