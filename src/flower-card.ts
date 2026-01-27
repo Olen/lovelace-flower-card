@@ -8,6 +8,8 @@ import { renderAttributes, renderBattery } from './utils/attributes';
 import { CARD_EDITOR_NAME, CARD_NAME, default_show_bars, missingImage } from './utils/constants';
 import { moreInfo } from './utils/utils';
 
+const ID_STORAGE_KEY = "browser_mod-browser-id";
+
 console.info(
     `%c FLOWER-CARD %c ${packageJson.version}`,
     'color: cyan; background: black; font-weight: bold;',
@@ -24,6 +26,12 @@ console.info(
 });
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+
+interface RenderTemplateResult {
+    result: string;
+    listeners: any;
+}
+
 @customElement(CARD_NAME)
 export default class FlowerCard extends LitElement {
     @property() _hass?: any;
@@ -33,6 +41,7 @@ export default class FlowerCard extends LitElement {
     private previousFetchDate: number;
 
     plantinfo: PlantInfo;
+    sensorName: string;
     set hass(hass: HomeAssistant) {
         this._hass = hass;
         this.stateObj = this.config?.entity ? hass.states[this.config.entity] : undefined;
@@ -47,6 +56,8 @@ export default class FlowerCard extends LitElement {
                 this.requestUpdate();
             });
         }
+        this.get_sensor_name(hass);
+
     }
 
     public static async getConfigElement(): Promise<LovelaceCardEditor> {
@@ -102,6 +113,7 @@ export default class FlowerCard extends LitElement {
         const headerCssClass = this.config.display_type === DisplayType.Compact ? "header-compact" : "header";
         const haCardCssClass = this.config.display_type === DisplayType.Compact ? "" : "card-margin-top";
 
+
         return html`
             <ha-card class="${haCardCssClass}">
             <div class="${headerCssClass}" @click="${() =>
@@ -117,6 +129,7 @@ export default class FlowerCard extends LitElement {
             }"></ha-icon>
                 </span>
                 <span id="battery">${renderBattery(this)}</span>
+                <span id="sensorname">${this.sensorName} </span>
                 <span id="species">${species} </span>
             </div>
             <div class="divider"></div>
@@ -124,6 +137,35 @@ export default class FlowerCard extends LitElement {
             </ha-card>
             `;
     }
+
+    async get_sensor_name(hass: HomeAssistant): Promise<void> {
+        try {
+            let browser_id = "";
+            if (document.querySelector("hc-main")) browser_id = "CAST";
+            if (localStorage[ID_STORAGE_KEY]) browser_id = localStorage[ID_STORAGE_KEY];
+
+            const variables = {
+                user: hass.user.name,
+                browser: browser_id,
+                hash: location.hash.substr(1) || "",
+                ...{config: this.config},
+            };
+
+            await hass.connection.subscribeMessage(
+                (result: RenderTemplateResult) => {
+                    this.sensorName = result.result;
+                },
+                {
+                    type: "render_template",
+                    template: "{{ device_name('"+this.config.battery_sensor+"') }}",
+                    variables,
+                }
+            )
+        } catch (err) {
+            this.sensorName = "";
+        }
+    }
+
 
     async get_data(hass: HomeAssistant): Promise<void> {
         try {
