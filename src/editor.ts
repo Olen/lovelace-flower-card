@@ -32,9 +32,11 @@ export class FlowerCardEditor extends LitElement {
 
         let value: any;
 
-        if (target.type === 'checkbox') {
-            // Handle checkboxes for show_bars
-            const currentBars = this._config.show_bars || [...default_show_bars];
+        // Handle show_bars checkboxes specially (ha-checkbox doesn't have type='checkbox')
+        if (configValue === 'show_bars') {
+            const currentBars = Array.isArray(this._config.show_bars)
+                ? this._config.show_bars
+                : [...default_show_bars];
             const checkboxValue = target.value;
 
             if (target.checked) {
