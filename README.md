@@ -3,9 +3,9 @@
 **This fork of the flower-card depends on this Plant component:
 https://github.com/Olen/homeassistant-plant**
 
-The card can be set up from the GUI (requires version 3.0.0)
+The card can be set up from the GUI
 
-![image](https://github.com/Olen/lovelace-flower-card/assets/203184/a31ad564-9458-41b4-9c1f-9da13f84f2ae)
+![image](https://github.com/user-attachments/assets/a2b1aea4-c2ed-4305-9b14-10ae2d17a34a)
 
 ## Configuration Options
 
@@ -53,6 +53,9 @@ extra_badges:
     color_on: orange
     color_off: grey
 ```
+<img width="484" height="256" alt="image" src="https://github.com/user-attachments/assets/faeaeb66-7990-4bbe-9af4-3a4d8648c1c8" />
+
+
 
 ### Display Type
 
@@ -63,6 +66,8 @@ type: custom:flower-card
 entity: plant.my_plant
 display_type: compact
 ```
+<img width="483" height="291" alt="image" src="https://github.com/user-attachments/assets/4951c49f-a112-43af-9684-c399bd30dd94" />
+
 
 ### Fine-grained Display Settings
 
@@ -148,7 +153,7 @@ show_bars:
   - illuminance
 ```
 
-Available bars: `moisture`, `temperature`, `conductivity`, `illuminance`, `humidity`, `dli`
+Available bars: `moisture`, `temperature`, `conductivity`, `illuminance`, `humidity`, `dli`, `co2`, `soil_temperature`
 
 ### Extra Badges
 
