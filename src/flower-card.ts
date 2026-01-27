@@ -77,6 +77,22 @@ export default class FlowerCard extends LitElement {
                     selector: { entity: { domain: "sensor", device_class: "battery" } }
                 },
                 {
+                    name: "show_bars",
+                    selector: {
+                        select: {
+                            multiple: true,
+                            options: [
+                                { value: "moisture", label: "Moisture" },
+                                { value: "conductivity", label: "Conductivity" },
+                                { value: "temperature", label: "Temperature" },
+                                { value: "illuminance", label: "Illuminance" },
+                                { value: "humidity", label: "Humidity" },
+                                { value: "dli", label: "Daily Light Integral" }
+                            ]
+                        }
+                    }
+                },
+                {
                     name: "hide_species",
                     selector: { boolean: {} }
                 },
@@ -92,9 +108,10 @@ export default class FlowerCard extends LitElement {
             computeLabel: (schema: { name: string }) => {
                 const labels: Record<string, string> = {
                     entity: "Entity",
-                    name: "Name",
+                    name: "Display Name",
                     display_type: "Display Type",
                     battery_sensor: "Battery Sensor",
+                    show_bars: "Show Bars",
                     hide_species: "Hide Species",
                     hide_image: "Hide Image",
                     hide_units: "Hide Units"
