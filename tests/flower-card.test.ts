@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeAll } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { default_show_bars } from '../src/utils/constants';
 
 // Test getStubConfig logic without instantiating LitElement
@@ -18,7 +18,7 @@ describe('FlowerCard logic', () => {
         if (states) {
           supportedEntities = Object.values(states).filter(isPlant) as Array<{ entity_id: string }>;
         }
-      } catch (e) {
+      } catch {
         // Handle error gracefully
       }
       const entity = supportedEntities.length > 0 ? supportedEntities[0].entity_id : 'plant.my_plant';
