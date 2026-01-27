@@ -183,6 +183,19 @@ export const style = css`
 .battery.tooltip .tip {
   top: 2em;
 }
+.extra-badge {
+  display: inline-block;
+  margin-right: 8px;
+  cursor: pointer;
+}
+.extra-badge .badge-text {
+  font-size: 0.9em;
+  margin-left: 2px;
+  vertical-align: middle;
+}
+.extra-badge.tooltip .tip {
+  top: 2em;
+}
 .tooltip:hover .tip, .tooltip:active .tip {
   display: block;
   opacity: 1;

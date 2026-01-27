@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { getChunkedDisplayed } from '../src/utils/attributes';
-import { DisplayedAttribute, DisplayedAttributes } from '../src/types/flower-card-types';
+import { DisplayedAttribute, DisplayedAttributes, ExtraBadge } from '../src/types/flower-card-types';
 
 describe('percentage calculation', () => {
   // Test the percentage calculation logic used in renderAttribute
@@ -220,6 +220,114 @@ describe('attributes', () => {
       expect(chunked[0]).toHaveLength(1);
       expect(chunked[1]).toHaveLength(1);
       expect(chunked[2]).toHaveLength(1);
+    });
+  });
+});
+
+describe('ExtraBadge type', () => {
+  describe('icon-only badge', () => {
+    it('should support icon-only badge configuration', () => {
+      const badge: ExtraBadge = {
+        icon: 'mdi:flower',
+        color: 'pink',
+      };
+
+      expect(badge.icon).toBe('mdi:flower');
+      expect(badge.color).toBe('pink');
+      expect(badge.entity).toBeUndefined();
+      expect(badge.text).toBeUndefined();
+    });
+  });
+
+  describe('static text badge', () => {
+    it('should support text-based badge configuration', () => {
+      const badge: ExtraBadge = {
+        text: 'Indoor',
+        icon: 'mdi:home',
+        color: 'blue',
+      };
+
+      expect(badge.text).toBe('Indoor');
+      expect(badge.icon).toBe('mdi:home');
+      expect(badge.color).toBe('blue');
+    });
+
+    it('should have optional show_state', () => {
+      const badge: ExtraBadge = {
+        text: 'Test',
+        show_state: true,
+      };
+
+      expect(badge.show_state).toBe(true);
+    });
+  });
+
+  describe('entity-based badge', () => {
+    it('should support entity-based badge configuration', () => {
+      const badge: ExtraBadge = {
+        entity: 'sensor.plant_humidity',
+        icon: 'mdi:water-percent',
+      };
+
+      expect(badge.entity).toBe('sensor.plant_humidity');
+      expect(badge.icon).toBe('mdi:water-percent');
+    });
+
+    it('should support binary_sensor with on/off colors', () => {
+      const badge: ExtraBadge = {
+        entity: 'binary_sensor.plant_needs_water',
+        color_on: 'red',
+        color_off: 'green',
+      };
+
+      expect(badge.entity).toBe('binary_sensor.plant_needs_water');
+      expect(badge.color_on).toBe('red');
+      expect(badge.color_off).toBe('green');
+    });
+  });
+
+  describe('badge color logic', () => {
+    // Test the color determination logic used in renderExtraBadge
+    const getBadgeColor = (badge: ExtraBadge, isBinarySensor: boolean, isOn: boolean) => {
+      if (isBinarySensor) {
+        return isOn
+          ? (badge.color_on || 'var(--primary-color)')
+          : (badge.color_off || 'var(--disabled-text-color)');
+      }
+      return badge.color || 'var(--secondary-text-color)';
+    };
+
+    it('should use default colors for binary sensor when not specified', () => {
+      const badge: ExtraBadge = { entity: 'binary_sensor.test' };
+
+      expect(getBadgeColor(badge, true, true)).toBe('var(--primary-color)');
+      expect(getBadgeColor(badge, true, false)).toBe('var(--disabled-text-color)');
+    });
+
+    it('should use custom colors for binary sensor when specified', () => {
+      const badge: ExtraBadge = {
+        entity: 'binary_sensor.test',
+        color_on: 'red',
+        color_off: 'grey',
+      };
+
+      expect(getBadgeColor(badge, true, true)).toBe('red');
+      expect(getBadgeColor(badge, true, false)).toBe('grey');
+    });
+
+    it('should use default color for regular sensor when not specified', () => {
+      const badge: ExtraBadge = { entity: 'sensor.test' };
+
+      expect(getBadgeColor(badge, false, false)).toBe('var(--secondary-text-color)');
+    });
+
+    it('should use custom color for regular sensor when specified', () => {
+      const badge: ExtraBadge = {
+        entity: 'sensor.test',
+        color: 'purple',
+      };
+
+      expect(getBadgeColor(badge, false, false)).toBe('purple');
     });
   });
 });
