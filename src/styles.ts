@@ -83,6 +83,9 @@ export const style = css`
 .header > #species {
   color: #8c96a5;
   display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .header-compact > #species {
   line-height: 85%;
@@ -92,6 +95,9 @@ export const style = css`
   margin-right: 4px;
   opacity: 0.4;
   display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .meter {
   height: 8px;
