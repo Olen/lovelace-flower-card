@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { default_show_bars } from '../src/utils/constants';
+import { isMediaSourceUrl, resolveMediaSource } from '../src/utils/utils';
 
 // Test getStubConfig logic without instantiating LitElement
 describe('FlowerCard logic', () => {
@@ -168,6 +169,68 @@ describe('FlowerCard logic', () => {
     it('should return 5', () => {
       const getCardSize = () => 5;
       expect(getCardSize()).toBe(5);
+    });
+  });
+
+  describe('media source URL handling', () => {
+    describe('isMediaSourceUrl', () => {
+      it('should return true for media-source:// URLs', () => {
+        expect(isMediaSourceUrl('media-source://media_source/local/plants/test.jpg')).toBe(true);
+        expect(isMediaSourceUrl('media-source://image_upload/123456')).toBe(true);
+      });
+
+      it('should return false for regular URLs', () => {
+        expect(isMediaSourceUrl('https://example.com/image.jpg')).toBe(false);
+        expect(isMediaSourceUrl('http://example.com/image.jpg')).toBe(false);
+        expect(isMediaSourceUrl('/local/images/plant.jpg')).toBe(false);
+      });
+
+      it('should return false for undefined or empty values', () => {
+        expect(isMediaSourceUrl(undefined)).toBe(false);
+        expect(isMediaSourceUrl('')).toBe(false);
+      });
+    });
+
+    describe('resolveMediaSource', () => {
+      it('should return original URL if not a media-source URL', async () => {
+        const mockHass = { callWS: vi.fn() };
+        const url = 'https://example.com/image.jpg';
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const result = await resolveMediaSource(mockHass as any, url);
+
+        expect(result).toBe(url);
+        expect(mockHass.callWS).not.toHaveBeenCalled();
+      });
+
+      it('should call WebSocket API for media-source URLs', async () => {
+        const resolvedUrl = '/media/local/plants/test.jpg?authSig=abc123';
+        const mockHass = {
+          callWS: vi.fn().mockResolvedValue({ url: resolvedUrl, mime_type: 'image/jpeg' })
+        };
+        const mediaSourceUrl = 'media-source://media_source/local/plants/test.jpg';
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const result = await resolveMediaSource(mockHass as any, mediaSourceUrl);
+
+        expect(result).toBe(resolvedUrl);
+        expect(mockHass.callWS).toHaveBeenCalledWith({
+          type: 'media_source/resolve_media',
+          media_content_id: mediaSourceUrl,
+        });
+      });
+
+      it('should return empty string on WebSocket error', async () => {
+        const mockHass = {
+          callWS: vi.fn().mockRejectedValue(new Error('WebSocket error'))
+        };
+        const mediaSourceUrl = 'media-source://media_source/local/plants/test.jpg';
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const result = await resolveMediaSource(mockHass as any, mediaSourceUrl);
+
+        expect(result).toBe('');
+      });
     });
   });
 });

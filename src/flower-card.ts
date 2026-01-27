@@ -6,7 +6,7 @@ import { DisplayType, FlowerCardConfig, HomeAssistantEntity, PlantInfo } from '.
 import * as packageJson from '../package.json';
 import { renderAttributes, renderBattery, renderExtraBadges } from './utils/attributes';
 import { CARD_NAME, default_show_bars, missingImage } from './utils/constants';
-import { moreInfo } from './utils/utils';
+import { isMediaSourceUrl, moreInfo, resolveMediaSource } from './utils/utils';
 
 console.info(
     `%c FLOWER-CARD %c ${packageJson.version}`,
@@ -31,11 +31,20 @@ export default class FlowerCard extends LitElement {
 
     private stateObj: HomeAssistantEntity | undefined;
     private previousFetchDate: number;
+    private _lastEntityPicture: string | undefined;
+    private _resolvedImageUrl: string | undefined;
 
     plantinfo: PlantInfo;
     set hass(hass: HomeAssistant) {
         this._hass = hass;
         this.stateObj = this.config?.entity ? hass.states[this.config.entity] : undefined;
+
+        // Check if entity_picture changed and needs resolution
+        const entityPicture = this.stateObj?.attributes.entity_picture;
+        if (entityPicture !== this._lastEntityPicture) {
+            this._lastEntityPicture = entityPicture;
+            this._resolveEntityPicture(hass, entityPicture);
+        }
 
         if (!this.previousFetchDate) {
             this.previousFetchDate = 0;
@@ -46,6 +55,20 @@ export default class FlowerCard extends LitElement {
             this.get_data(hass).then(() => {
                 this.requestUpdate();
             });
+        }
+    }
+
+    private async _resolveEntityPicture(hass: HomeAssistant, entityPicture: string | undefined): Promise<void> {
+        if (!entityPicture) {
+            this._resolvedImageUrl = undefined;
+            return;
+        }
+
+        if (isMediaSourceUrl(entityPicture)) {
+            this._resolvedImageUrl = await resolveMediaSource(hass, entityPicture);
+            this.requestUpdate();
+        } else {
+            this._resolvedImageUrl = entityPicture;
         }
     }
 
@@ -191,10 +214,7 @@ export default class FlowerCard extends LitElement {
             <ha-card class="${haCardCssClass}">
             <div class="${headerCssClass}${noImageClass}" @click="${() =>
                 moreInfo(this, this.stateObj.entity_id)}">
-                ${!hideImage ? html`<img src="${this.stateObj.attributes.entity_picture
-                ? this.stateObj.attributes.entity_picture
-                : missingImage
-            }">` : ''}
+                ${!hideImage ? html`<img src="${this._resolvedImageUrl || missingImage}">` : ''}
                 <span id="name"> ${displayName} <ha-icon .icon="mdi:${this.stateObj.state.toLowerCase() == "problem"
                 ? "alert-circle-outline"
                 : ""
