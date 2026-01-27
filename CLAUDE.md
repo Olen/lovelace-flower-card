@@ -66,3 +66,20 @@ hass.callWS({ type: "plant/get_info", entity_id: "plant.my_plant" })
 ```
 
 This returns plant info including current readings, min/max thresholds, icons, and sensors.
+
+## Releases
+
+Releases are automated via GitHub Actions. The workflow triggers when `package.json` version changes.
+
+**To create a new release:**
+
+1. Update the version in `package.json`
+2. Run `npm run build` to update the compiled files
+3. Commit and push to main (or merge PR)
+4. The CI workflow runs tests, then the release workflow creates a GitHub release
+
+**Version format:**
+- Stable: `YYYY.M.P` (e.g., `2026.1.0`)
+- Beta: `YYYY.M.P-betaN` (e.g., `2026.1.0-beta9`)
+
+**Do NOT manually create tags** - the release workflow handles this automatically based on the package.json version.
