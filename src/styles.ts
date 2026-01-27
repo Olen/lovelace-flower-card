@@ -25,6 +25,9 @@ export const style = css`
 }
 #battery {
   float: right;
+  display: flex;
+  align-items: center;
+  gap: 4px;
   margin-right: 16px;
   margin-top: -15px;
 }
