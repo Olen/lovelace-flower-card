@@ -46,6 +46,29 @@ describe('FlowerCardConfig', () => {
     });
   });
 
+  describe('hide_image option', () => {
+    it('should allow hiding image', () => {
+      const config: FlowerCardConfig = {
+        type: 'flower-card',
+        entity: 'plant.my_plant',
+        hide_image: true,
+      };
+
+      expect(config.hide_image).toBe(true);
+    });
+
+    it('should default to showing image when not set', () => {
+      const config: FlowerCardConfig = {
+        type: 'flower-card',
+        entity: 'plant.my_plant',
+      };
+
+      // When hide_image is undefined, image should be shown (hide_image ?? false === false)
+      const hideImage = config.hide_image ?? false;
+      expect(hideImage).toBe(false);
+    });
+  });
+
   describe('display_type option', () => {
     it('should support Full display type', () => {
       const config: FlowerCardConfig = {

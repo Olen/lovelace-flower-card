@@ -32,6 +32,7 @@ export class FlowerCardEditor extends EditorForm {
             { controls: [{ label: "Name", configValue: "name", type: FormControlType.Textbox }] },
             { controls: [{ label: "Battery Sensor", configValue: "battery_sensor", type: FormControlType.Dropdown, items: batteryList }] },
             { controls: [{ label: "Hide Species", configValue: "hide_species", type: FormControlType.Switch }] },
+            { controls: [{ label: "Hide Image", configValue: "hide_image", type: FormControlType.Switch }] },
             { controls: [{ label: "Show Bars", configValue: "show_bars", type: FormControlType.Checkboxes, items: plantAttributes }] }
         ]);
     }    
