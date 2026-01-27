@@ -168,6 +168,14 @@ extra_badges:
 
 #### Static Icon/Text Badge
 
+Display a decorative icon with no text or tooltip:
+
+```yaml
+extra_badges:
+  - icon: mdi:flower
+    color: pink
+```
+
 Display a static icon (tooltip shows text on hover):
 
 ```yaml

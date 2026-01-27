@@ -225,6 +225,20 @@ describe('attributes', () => {
 });
 
 describe('ExtraBadge type', () => {
+  describe('icon-only badge', () => {
+    it('should support icon-only badge configuration', () => {
+      const badge: ExtraBadge = {
+        icon: 'mdi:flower',
+        color: 'pink',
+      };
+
+      expect(badge.icon).toBe('mdi:flower');
+      expect(badge.color).toBe('pink');
+      expect(badge.entity).toBeUndefined();
+      expect(badge.text).toBeUndefined();
+    });
+  });
+
   describe('static text badge', () => {
     it('should support text-based badge configuration', () => {
       const badge: ExtraBadge = {

@@ -51,6 +51,16 @@ export const renderExtraBadge = (card: FlowerCard, badge: ExtraBadge) => {
         `;
     }
 
+    // Handle icon-only badge (no entity, no text)
+    if (!badge.entity && badge.icon) {
+        const color = badge.color || "var(--secondary-text-color)";
+        return html`
+            <div class="extra-badge">
+                <ha-icon .icon="${badge.icon}" style="color: ${color}"></ha-icon>
+            </div>
+        `;
+    }
+
     // Handle entity-based badge
     if (!badge.entity) return html``;
 
