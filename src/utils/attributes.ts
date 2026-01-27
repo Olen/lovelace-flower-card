@@ -58,7 +58,7 @@ export const renderAttributes = (card: FlowerCard): TemplateResult[] => {
                 icon = String(icon);
                 sensor = String(sensor);
                 current = Number(current);
-                const display_state = card._hass.formatEntityState(card._hass.states[sensor]).replace(/[^\d,.]/g, "");
+                const display_state = card._hass.formatEntityState(card._hass.states[sensor]).replace(/[^\d,.+-]/g, "");
                 unit_of_measurement = String(unit_of_measurement);
                 limits[`max_${elem}`] = { max, min };
                 curr[elem] = current;
@@ -81,12 +81,14 @@ export const renderAttributes = (card: FlowerCard): TemplateResult[] => {
 export const renderAttribute = (card: FlowerCard, attr: DisplayedAttribute) => {
     const { max, min } = attr.limits;
     const unitTooltip = attr.unit_of_measurement;
-    const logScale = attr.unit_of_measurement === 'lx'
+    const logScale = attr.unit_of_measurement === 'lx';
     const icon = attr.icon || "mdi:help-circle-outline";
-    const val = attr.current || 0;
-    const aval = !isNaN(val);
+    const val = attr.current ?? 0;
+    const aval = !isNaN(val) && val !== null && val !== undefined;
     const display_val = attr.display_state;
-    const pct = !logScale
+    // For log scale, use linear if value or min is 0 (log(0) is undefined)
+    const useLinear = !logScale || val <= 0 || min <= 0;
+    const pct = useLinear
         ? 100 * Math.max(0, Math.min(1, (val - min) / (max - min)))
         : 100 * Math.max(0, Math.min(1, (Math.log(val) - Math.log(min)) / (Math.log(max) - Math.log(min))));
     const toolTipText = aval ? `${attr.name}: ${val} ${unitTooltip}<br>(${min} ~ ${max} ${unitTooltip})` : card._hass.localize('state.default.unavailable');
