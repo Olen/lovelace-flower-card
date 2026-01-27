@@ -44,8 +44,11 @@ export const renderAttributes = (card: FlowerCard): TemplateResult[] => {
         const result = card.plantinfo.result;
         for (const elem of monitored) {
             if (result[elem]) {
-                const { max, min, current, icon, sensor, unit_of_measurement } = result[elem];
-                const display_state = card._hass.formatEntityState(card._hass.states[sensor]).replace(/[^\d,.+-]/g, "");
+                const { max, min, current, icon, sensor } = result[elem];
+                const entityState = card._hass.states[sensor];
+                const display_state = card._hass.formatEntityState(entityState).replace(/[^\d,.+-]/g, "");
+                // Get unit from entity state attributes (respects user customizations)
+                const unit_of_measurement = entityState?.attributes?.unit_of_measurement || result[elem].unit_of_measurement || "";
                 const limits: Limits = { max: Number(max), min: Number(min) };
                 displayed[elem] = {
                     name: elem,
