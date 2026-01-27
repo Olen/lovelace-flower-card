@@ -62,47 +62,63 @@ export default class FlowerCard extends LitElement {
                     selector: { text: {} }
                 },
                 {
-                    name: "display_type",
-                    selector: {
-                        select: {
-                            options: [
-                                { value: "full", label: "Full" },
-                                { value: "compact", label: "Compact" }
-                            ]
-                        }
-                    }
-                },
-                {
                     name: "battery_sensor",
                     selector: { entity: { domain: "sensor", device_class: "battery" } }
                 },
                 {
-                    name: "show_bars",
-                    selector: {
-                        select: {
-                            multiple: true,
-                            options: [
-                                { value: "moisture", label: "Moisture" },
-                                { value: "conductivity", label: "Conductivity" },
-                                { value: "temperature", label: "Temperature" },
-                                { value: "illuminance", label: "Illuminance" },
-                                { value: "humidity", label: "Humidity" },
-                                { value: "dli", label: "Daily Light Integral" }
-                            ]
+                    type: "expandable",
+                    name: "",
+                    title: "Bars",
+                    schema: [
+                        {
+                            name: "show_bars",
+                            selector: {
+                                select: {
+                                    multiple: true,
+                                    options: [
+                                        { value: "moisture", label: "Moisture" },
+                                        { value: "conductivity", label: "Conductivity" },
+                                        { value: "temperature", label: "Temperature" },
+                                        { value: "illuminance", label: "Illuminance" },
+                                        { value: "humidity", label: "Humidity" },
+                                        { value: "dli", label: "Daily Light Integral" },
+                                        { value: "co2", label: "CO2" },
+                                        { value: "soil_temperature", label: "Soil Temperature" }
+                                    ]
+                                }
+                            }
                         }
-                    }
+                    ]
                 },
                 {
-                    name: "hide_species",
-                    selector: { boolean: {} }
-                },
-                {
-                    name: "hide_image",
-                    selector: { boolean: {} }
-                },
-                {
-                    name: "hide_units",
-                    selector: { boolean: {} }
+                    type: "expandable",
+                    name: "",
+                    title: "Appearance",
+                    schema: [
+                        {
+                            name: "display_type",
+                            selector: {
+                                select: {
+                                    options: [
+                                        { value: "full", label: "Full" },
+                                        { value: "compact", label: "Compact" }
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            name: "hide_species",
+                            selector: { boolean: {} }
+                        },
+                        {
+                            name: "hide_image",
+                            selector: { boolean: {} }
+                        },
+                        {
+                            name: "hide_units",
+                            selector: { boolean: {} }
+                        }
+                    ]
                 }
             ],
             computeLabel: (schema: { name: string }) => {
