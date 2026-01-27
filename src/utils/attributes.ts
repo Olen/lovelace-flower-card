@@ -242,7 +242,7 @@ export const renderAttribute = (card: FlowerCard, attr: DisplayedAttribute) => {
     // Determine settings with explicit overrides taking precedence over display_type defaults
     const isCompact = card.config.display_type === DisplayType.Compact;
     const barsPerRow = card.config.bars_per_row ?? (isCompact ? 1 : 2);
-    const showUnits = card.config.show_units ?? !isCompact;
+    const showUnits = !(card.config.hide_units ?? isCompact);
     const useFullWidth = barsPerRow === 1;
 
     const attributeCssClass = `attribute tooltip ${useFullWidth ? 'width-100' : ''}`;

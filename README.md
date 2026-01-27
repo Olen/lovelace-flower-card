@@ -14,7 +14,7 @@ The card can be set up from the GUI (requires version 3.0.0)
 | `entity` | string | **Required** | The plant entity ID |
 | `name` | string | Entity name | Custom display name for the plant |
 | `display_type` | string | `full` | Display mode: `full` or `compact` |
-| `show_units` | boolean | Based on display_type | Show value/unit next to bars |
+| `hide_units` | boolean | Based on display_type | Hide value/unit next to bars |
 | `bars_per_row` | number | Based on display_type | Number of bars per row (1 or 2) |
 | `battery_sensor` | string | - | Entity ID of a battery sensor to display |
 | `show_bars` | list | All | List of measurement bars to show |
@@ -70,7 +70,7 @@ The `display_type` sets defaults for several display options. You can override t
 
 | Setting | Full (default) | Compact |
 |---------|----------------|---------|
-| `show_units` | `true` | `false` |
+| `hide_units` | `false` | `true` |
 | `bars_per_row` | `2` | `1` |
 
 Mix and match settings to customize the layout:
@@ -81,7 +81,7 @@ type: custom:flower-card
 entity: plant.my_plant
 display_type: compact
 bars_per_row: 2
-show_units: true
+hide_units: false
 ```
 
 ```yaml
@@ -89,7 +89,7 @@ show_units: true
 type: custom:flower-card
 entity: plant.my_plant
 display_type: full
-show_units: false
+hide_units: true
 ```
 
 ```yaml

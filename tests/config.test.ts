@@ -91,15 +91,15 @@ describe('FlowerCardConfig', () => {
     });
   });
 
-  describe('show_units option', () => {
-    it('should allow explicit show_units setting', () => {
+  describe('hide_units option', () => {
+    it('should allow explicit hide_units setting', () => {
       const config: FlowerCardConfig = {
         type: 'flower-card',
         entity: 'plant.my_plant',
-        show_units: false,
+        hide_units: true,
       };
 
-      expect(config.show_units).toBe(false);
+      expect(config.hide_units).toBe(true);
     });
 
     it('should default based on display_type when not set', () => {
@@ -114,13 +114,13 @@ describe('FlowerCardConfig', () => {
         display_type: DisplayType.Compact,
       };
 
-      // Default: true for full, false for compact
+      // Default: false for full (show units), true for compact (hide units)
       const isCompactFull = fullConfig.display_type === DisplayType.Compact;
-      const showUnitsFull = fullConfig.show_units ?? !isCompactFull;
+      const showUnitsFull = !(fullConfig.hide_units ?? isCompactFull);
       expect(showUnitsFull).toBe(true);
 
       const isCompactCompact = compactConfig.display_type === DisplayType.Compact;
-      const showUnitsCompact = compactConfig.show_units ?? !isCompactCompact;
+      const showUnitsCompact = !(compactConfig.hide_units ?? isCompactCompact);
       expect(showUnitsCompact).toBe(false);
     });
 
@@ -129,12 +129,12 @@ describe('FlowerCardConfig', () => {
         type: 'flower-card',
         entity: 'plant.my_plant',
         display_type: DisplayType.Compact,
-        show_units: true,
+        hide_units: false,
       };
 
-      // Explicit show_units should override the compact default
+      // Explicit hide_units: false should override the compact default (show units)
       const isCompact = config.display_type === DisplayType.Compact;
-      const showUnits = config.show_units ?? !isCompact;
+      const showUnits = !(config.hide_units ?? isCompact);
       expect(showUnits).toBe(true);
     });
   });
