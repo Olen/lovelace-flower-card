@@ -5,7 +5,7 @@ import { style } from './styles';
 import { DisplayType, FlowerCardConfig, HomeAssistantEntity, PlantInfo } from './types/flower-card-types';
 import * as packageJson from '../package.json';
 import { renderAttributes, renderBattery, renderExtraBadges } from './utils/attributes';
-import { CARD_NAME, default_show_bars, missingImage } from './utils/constants';
+import { CARD_NAME, default_show_bars, missingImage, plantAttributes } from './utils/constants';
 import { isMediaSourceUrl, moreInfo, resolveMediaSource } from './utils/utils';
 
 console.info(
@@ -98,16 +98,7 @@ export default class FlowerCard extends LitElement {
                             selector: {
                                 select: {
                                     multiple: true,
-                                    options: [
-                                        { value: "moisture", label: "Moisture" },
-                                        { value: "conductivity", label: "Conductivity" },
-                                        { value: "temperature", label: "Temperature" },
-                                        { value: "illuminance", label: "Illuminance" },
-                                        { value: "humidity", label: "Humidity" },
-                                        { value: "dli", label: "Daily Light Integral" },
-                                        { value: "co2", label: "CO2" },
-                                        { value: "soil_temperature", label: "Soil Temperature" }
-                                    ]
+                                    options: plantAttributes
                                 }
                             }
                         }
