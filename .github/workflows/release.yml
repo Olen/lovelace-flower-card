@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   release:
@@ -68,6 +69,36 @@ jobs:
       - name: "🔨 Build"
         run: npm run build
         if: steps.check_package.outputs.changed == 'true' && steps.check_tag.outputs.exists != 'true'
+
+      - name: "📝 Check if build output changed"
+        id: check_build
+        run: |
+          if git diff --quiet flower-card.js flower-card.js.gz; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+        if: steps.check_package.outputs.changed == 'true' && steps.check_tag.outputs.exists != 'true'
+
+      - name: "🔀 Create PR with built files"
+        run: |
+          BRANCH_NAME="build/v${{ env.COMPONENT_VERSION }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH_NAME"
+          git add flower-card.js flower-card.js.gz
+          git commit -m "Build flower-card.js for v${{ env.COMPONENT_VERSION }} [skip ci]"
+          git push origin "$BRANCH_NAME"
+          gh pr create --title "Build flower-card.js for v${{ env.COMPONENT_VERSION }}" \
+            --body "Auto-generated PR to update built files for release v${{ env.COMPONENT_VERSION }}
+
+          [skip ci]" \
+            --base main \
+            --head "$BRANCH_NAME"
+          gh pr merge "$BRANCH_NAME" --merge --admin --delete-branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: steps.check_package.outputs.changed == 'true' && steps.check_tag.outputs.exists != 'true' && steps.check_build.outputs.changed == 'true'
 
       - name: "🗝️ Get previous release version"
         id: last_release
