@@ -54,6 +54,21 @@ jobs:
         run: echo "Skipping release - package.json unchanged or tag already exists"
         if: steps.check_package.outputs.changed != 'true' || steps.check_tag.outputs.exists == 'true'
 
+      - name: "📦 Setup Node.js"
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+        if: steps.check_package.outputs.changed == 'true' && steps.check_tag.outputs.exists != 'true'
+
+      - name: "📥 Install dependencies"
+        run: npm ci
+        if: steps.check_package.outputs.changed == 'true' && steps.check_tag.outputs.exists != 'true'
+
+      - name: "🔨 Build"
+        run: npm run build
+        if: steps.check_package.outputs.changed == 'true' && steps.check_tag.outputs.exists != 'true'
+
       - name: "🗝️ Get previous release version"
         id: last_release
         run: |
