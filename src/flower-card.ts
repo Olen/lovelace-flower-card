@@ -51,12 +51,9 @@ export default class FlowerCard extends LitElement {
         }
         // Only fetch once every second at max. HA is flooded with websocket requests
         if (Date.now() > this.previousFetchDate + 1000) {
-            this.get_data(hass).then(() => {
+            this.get_data(hass).finally(() => {
                 this.previousFetchDate = Date.now();
                 this.requestUpdate();
-            }).catch(() => {
-                // Allow retry after 5 seconds instead of blocking forever
-                this.previousFetchDate = Date.now() - 1000 + 5000;
             });
         }
     }
@@ -234,7 +231,6 @@ export default class FlowerCard extends LitElement {
             if (!this.plantinfo || !this.plantinfo.result || Object.keys(this.plantinfo.result).length === 0) {
                 this.plantinfo = { result: {} };
             }
-            throw err;
         }
     }
 

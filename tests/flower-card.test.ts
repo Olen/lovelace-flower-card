@@ -165,20 +165,16 @@ describe('FlowerCard logic', () => {
       expect(shouldFetch()).toBe(false);
     });
 
-    it('should only set previousFetchDate after successful fetch', async () => {
+    it('should set previousFetchDate after fetch completes (success or failure)', async () => {
       let previousFetchDate = 0;
       const mockCallWS = vi.fn().mockResolvedValue({ result: { moisture: { current: 50, min: 0, max: 100, sensor: 'sensor.moisture', icon: 'mdi:water', unit_of_measurement: '%' } } });
 
-      // Simulate the fixed hass setter logic
+      // Simulate the hass setter logic using .finally()
       const fetchData = async () => {
         if (Date.now() > previousFetchDate + 1000) {
-          try {
-            await mockCallWS();
-            previousFetchDate = Date.now();
-          } catch {
-            // Allow retry after 5 seconds
-            previousFetchDate = Date.now() - 1000 + 5000;
-          }
+          // get_data never throws (catches internally)
+          await mockCallWS().catch(() => { /* handled internally */ });
+          previousFetchDate = Date.now();
         }
       };
 
@@ -188,35 +184,27 @@ describe('FlowerCard logic', () => {
       expect(mockCallWS).toHaveBeenCalledTimes(1);
     });
 
-    it('should allow retry after 5 seconds on failure', async () => {
+    it('should set previousFetchDate even after failure so retries happen at normal pace', async () => {
       let previousFetchDate = 0;
       const mockCallWS = vi.fn().mockRejectedValue(new Error('WebSocket error'));
 
+      // Simulate get_data that catches internally + .finally() setting timestamp
       const fetchData = async () => {
         if (Date.now() > previousFetchDate + 1000) {
-          try {
-            await mockCallWS();
-            previousFetchDate = Date.now();
-          } catch {
-            // Allow retry after 5 seconds
-            previousFetchDate = Date.now() - 1000 + 5000;
-          }
+          await mockCallWS().catch(() => { /* handled internally */ });
+          previousFetchDate = Date.now();
         }
       };
 
       await fetchData();
       const afterFailure = previousFetchDate;
 
-      // After failure, previousFetchDate should be set ~4 seconds in the future
-      // so that Date.now() > previousFetchDate + 1000 won't be true for ~5 seconds
-      expect(afterFailure).toBeGreaterThan(Date.now() + 3000);
-
-      // Immediate retry should be blocked
-      const canRetry = Date.now() > afterFailure + 1000;
-      expect(canRetry).toBe(false);
+      // previousFetchDate should be set to ~now, allowing retry after 1 second
+      expect(afterFailure).toBeGreaterThan(0);
+      expect(afterFailure).toBeLessThanOrEqual(Date.now());
     });
 
-    it('should not block forever on fetch failure (old bug: timestamp set before fetch)', async () => {
+    it('should retry after failure on next hass setter call (old bug: never retried)', async () => {
       let previousFetchDate = 0;
       let fetchCount = 0;
       const mockCallWS = vi.fn()
@@ -226,12 +214,8 @@ describe('FlowerCard logic', () => {
       const fetchData = async () => {
         if (Date.now() > previousFetchDate + 1000) {
           fetchCount++;
-          try {
-            await mockCallWS();
-            previousFetchDate = Date.now();
-          } catch {
-            previousFetchDate = Date.now() - 1000 + 5000;
-          }
+          await mockCallWS().catch(() => { /* handled internally */ });
+          previousFetchDate = Date.now();
         }
       };
 
@@ -239,8 +223,8 @@ describe('FlowerCard logic', () => {
       await fetchData();
       expect(fetchCount).toBe(1);
 
-      // Simulate time passing (5+ seconds)
-      previousFetchDate = Date.now() - 2000; // Force past the retry delay
+      // Simulate time passing (1+ second)
+      previousFetchDate = Date.now() - 2000;
 
       // Second call should succeed
       await fetchData();
@@ -250,6 +234,20 @@ describe('FlowerCard logic', () => {
   });
 
   describe('get_data error handling', () => {
+    // Mirrors the actual get_data logic: catches errors internally, never throws
+    const createGetData = (mockCallWS: ReturnType<typeof vi.fn>, getPlantinfo: () => PlantInfo, setPlantinfo: (p: PlantInfo) => void) => {
+      return async () => {
+        try {
+          setPlantinfo(await mockCallWS());
+        } catch {
+          const plantinfo = getPlantinfo();
+          if (!plantinfo || !plantinfo.result || Object.keys(plantinfo.result).length === 0) {
+            setPlantinfo({ result: {} });
+          }
+        }
+      };
+    };
+
     it('should preserve existing plantinfo on transient failure', async () => {
       const existingPlantinfo: PlantInfo = {
         result: {
@@ -257,85 +255,44 @@ describe('FlowerCard logic', () => {
         }
       };
       let plantinfo: PlantInfo = { ...existingPlantinfo };
-
       const mockCallWS = vi.fn().mockRejectedValue(new Error('WebSocket error'));
 
-      // Simulate the fixed get_data logic
-      const get_data = async () => {
-        try {
-          plantinfo = await mockCallWS();
-        } catch (err) {
-          if (!plantinfo || !plantinfo.result || Object.keys(plantinfo.result).length === 0) {
-            plantinfo = { result: {} };
-          }
-          throw err;
-        }
-      };
-
-      await expect(get_data()).rejects.toThrow('WebSocket error');
+      const get_data = createGetData(mockCallWS, () => plantinfo, (p) => { plantinfo = p; });
+      await get_data();
 
       // Existing good data should be preserved
       expect(plantinfo.result.moisture).toBeDefined();
       expect(plantinfo.result.moisture.current).toBe(50);
     });
 
-    it('should set empty result when plantinfo has no data on failure', async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let plantinfo: any = undefined;
-
+    it('should not throw so callers can always run requestUpdate', async () => {
+      let plantinfo: PlantInfo = { result: {} };
       const mockCallWS = vi.fn().mockRejectedValue(new Error('WebSocket error'));
 
-      const get_data = async () => {
-        try {
-          plantinfo = await mockCallWS();
-        } catch (err) {
-          if (!plantinfo || !plantinfo.result || Object.keys(plantinfo.result).length === 0) {
-            plantinfo = { result: {} };
-          }
-          throw err;
-        }
-      };
+      const get_data = createGetData(mockCallWS, () => plantinfo, (p) => { plantinfo = p; });
 
-      await expect(get_data()).rejects.toThrow('WebSocket error');
+      // get_data should resolve (not reject) even on WS error
+      await expect(get_data()).resolves.toBeUndefined();
+    });
+
+    it('should set empty result when plantinfo has no data on failure', async () => {
+      let plantinfo: PlantInfo = undefined as unknown as PlantInfo;
+      const mockCallWS = vi.fn().mockRejectedValue(new Error('WebSocket error'));
+
+      const get_data = createGetData(mockCallWS, () => plantinfo, (p) => { plantinfo = p; });
+      await get_data();
+
       expect(plantinfo).toEqual({ result: {} });
     });
 
     it('should set empty result when plantinfo has empty result on failure', async () => {
       let plantinfo: PlantInfo = { result: {} };
-
       const mockCallWS = vi.fn().mockRejectedValue(new Error('WebSocket error'));
 
-      const get_data = async () => {
-        try {
-          plantinfo = await mockCallWS();
-        } catch (err) {
-          if (!plantinfo || !plantinfo.result || Object.keys(plantinfo.result).length === 0) {
-            plantinfo = { result: {} };
-          }
-          throw err;
-        }
-      };
+      const get_data = createGetData(mockCallWS, () => plantinfo, (p) => { plantinfo = p; });
+      await get_data();
 
-      await expect(get_data()).rejects.toThrow('WebSocket error');
       expect(plantinfo).toEqual({ result: {} });
-    });
-
-    it('should re-throw error so caller can handle retry', async () => {
-      const mockCallWS = vi.fn().mockRejectedValue(new Error('Connection lost'));
-      let plantinfo: PlantInfo = { result: {} };
-
-      const get_data = async () => {
-        try {
-          plantinfo = await mockCallWS();
-        } catch (err) {
-          if (!plantinfo || !plantinfo.result || Object.keys(plantinfo.result).length === 0) {
-            plantinfo = { result: {} };
-          }
-          throw err;
-        }
-      };
-
-      await expect(get_data()).rejects.toThrow('Connection lost');
     });
 
     it('should update plantinfo on successful fetch', async () => {
@@ -347,19 +304,23 @@ describe('FlowerCard logic', () => {
       };
       const mockCallWS = vi.fn().mockResolvedValue(newData);
 
-      const get_data = async () => {
-        try {
-          plantinfo = await mockCallWS();
-        } catch (err) {
-          if (!plantinfo || !plantinfo.result || Object.keys(plantinfo.result).length === 0) {
-            plantinfo = { result: {} };
-          }
-          throw err;
-        }
-      };
-
+      const get_data = createGetData(mockCallWS, () => plantinfo, (p) => { plantinfo = p; });
       await get_data();
+
       expect(plantinfo).toEqual(newData);
+    });
+
+    it('should allow .finally() to always run requestUpdate', async () => {
+      let plantinfo: PlantInfo = { result: {} };
+      let updateCalled = false;
+      const mockCallWS = vi.fn().mockRejectedValue(new Error('WebSocket error'));
+
+      const get_data = createGetData(mockCallWS, () => plantinfo, (p) => { plantinfo = p; });
+      await get_data().finally(() => {
+        updateCalled = true;
+      });
+
+      expect(updateCalled).toBe(true);
     });
   });
 
