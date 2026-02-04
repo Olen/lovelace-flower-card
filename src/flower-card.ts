@@ -51,8 +51,8 @@ export default class FlowerCard extends LitElement {
         }
         // Only fetch once every second at max. HA is flooded with websocket requests
         if (Date.now() > this.previousFetchDate + 1000) {
-            this.get_data(hass).finally(() => {
-                this.previousFetchDate = Date.now();
+            this.previousFetchDate = Date.now();
+            this.get_data(hass).then(() => {
                 this.requestUpdate();
             });
         }

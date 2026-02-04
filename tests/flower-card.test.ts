@@ -165,71 +165,49 @@ describe('FlowerCard logic', () => {
       expect(shouldFetch()).toBe(false);
     });
 
-    it('should set previousFetchDate after fetch completes (success or failure)', async () => {
+    it('should set previousFetchDate before fetch to prevent flooding', () => {
       let previousFetchDate = 0;
-      const mockCallWS = vi.fn().mockResolvedValue({ result: { moisture: { current: 50, min: 0, max: 100, sensor: 'sensor.moisture', icon: 'mdi:water', unit_of_measurement: '%' } } });
+      let fetchStarted = false;
 
-      // Simulate the hass setter logic using .finally()
-      const fetchData = async () => {
+      // Simulate the hass setter: timestamp is set synchronously before async fetch
+      const triggerFetch = () => {
         if (Date.now() > previousFetchDate + 1000) {
-          // get_data never throws (catches internally)
-          await mockCallWS().catch(() => { /* handled internally */ });
           previousFetchDate = Date.now();
+          fetchStarted = true;
         }
       };
 
-      await fetchData();
-      const afterSuccess = previousFetchDate;
-      expect(afterSuccess).toBeGreaterThan(0);
-      expect(mockCallWS).toHaveBeenCalledTimes(1);
+      triggerFetch();
+      expect(fetchStarted).toBe(true);
+      expect(previousFetchDate).toBeGreaterThan(0);
+
+      // Second call within 1s should be throttled
+      fetchStarted = false;
+      triggerFetch();
+      expect(fetchStarted).toBe(false);
     });
 
-    it('should set previousFetchDate even after failure so retries happen at normal pace', async () => {
-      let previousFetchDate = 0;
-      const mockCallWS = vi.fn().mockRejectedValue(new Error('WebSocket error'));
-
-      // Simulate get_data that catches internally + .finally() setting timestamp
-      const fetchData = async () => {
-        if (Date.now() > previousFetchDate + 1000) {
-          await mockCallWS().catch(() => { /* handled internally */ });
-          previousFetchDate = Date.now();
-        }
-      };
-
-      await fetchData();
-      const afterFailure = previousFetchDate;
-
-      // previousFetchDate should be set to ~now, allowing retry after 1 second
-      expect(afterFailure).toBeGreaterThan(0);
-      expect(afterFailure).toBeLessThanOrEqual(Date.now());
-    });
-
-    it('should retry after failure on next hass setter call (old bug: never retried)', async () => {
+    it('should retry after 1 second even if previous fetch failed', () => {
       let previousFetchDate = 0;
       let fetchCount = 0;
-      const mockCallWS = vi.fn()
-        .mockRejectedValueOnce(new Error('WebSocket error'))
-        .mockResolvedValueOnce({ result: { moisture: { current: 50 } } });
 
-      const fetchData = async () => {
+      const triggerFetch = () => {
         if (Date.now() > previousFetchDate + 1000) {
-          fetchCount++;
-          await mockCallWS().catch(() => { /* handled internally */ });
           previousFetchDate = Date.now();
+          fetchCount++;
         }
       };
 
-      // First call fails
-      await fetchData();
+      // First call
+      triggerFetch();
       expect(fetchCount).toBe(1);
 
-      // Simulate time passing (1+ second)
+      // Simulate 1+ second passing
       previousFetchDate = Date.now() - 2000;
 
-      // Second call should succeed
-      await fetchData();
+      // Should be able to fetch again
+      triggerFetch();
       expect(fetchCount).toBe(2);
-      expect(mockCallWS).toHaveBeenCalledTimes(2);
     });
   });
 
