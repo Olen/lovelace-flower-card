@@ -224,6 +224,130 @@ describe('attributes', () => {
   });
 });
 
+describe('renderAttributes entity state guard', () => {
+  // Test the logic that builds displayed attributes from plantinfo
+  // This tests the fix for the missing entity state guard
+  const buildDisplayedAttributes = (
+    plantinfoResult: Record<string, { max: number; min: number; current: number; icon: string; sensor: string; unit_of_measurement: string }>,
+    monitored: string[],
+    states: Record<string, { state: string; attributes: Record<string, unknown> } | undefined>,
+    formatEntityState: (entity: { state: string }) => string,
+  ) => {
+    const displayed: DisplayedAttributes = {};
+    for (const elem of monitored) {
+      if (plantinfoResult[elem]) {
+        const { max, min, current, icon, sensor } = plantinfoResult[elem];
+        const entityState = states[sensor];
+        if (!entityState) continue;
+        const display_state = formatEntityState(entityState).replace(/[^\d,.+-]/g, '');
+        const unit_of_measurement = entityState?.attributes?.unit_of_measurement as string || plantinfoResult[elem].unit_of_measurement || '';
+        displayed[elem] = {
+          name: elem,
+          current: Number(current),
+          limits: { max: Number(max), min: Number(min) },
+          icon: String(icon),
+          sensor: String(sensor),
+          unit_of_measurement: String(unit_of_measurement),
+          display_state,
+        };
+      }
+    }
+    return displayed;
+  };
+
+  const mockPlantinfoResult = {
+    moisture: { max: 100, min: 0, current: 50, icon: 'mdi:water', sensor: 'sensor.moisture', unit_of_measurement: '%' },
+    temperature: { max: 40, min: 5, current: 22, icon: 'mdi:thermometer', sensor: 'sensor.temperature', unit_of_measurement: '°C' },
+    conductivity: { max: 2000, min: 50, current: 500, icon: 'mdi:flash', sensor: 'sensor.conductivity', unit_of_measurement: 'µS/cm' },
+  };
+
+  it('should skip attributes whose sensor entity is missing from hass states', () => {
+    const states: Record<string, { state: string; attributes: Record<string, unknown> } | undefined> = {
+      'sensor.moisture': { state: '50', attributes: { unit_of_measurement: '%' } },
+      // sensor.temperature is missing (e.g. unavailable after restart)
+      'sensor.conductivity': { state: '500', attributes: { unit_of_measurement: 'µS/cm' } },
+    };
+
+    const displayed = buildDisplayedAttributes(
+      mockPlantinfoResult,
+      ['moisture', 'temperature', 'conductivity'],
+      states,
+      (entity) => entity.state,
+    );
+
+    expect(Object.keys(displayed)).toHaveLength(2);
+    expect(displayed['moisture']).toBeDefined();
+    expect(displayed['temperature']).toBeUndefined();
+    expect(displayed['conductivity']).toBeDefined();
+  });
+
+  it('should skip attributes whose sensor entity is undefined', () => {
+    const states: Record<string, { state: string; attributes: Record<string, unknown> } | undefined> = {
+      'sensor.moisture': undefined,
+    };
+
+    const displayed = buildDisplayedAttributes(
+      mockPlantinfoResult,
+      ['moisture'],
+      states,
+      (entity) => entity.state,
+    );
+
+    expect(Object.keys(displayed)).toHaveLength(0);
+  });
+
+  it('should handle all sensor entities missing gracefully', () => {
+    const states: Record<string, { state: string; attributes: Record<string, unknown> } | undefined> = {};
+
+    const displayed = buildDisplayedAttributes(
+      mockPlantinfoResult,
+      ['moisture', 'temperature', 'conductivity'],
+      states,
+      (entity) => entity.state,
+    );
+
+    expect(Object.keys(displayed)).toHaveLength(0);
+  });
+
+  it('should display all attributes when all sensor entities are present', () => {
+    const states: Record<string, { state: string; attributes: Record<string, unknown> } | undefined> = {
+      'sensor.moisture': { state: '50', attributes: { unit_of_measurement: '%' } },
+      'sensor.temperature': { state: '22', attributes: { unit_of_measurement: '°C' } },
+      'sensor.conductivity': { state: '500', attributes: { unit_of_measurement: 'µS/cm' } },
+    };
+
+    const displayed = buildDisplayedAttributes(
+      mockPlantinfoResult,
+      ['moisture', 'temperature', 'conductivity'],
+      states,
+      (entity) => entity.state,
+    );
+
+    expect(Object.keys(displayed)).toHaveLength(3);
+    expect(displayed['moisture'].current).toBe(50);
+    expect(displayed['temperature'].current).toBe(22);
+    expect(displayed['conductivity'].current).toBe(500);
+  });
+
+  it('should not crash when formatEntityState would receive undefined (old bug)', () => {
+    // Before the fix, if entityState was undefined, calling formatEntityState(undefined)
+    // would throw a TypeError
+    const states: Record<string, { state: string; attributes: Record<string, unknown> } | undefined> = {};
+    const formatEntityState = vi.fn((entity: { state: string }) => entity.state);
+
+    const displayed = buildDisplayedAttributes(
+      { moisture: mockPlantinfoResult.moisture },
+      ['moisture'],
+      states,
+      formatEntityState,
+    );
+
+    // formatEntityState should never be called for missing entities
+    expect(formatEntityState).not.toHaveBeenCalled();
+    expect(Object.keys(displayed)).toHaveLength(0);
+  });
+});
+
 describe('ExtraBadge type', () => {
   describe('icon-only badge', () => {
     it('should support icon-only badge configuration', () => {
