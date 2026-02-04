@@ -214,6 +214,7 @@ export const renderAttributes = (card: FlowerCard): TemplateResult[] => {
             if (result[elem]) {
                 const { max, min, current, icon, sensor } = result[elem];
                 const entityState = card._hass.states[sensor];
+                if (!entityState) continue;
                 const display_state = card._hass.formatEntityState(entityState).replace(/[^\d,.+-]/g, "");
                 // Get unit from entity state attributes (respects user customizations)
                 const unit_of_measurement = entityState?.attributes?.unit_of_measurement || result[elem].unit_of_measurement || "";

@@ -34,7 +34,7 @@ export default class FlowerCard extends LitElement {
     private _lastEntityPicture: string | undefined;
     private _resolvedImageUrl: string | undefined;
 
-    plantinfo: PlantInfo;
+    plantinfo: PlantInfo = { result: {} };
     set hass(hass: HomeAssistant) {
         this._hass = hass;
         this.stateObj = this.config?.entity ? hass.states[this.config.entity] : undefined;
@@ -51,9 +51,12 @@ export default class FlowerCard extends LitElement {
         }
         // Only fetch once every second at max. HA is flooded with websocket requests
         if (Date.now() > this.previousFetchDate + 1000) {
-            this.previousFetchDate = Date.now();
             this.get_data(hass).then(() => {
+                this.previousFetchDate = Date.now();
                 this.requestUpdate();
+            }).catch(() => {
+                // Allow retry after 5 seconds instead of blocking forever
+                this.previousFetchDate = Date.now() - 1000 + 5000;
             });
         }
     }
@@ -227,7 +230,11 @@ export default class FlowerCard extends LitElement {
                 entity_id: this.config?.entity,
             });
         } catch (err) {
-            this.plantinfo = { result: {} };
+            console.warn(`Flower card: Failed to fetch data for ${this.config?.entity}:`, err);
+            if (!this.plantinfo || !this.plantinfo.result || Object.keys(this.plantinfo.result).length === 0) {
+                this.plantinfo = { result: {} };
+            }
+            throw err;
         }
     }
 
