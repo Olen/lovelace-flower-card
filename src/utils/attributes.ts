@@ -212,22 +212,26 @@ export const renderAttributes = (card: FlowerCard): TemplateResult[] => {
         const result = card.plantinfo.result;
         for (const elem of monitored) {
             if (result[elem]) {
-                const { max, min, current, icon, sensor } = result[elem];
-                const entityState = card._hass.states[sensor];
-                if (!entityState) continue;
-                const display_state = card._hass.formatEntityState(entityState).replace(/[^\d,.+-]/g, "");
-                // Get unit from entity state attributes (respects user customizations)
-                const unit_of_measurement = entityState?.attributes?.unit_of_measurement || result[elem].unit_of_measurement || "";
-                const limits: Limits = { max: Number(max), min: Number(min) };
-                displayed[elem] = {
-                    name: elem,
-                    current: Number(current),
-                    limits,
-                    icon: String(icon),
-                    sensor: String(sensor),
-                    unit_of_measurement: String(unit_of_measurement),
-                    display_state
-                };
+                try {
+                    const { max, min, current, icon, sensor } = result[elem];
+                    const entityState = card._hass.states[sensor];
+                    if (!entityState) continue;
+                    const display_state = card._hass.formatEntityState(entityState).replace(/[^\d,.+-]/g, "");
+                    // Get unit from entity state attributes (respects user customizations)
+                    const unit_of_measurement = entityState?.attributes?.unit_of_measurement || result[elem].unit_of_measurement || "";
+                    const limits: Limits = { max: Number(max), min: Number(min) };
+                    displayed[elem] = {
+                        name: elem,
+                        current: Number(current),
+                        limits,
+                        icon: String(icon),
+                        sensor: String(sensor),
+                        unit_of_measurement: String(unit_of_measurement),
+                        display_state
+                    };
+                } catch (e) {
+                    console.warn(`Flower card: Error processing ${elem}:`, e);
+                }
             }
         }
     }

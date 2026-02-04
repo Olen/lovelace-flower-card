@@ -236,20 +236,24 @@ describe('renderAttributes entity state guard', () => {
     const displayed: DisplayedAttributes = {};
     for (const elem of monitored) {
       if (plantinfoResult[elem]) {
-        const { max, min, current, icon, sensor } = plantinfoResult[elem];
-        const entityState = states[sensor];
-        if (!entityState) continue;
-        const display_state = formatEntityState(entityState).replace(/[^\d,.+-]/g, '');
-        const unit_of_measurement = entityState?.attributes?.unit_of_measurement as string || plantinfoResult[elem].unit_of_measurement || '';
-        displayed[elem] = {
-          name: elem,
-          current: Number(current),
-          limits: { max: Number(max), min: Number(min) },
-          icon: String(icon),
-          sensor: String(sensor),
-          unit_of_measurement: String(unit_of_measurement),
-          display_state,
-        };
+        try {
+          const { max, min, current, icon, sensor } = plantinfoResult[elem];
+          const entityState = states[sensor];
+          if (!entityState) continue;
+          const display_state = formatEntityState(entityState).replace(/[^\d,.+-]/g, '');
+          const unit_of_measurement = entityState?.attributes?.unit_of_measurement as string || plantinfoResult[elem].unit_of_measurement || '';
+          displayed[elem] = {
+            name: elem,
+            current: Number(current),
+            limits: { max: Number(max), min: Number(min) },
+            icon: String(icon),
+            sensor: String(sensor),
+            unit_of_measurement: String(unit_of_measurement),
+            display_state,
+          };
+        } catch {
+          // Skip this attribute, continue with others
+        }
       }
     }
     return displayed;
@@ -327,6 +331,33 @@ describe('renderAttributes entity state guard', () => {
     expect(displayed['moisture'].current).toBe(50);
     expect(displayed['temperature'].current).toBe(22);
     expect(displayed['conductivity'].current).toBe(500);
+  });
+
+  it('should still display other attributes when one throws an error', () => {
+    const states: Record<string, { state: string; attributes: Record<string, unknown> } | undefined> = {
+      'sensor.moisture': { state: '50', attributes: { unit_of_measurement: '%' } },
+      'sensor.temperature': { state: '22', attributes: { unit_of_measurement: '°C' } },
+      'sensor.conductivity': { state: '500', attributes: { unit_of_measurement: 'µS/cm' } },
+    };
+
+    // formatEntityState throws for temperature but works for others
+    const formatEntityState = (entity: { state: string }) => {
+      if (entity.state === '22') throw new Error('Formatting failed');
+      return entity.state;
+    };
+
+    const displayed = buildDisplayedAttributes(
+      mockPlantinfoResult,
+      ['moisture', 'temperature', 'conductivity'],
+      states,
+      formatEntityState,
+    );
+
+    // Temperature threw, but moisture and conductivity should still display
+    expect(Object.keys(displayed)).toHaveLength(2);
+    expect(displayed['moisture']).toBeDefined();
+    expect(displayed['temperature']).toBeUndefined();
+    expect(displayed['conductivity']).toBeDefined();
   });
 
   it('should not crash when formatEntityState would receive undefined (old bug)', () => {
