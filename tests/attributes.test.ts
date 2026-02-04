@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { getChunkedDisplayed, isPpfdUnit } from '../src/utils/attributes';
 import { DisplayedAttribute, DisplayedAttributes, ExtraBadge } from '../src/types/flower-card-types';
 

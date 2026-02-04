@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
+import { PlantInfo } from '../src/types/flower-card-types';
 import { default_show_bars } from '../src/utils/constants';
 import { isMediaSourceUrl, resolveMediaSource } from '../src/utils/utils';
 
@@ -250,12 +251,12 @@ describe('FlowerCard logic', () => {
 
   describe('get_data error handling', () => {
     it('should preserve existing plantinfo on transient failure', async () => {
-      const existingPlantinfo = {
+      const existingPlantinfo: PlantInfo = {
         result: {
           moisture: { current: 50, min: 0, max: 100, sensor: 'sensor.moisture', icon: 'mdi:water', unit_of_measurement: '%' }
         }
       };
-      let plantinfo = { ...existingPlantinfo };
+      let plantinfo: PlantInfo = { ...existingPlantinfo };
 
       const mockCallWS = vi.fn().mockRejectedValue(new Error('WebSocket error'));
 
@@ -300,7 +301,7 @@ describe('FlowerCard logic', () => {
     });
 
     it('should set empty result when plantinfo has empty result on failure', async () => {
-      let plantinfo = { result: {} };
+      let plantinfo: PlantInfo = { result: {} };
 
       const mockCallWS = vi.fn().mockRejectedValue(new Error('WebSocket error'));
 
@@ -321,7 +322,7 @@ describe('FlowerCard logic', () => {
 
     it('should re-throw error so caller can handle retry', async () => {
       const mockCallWS = vi.fn().mockRejectedValue(new Error('Connection lost'));
-      let plantinfo = { result: {} };
+      let plantinfo: PlantInfo = { result: {} };
 
       const get_data = async () => {
         try {
@@ -338,8 +339,8 @@ describe('FlowerCard logic', () => {
     });
 
     it('should update plantinfo on successful fetch', async () => {
-      let plantinfo = { result: {} };
-      const newData = {
+      let plantinfo: PlantInfo = { result: {} };
+      const newData: PlantInfo = {
         result: {
           moisture: { current: 75, min: 0, max: 100, sensor: 'sensor.moisture', icon: 'mdi:water', unit_of_measurement: '%' }
         }
@@ -365,7 +366,7 @@ describe('FlowerCard logic', () => {
   describe('plantinfo initialization', () => {
     it('should default to empty result object', () => {
       // Simulates the fix: plantinfo: PlantInfo = { result: {} }
-      const plantinfo = { result: {} };
+      const plantinfo: PlantInfo = { result: {} };
       expect(plantinfo).toBeDefined();
       expect(plantinfo.result).toBeDefined();
       expect(Object.keys(plantinfo.result)).toHaveLength(0);
@@ -374,7 +375,7 @@ describe('FlowerCard logic', () => {
     it('should not be undefined before first fetch', () => {
       // The old bug: plantinfo was declared without initialization
       // Verify the initialized value is safe to access
-      const plantinfo = { result: {} };
+      const plantinfo: PlantInfo = { result: {} };
       expect(plantinfo.result).not.toBeUndefined();
       // renderAttributes checks plantinfo && plantinfo.result
       expect(plantinfo && plantinfo.result).toBeTruthy();
