@@ -36,13 +36,13 @@ npm run build
 
 ## Git Workflow
 
-**Always use feature branches for code changes.** Do not commit directly to master.
+**Default branch is `main`.** Always create feature branches from `origin/main`. Never commit directly to `main`.
 
 ```bash
-git checkout -b feature-name
+git checkout -b feature-name origin/main
 # make changes
 git push -u origin feature-name
-gh pr create --fill
+gh pr create --base main --fill
 ```
 
 ## Architecture
@@ -69,17 +69,25 @@ This returns plant info including current readings, min/max thresholds, icons, a
 
 ## Releases
 
-Releases are automated via GitHub Actions. The workflow triggers when `package.json` version changes.
+Releases are fully automated via GitHub Actions. **Do NOT manually create tags, build, or push built files.**
+
+**How the CI release pipeline works:**
+
+1. The "Test & Lint" workflow runs on every push to `main`
+2. If tests pass, the "Auto Release" workflow triggers and checks if `package.json` version changed
+3. If version changed and the tag doesn't exist yet, CI will:
+   - Run `npm ci && npm run build`
+   - If `flower-card.js` changed, create a PR with built files, auto-merge it
+   - Create a git tag `v{version}`
+   - Generate a changelog and create a GitHub Release (stable or prerelease based on version string)
 
 **To create a new release:**
 
-1. Update the version in `package.json`
-2. Run `npm run build` to update the compiled files
-3. Commit and push to main (or merge PR)
-4. The CI workflow runs tests, then the release workflow creates a GitHub release
+1. Create a branch from `origin/main` (e.g., `release/v2026.4.0`)
+2. Update the version in `package.json` only — do NOT run `npm run build` locally
+3. Commit, push, and merge the PR to `main`
+4. CI handles everything else: build, tag, release
 
 **Version format:**
-- Stable: `YYYY.M.P` (e.g., `2026.1.0`)
-- Beta: `YYYY.M.P-betaN` (e.g., `2026.1.0-beta9`)
-
-**Do NOT manually create tags** - the release workflow handles this automatically based on the package.json version.
+- Stable: `YYYY.M.P` (e.g., `2026.4.0`)
+- Beta: `YYYY.M.P-betaN` (e.g., `2026.4.0-beta1`)
