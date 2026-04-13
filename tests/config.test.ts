@@ -186,4 +186,41 @@ describe('FlowerCardConfig', () => {
       expect(barsPerRow).toBe(1);
     });
   });
+
+  describe('battery threshold options', () => {
+    it('should allow configuring battery_warn_level', () => {
+      const config: FlowerCardConfig = {
+        type: 'flower-card',
+        entity: 'plant.my_plant',
+        battery_sensor: 'sensor.plant_battery',
+        battery_warn_level: 10,
+      };
+
+      expect(config.battery_warn_level).toBe(10);
+    });
+
+    it('should allow configuring battery_ok_level', () => {
+      const config: FlowerCardConfig = {
+        type: 'flower-card',
+        entity: 'plant.my_plant',
+        battery_sensor: 'sensor.plant_battery',
+        battery_ok_level: 25,
+      };
+
+      expect(config.battery_ok_level).toBe(25);
+    });
+
+    it('should default to 20 and 40 when not set', () => {
+      const config: FlowerCardConfig = {
+        type: 'flower-card',
+        entity: 'plant.my_plant',
+        battery_sensor: 'sensor.plant_battery',
+      };
+
+      const warnLevel = config.battery_warn_level ?? 20;
+      const okLevel = config.battery_ok_level ?? 40;
+      expect(warnLevel).toBe(20);
+      expect(okLevel).toBe(40);
+    });
+  });
 });

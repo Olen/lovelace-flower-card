@@ -22,22 +22,32 @@ export const renderBattery = (card: FlowerCard) => {
     if(!battery_sensor) return html``;
 
     const state = parseInt(battery_sensor.state);
+    const warnLevel = card.config.battery_warn_level ?? 20;
+    const okLevel = card.config.battery_ok_level ?? 40;
+
+    const getColor = (threshold: number): string => {
+        if (threshold >= okLevel) return "green";
+        if (threshold >= warnLevel) return "orange";
+        return "red";
+    };
 
     const levels = [
-        { threshold: 90, icon: "mdi:battery", color: "green" },
-        { threshold: 80, icon: "mdi:battery-90", color: "green" },
-        { threshold: 70, icon: "mdi:battery-80", color: "green" },
-        { threshold: 60, icon: "mdi:battery-70", color: "green" },
-        { threshold: 50, icon: "mdi:battery-60", color: "green" },
-        { threshold: 40, icon: "mdi:battery-50", color: "green" },
-        { threshold: 30, icon: "mdi:battery-40", color: "orange" },
-        { threshold: 20, icon: "mdi:battery-30", color: "orange" },
-        { threshold: 10, icon: "mdi:battery-20", color: "red" },
-        { threshold: 0, icon: "mdi:battery-10", color: "red" },
-        { threshold: -Infinity, icon: "mdi:battery-alert-variant-outline", color: "red" },
+        { threshold: 90, icon: "mdi:battery" },
+        { threshold: 80, icon: "mdi:battery-90" },
+        { threshold: 70, icon: "mdi:battery-80" },
+        { threshold: 60, icon: "mdi:battery-70" },
+        { threshold: 50, icon: "mdi:battery-60" },
+        { threshold: 40, icon: "mdi:battery-50" },
+        { threshold: 30, icon: "mdi:battery-40" },
+        { threshold: 20, icon: "mdi:battery-30" },
+        { threshold: 10, icon: "mdi:battery-20" },
+        { threshold: 0, icon: "mdi:battery-10" },
+        { threshold: -Infinity, icon: "mdi:battery-alert-variant-outline" },
     ];
 
-    const { icon, color } = levels.find(({ threshold }) => state > threshold) ||  { icon: "mdi:battery-alert-variant-outline", color: "red" };
+    const level = levels.find(({ threshold }) => state > threshold) || { threshold: -Infinity, icon: "mdi:battery-alert-variant-outline" };
+    const icon = level.icon;
+    const color = getColor(state);
 
     return html`
         <div class="battery tooltip" @click="${(e: Event) => { e.stopPropagation(); moreInfo(card, card.config.battery_sensor)}}">
