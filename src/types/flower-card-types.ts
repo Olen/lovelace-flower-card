@@ -12,6 +12,14 @@ export interface ExtraBadge {
     show_state?: boolean; // Show state value next to icon (default: false)
 }
 
+export interface ExtraBar {
+    entity: string;      // The numerical entity ID
+    icon?: string;       // Optional custom icon
+    name?: string;       // Optional custom name for the tooltip
+    min?: number;        // Low threshold (default: 0)
+    max?: number;        // High threshold (default: 100)
+}
+
 export interface FlowerCardConfig extends LovelaceCardConfig {
     entity?: string;
     battery_sensor?: string;
@@ -22,6 +30,7 @@ export interface FlowerCardConfig extends LovelaceCardConfig {
     hide_species?: boolean;
     hide_image?: boolean;
     extra_badges?: ExtraBadge[];
+    extra_bars?: ExtraBar[];
     battery_warn_level?: number;   // Below this → red (default: 20)
     battery_ok_level?: number;     // Above this → green (default: 40)
 }

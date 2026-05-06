@@ -72,6 +72,7 @@ entity: plant.my_plant
 | `hide_species` | boolean | `false` | Hide the species name |
 | `hide_image` | boolean | `false` | Hide the plant image |
 | `extra_badges` | list | — | Additional icons ([details](EXTRA_BADGES.md)) |
+| `extra_bars` | list | — | Additional measurement bars for custom entities |
 
 ### Full Example
 
@@ -193,6 +194,21 @@ extra_badges:
 ```
 
 For the full reference with all badge types and options, see **[EXTRA_BADGES.md](EXTRA_BADGES.md)**.
+
+---
+
+## 🎚️ Extra Bars
+
+Add custom measurement bars for any numerical entity. They will appear alongside the standard plant attributes.
+
+```yaml
+extra_bars:
+  - entity: sensor.custom_sensor
+    name: "Custom Metric"  # Optional
+    icon: mdi:chart-bar    # Optional
+    min: 0                 # Optional, default: 0
+    max: 100               # Optional, default: 100
+```
 
 ---
 
