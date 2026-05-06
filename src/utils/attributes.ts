@@ -246,6 +246,37 @@ export const renderAttributes = (card: FlowerCard): TemplateResult[] => {
         }
     }
 
+    if (card.config.extra_bars && card.config.extra_bars.length > 0) {
+        for (const bar of card.config.extra_bars) {
+            try {
+                const entityState = card._hass.states[bar.entity];
+                if (!entityState) continue;
+
+                const current = Number(entityState.state);
+                
+                const display_state = card._hass.formatEntityState(entityState).replace(/[^\d,.+-]/g, "");
+                const unit_of_measurement = entityState.attributes?.unit_of_measurement || "";
+                
+                const icon = bar.icon || entityState.attributes?.icon || "mdi:chart-bar";
+                const name = bar.name || entityState.attributes?.friendly_name || bar.entity;
+                const min = bar.min ?? 0;
+                const max = bar.max ?? 100;
+
+                displayed[bar.entity] = {
+                    name: name,
+                    current: current,
+                    limits: { max, min },
+                    icon: icon,
+                    sensor: bar.entity,
+                    unit_of_measurement: unit_of_measurement,
+                    display_state: display_state
+                };
+            } catch (e) {
+                console.warn(`Flower card: Error processing extra_bar ${bar.entity}:`, e);
+            }
+        }
+    }
+
     return renderAttributeChunks(card, displayed);
 }
 
