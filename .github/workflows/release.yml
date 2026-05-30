@@ -19,7 +19,7 @@ jobs:
     if: github.event.workflow_run.conclusion == 'success'
     steps:
       - name: "✏️ Checkout code"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
           ref: ${{ github.event.workflow_run.head_sha }}
@@ -45,7 +45,7 @@ jobs:
         if: steps.check_package.outputs.changed == 'true'
 
       - name: "🏷️ Check if tag exists already"
-        uses: mukunku/tag-exists-action@v1.6.0
+        uses: mukunku/tag-exists-action@v1.7.0
         id: "check_tag"
         with:
           tag: "v${{ env.COMPONENT_VERSION }}"
@@ -56,7 +56,7 @@ jobs:
         if: steps.check_package.outputs.changed != 'true' || steps.check_tag.outputs.exists == 'true'
 
       - name: "📦 Setup Node.js"
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '20'
           cache: 'npm'
@@ -130,7 +130,7 @@ jobs:
         if: steps.check_package.outputs.changed == 'true' && steps.check_tag.outputs.exists != 'true'
 
       - name: "👍 Create Stable release"
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           prerelease: false
           body_path: RELEASE_CHANGELOG.md
@@ -142,7 +142,7 @@ jobs:
         if: steps.check_package.outputs.changed == 'true' && steps.check_tag.outputs.exists != 'true' && contains(env.COMPONENT_VERSION, 'beta') == false
 
       - name: "🤞 Create Beta release"
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           prerelease: true
           body_path: RELEASE_CHANGELOG.md
