@@ -1,0 +1,41 @@
+version: 2
+updates:
+  # Keep GitHub Actions current (e.g. Node runtime deprecations).
+  # All action bumps are grouped into a single weekly PR to limit noise.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+    commit-message:
+      prefix: "ci"
+    labels:
+      - "dependencies"
+      - "github-actions"
+
+  # Keep npm dependencies current. Grouped by type so security/patch updates
+  # land together rather than as many individual PRs.
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    groups:
+      production-dependencies:
+        dependency-type: "production"
+        update-types:
+          - "minor"
+          - "patch"
+      development-dependencies:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
+    commit-message:
+      prefix: "build"
+    labels:
+      - "dependencies"
+      - "npm"
