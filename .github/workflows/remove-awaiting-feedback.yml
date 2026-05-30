@@ -4,6 +4,10 @@ on:
   issue_comment:
     types: [created]
 
+# Least-privilege: only needs to remove a label from issues.
+permissions:
+  issues: write
+
 jobs:
   remove-label:
     runs-on: ubuntu-latest
