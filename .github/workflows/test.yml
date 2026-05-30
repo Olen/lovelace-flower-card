@@ -4,6 +4,10 @@ name: "Test & Lint"
 on:
   push:
 
+# Least-privilege: this workflow only checks out and builds.
+permissions:
+  contents: read
+
 jobs:
   test:
     name: "Test & Lint"
