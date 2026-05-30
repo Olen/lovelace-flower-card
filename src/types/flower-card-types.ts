@@ -31,6 +31,13 @@ export enum DisplayType {
     Compact = "compact"
 }
 
+// Shape returned to Home Assistant's card picker via `getEntitySuggestion`.
+// `label` distinguishes variants when more than one is offered for an entity.
+export interface EntitySuggestion {
+    label?: string;
+    config: FlowerCardConfig;
+}
+
 export interface HomeAssistantEntity extends HassEntity {
     entity_id: string;
     state: string;

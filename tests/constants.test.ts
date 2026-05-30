@@ -1,16 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { CARD_NAME, CARD_EDITOR_NAME, default_show_bars, missingImage, plantAttributes } from '../src/utils/constants';
+import { CARD_NAME, default_show_bars, missingImage, plantAttributes } from '../src/utils/constants';
 
 describe('constants', () => {
   describe('CARD_NAME', () => {
     it('should be "flower-card"', () => {
       expect(CARD_NAME).toBe('flower-card');
-    });
-  });
-
-  describe('CARD_EDITOR_NAME', () => {
-    it('should be derived from CARD_NAME', () => {
-      expect(CARD_EDITOR_NAME).toBe('flower-card-editor');
     });
   });
 

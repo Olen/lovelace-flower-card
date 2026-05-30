@@ -2,6 +2,12 @@ import { describe, it, expect, vi } from 'vitest';
 import { PlantInfo } from '../src/types/flower-card-types';
 import { default_show_bars } from '../src/utils/constants';
 import { isMediaSourceUrl, resolveMediaSource } from '../src/utils/utils';
+import { getEntitySuggestion } from '../src/flower-card';
+
+// hass is unused by the suggestion logic (domain is derived from entityId),
+// but the Home Assistant API passes it, so we mirror the real call shape.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const fakeHass = {} as any;
 
 // Test getStubConfig logic without instantiating LitElement
 describe('FlowerCard logic', () => {
@@ -86,6 +92,38 @@ describe('FlowerCard logic', () => {
         expect(isPlant({ other_field: 'value' })).toBe(false);
         expect(isPlant({ entity_id: 123 })).toBe(false);
       });
+    });
+  });
+
+  describe('getEntitySuggestion', () => {
+    it('should return null for non-plant entities', () => {
+      expect(getEntitySuggestion(fakeHass, 'sensor.temperature')).toBeNull();
+      expect(getEntitySuggestion(fakeHass, 'light.living_room')).toBeNull();
+      expect(getEntitySuggestion(fakeHass, 'binary_sensor.plant_motion')).toBeNull();
+    });
+
+    it('should offer two variants (full and compact) for plant entities', () => {
+      const suggestions = getEntitySuggestion(fakeHass, 'plant.tomato');
+
+      expect(suggestions).not.toBeNull();
+      expect(suggestions).toHaveLength(2);
+      expect(suggestions!.map((s) => s.label)).toEqual(['Full', 'Compact']);
+    });
+
+    it('should target the selected plant entity in every variant', () => {
+      const suggestions = getEntitySuggestion(fakeHass, 'plant.basil');
+
+      for (const suggestion of suggestions!) {
+        expect(suggestion.config.type).toBe('custom:flower-card');
+        expect(suggestion.config.entity).toBe('plant.basil');
+      }
+    });
+
+    it('should only set display_type:compact on the compact variant', () => {
+      const [full, compact] = getEntitySuggestion(fakeHass, 'plant.basil')!;
+
+      expect(full.config.display_type).toBeUndefined();
+      expect(compact.config.display_type).toBe('compact');
     });
   });
 
