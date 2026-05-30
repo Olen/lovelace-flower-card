@@ -1,7 +1,10 @@
-import { DropdownOption } from "@marcokreeft/ha-editor-formbuilder/dist/interfaces";
+// A selectable option (label/value pair) for the card's config-form selectors.
+export interface DropdownOption {
+    label: string;
+    value: string;
+}
 
 export const CARD_NAME = "flower-card";
-export const CARD_EDITOR_NAME = `${CARD_NAME}-editor`;
 
 export const default_show_bars = [
     "moisture",

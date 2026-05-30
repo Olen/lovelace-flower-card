@@ -2,7 +2,7 @@ import { CSSResult, HTMLTemplateResult, LitElement, html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { HomeAssistant } from 'custom-card-helpers';
 import { style } from './styles';
-import { DisplayType, FlowerCardConfig, HomeAssistantEntity, PlantInfo } from './types/flower-card-types';
+import { DisplayType, EntitySuggestion, FlowerCardConfig, HomeAssistantEntity, PlantInfo } from './types/flower-card-types';
 import * as packageJson from '../package.json';
 import { renderAttributes, renderBattery, renderExtraBadges } from './utils/attributes';
 import { CARD_NAME, default_show_bars, missingImage, plantAttributes } from './utils/constants';
@@ -14,6 +14,20 @@ console.info(
     'color: darkblue; background: white; font-weight: bold;'
 );
 
+// Suggests flower-card in Home Assistant's card picker when a plant entity is
+// selected (HA 2026.6+). Returns null for any non-plant entity so the card only
+// appears where it makes sense. `hass` is part of HA's API contract but unused
+// here, since the domain is derivable from the entity id alone.
+export const getEntitySuggestion = (hass: HomeAssistant, entityId: string): EntitySuggestion[] | null => {
+    if (entityId.split('.')[0] !== 'plant') {
+        return null;
+    }
+    return [
+        { label: 'Full', config: { type: `custom:${CARD_NAME}`, entity: entityId } },
+        { label: 'Compact', config: { type: `custom:${CARD_NAME}`, entity: entityId, display_type: DisplayType.Compact } },
+    ];
+};
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 (window as any).customCards = (window as any).customCards || [];
 (window as any).customCards.push({
@@ -21,6 +35,7 @@ console.info(
     name: 'Flower card',
     preview: true,
     description: 'Custom flower card for https://github.com/Olen/homeassistant-plant',
+    getEntitySuggestion,
 });
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
