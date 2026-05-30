@@ -251,7 +251,7 @@ describe('FlowerCard logic', () => {
 
   describe('get_data error handling', () => {
     // Mirrors the actual get_data logic: catches errors internally, never throws
-    const createGetData = (mockCallWS: ReturnType<typeof vi.fn>, getPlantinfo: () => PlantInfo, setPlantinfo: (p: PlantInfo) => void) => {
+    const createGetData = (mockCallWS: () => Promise<PlantInfo>, getPlantinfo: () => PlantInfo, setPlantinfo: (p: PlantInfo) => void) => {
       return async () => {
         try {
           setPlantinfo(await mockCallWS());

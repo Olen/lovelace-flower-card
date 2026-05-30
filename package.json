@@ -28,18 +28,14 @@
     "build": "yarn lint && webpack -c webpack.config.js"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^8.60.0",
-    "@vitest/coverage-v8": "^2.1.0",
-    "eslint": "^8.57.1",
-    "eslint-config-love": "^83.0.0",
-    "eslint-plugin-import": "^2.32.0",
-    "eslint-plugin-n": "^17.10.3",
-    "eslint-plugin-promise": "^7.3.0",
-    "eslint-plugin-react": "^7.37.5",
-    "jsdom": "^25.0.0",
+    "@eslint/js": "^10.0.1",
+    "@vitest/coverage-v8": "^4.1.7",
+    "eslint": "^10.4.1",
+    "jsdom": "^29.1.1",
     "ts-loader": "^9.6.0",
     "typescript": "<5.6.0",
-    "vitest": "^2.1.0",
+    "typescript-eslint": "^8.60.0",
+    "vitest": "^4.1.7",
     "webpack-cli": "^5.1.4"
   }
 }
