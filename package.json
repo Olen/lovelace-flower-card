@@ -14,8 +14,8 @@
     "babel-loader": "^9.2.1",
     "compression-webpack-plugin": "^11.1.0",
     "custom-card-helpers": "^1.9.0",
-    "home-assistant-js-websocket": "^9.4.0",
-    "lit": "^3.3.0",
+    "home-assistant-js-websocket": "^9.6.0",
+    "lit": "^3.3.3",
     "webpack": "^5.95.0",
     "yarn": "^1.22.22"
   },
