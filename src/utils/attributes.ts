@@ -31,6 +31,27 @@ export const selectCareInfo = (
             typeof entry.text === 'string' && entry.text.trim() !== '');
 };
 
+export const renderCareInfo = (card: FlowerCard): TemplateResult => {
+    const entity = card.config.entity;
+    const attributes = entity ? card._hass.states[entity]?.attributes : undefined;
+    const entries = selectCareInfo(attributes, card.config.show_care);
+    if (entries.length === 0) return html``;
+
+    return html`
+        <div class="care-info">
+            ${entries.map(entry => html`
+                <div class="care-item">
+                    <div class="care-heading">
+                        <ha-icon .icon="${entry.icon}"></ha-icon>
+                        <span>${entry.label}</span>
+                    </div>
+                    <div class="care-text">${entry.text}</div>
+                </div>
+            `)}
+        </div>
+    `;
+};
+
 /**
  * Check if a unit indicates PPFD (not lux).
  * Covers: µmol/s⋅m², μmol/s⋅m², mol/s⋅m², etc.

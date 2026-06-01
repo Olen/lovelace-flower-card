@@ -4,7 +4,7 @@ import { HomeAssistant } from 'custom-card-helpers';
 import { style } from './styles';
 import { DisplayType, EntitySuggestion, FlowerCardConfig, HomeAssistantEntity, PlantInfo } from './types/flower-card-types';
 import * as packageJson from '../package.json';
-import { renderAttributes, renderBattery, renderExtraBadges } from './utils/attributes';
+import { renderAttributes, renderBattery, renderCareInfo, renderExtraBadges } from './utils/attributes';
 import { CARD_NAME, default_show_bars, missingImage, plantAttributes } from './utils/constants';
 import { isMediaSourceUrl, moreInfo, resolveMediaSource } from './utils/utils';
 
@@ -231,6 +231,7 @@ export default class FlowerCard extends LitElement {
             </div>
             <div class="divider"></div>
             ${renderAttributes(this)}
+            ${renderCareInfo(this)}
             </ha-card>
             `;
     }
