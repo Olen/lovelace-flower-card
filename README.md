@@ -17,6 +17,7 @@ A Lovelace card for displaying plant data from the [Plant Monitor](https://githu
   - [⚙️ Configuration](#️-configuration)
   - [🖼️ Display Types](#️-display-types)
   - [📊 Show Bars](#-show-bars)
+  - [🌿 Care Info](#-care-info)
   - [🔋 Battery Sensor](#-battery-sensor)
   - [🏷️ Extra Badges](#️-extra-badges)
   - [🎨 Other Options](#-other-options)
@@ -69,6 +70,7 @@ entity: plant.my_plant
 | `bars_per_row` | number | Based on display_type | Number of bars per row (1 or 2) |
 | `battery_sensor` | string | — | Entity ID of a battery sensor |
 | `show_bars` | list | All | Measurement bars to show |
+| `show_care` | list | — | Care guidance text boxes to show ([details](#-care-info)) |
 | `hide_species` | boolean | `false` | Hide the species name |
 | `hide_image` | boolean | `false` | Hide the plant image |
 | `extra_badges` | list | — | Additional icons ([details](EXTRA_BADGES.md)) |
@@ -90,6 +92,9 @@ show_bars:
   - conductivity
   - temperature
   - dli
+show_care:
+  - care_watering
+  - care_sunlight
 extra_badges:
   - entity: sensor.room_humidity
     icon: mdi:water-percent
@@ -156,6 +161,27 @@ show_bars:
 ```
 
 Available bars: `moisture`, `temperature`, `conductivity`, `illuminance`, `humidity`, `dli`, `co2`, `soil_temperature`
+
+---
+
+## 🌿 Care Info
+
+Show OpenPlantbook care guidance as text boxes on the card. Select which fields to display:
+
+```yaml
+show_care:
+  - care_watering
+  - care_sunlight
+  - care_soil
+  - care_pruning
+  - care_fertilization
+```
+
+Available fields: `care_watering`, `care_sunlight`, `care_soil`, `care_pruning`, `care_fertilization`
+
+Each selected field renders as a labeled text box — and only when the plant actually has that care attribute, so missing or empty fields are skipped automatically.
+
+> **Note:** Care text comes from [OpenPlantbook](https://open.plantbook.io/) via the [plant integration](https://github.com/Olen/homeassistant-plant). Existing plants need a **species refresh** before the `care_*` attributes appear (newly added plants get them automatically). You can confirm the data on your `plant.…` entity under **Developer Tools → States**.
 
 ---
 
