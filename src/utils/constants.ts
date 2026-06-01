@@ -29,3 +29,19 @@ export const plantAttributes : DropdownOption[] = [
   { label: 'Soil Temperature', value: 'soil_temperature' },
   { label: 'VPD', value: 'vpd' }
 ];
+
+export const careFields: DropdownOption[] = [
+  { label: 'Watering', value: 'care_watering' },
+  { label: 'Sunlight', value: 'care_sunlight' },
+  { label: 'Soil', value: 'care_soil' },
+  { label: 'Pruning', value: 'care_pruning' },
+  { label: 'Fertilization', value: 'care_fertilization' }
+];
+
+export const careIcons: Record<string, string> = {
+  care_watering: 'mdi:watering-can-outline',
+  care_sunlight: 'mdi:white-balance-sunny',
+  care_soil: 'mdi:shovel',
+  care_pruning: 'mdi:content-cut',
+  care_fertilization: 'mdi:bottle-tonic-outline',
+};
