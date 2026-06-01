@@ -1,9 +1,35 @@
 import { DisplayType, DisplayedAttribute, DisplayedAttributes, ExtraBadge, Limits } from "../types/flower-card-types";
 import { TemplateResult, html } from "lit";
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
-import { default_show_bars } from "./constants";
+import { careFields, careIcons, default_show_bars } from "./constants";
 import { moreInfo } from "./utils";
 import FlowerCard from "../flower-card";
+
+export interface CareEntry {
+    key: string;
+    label: string;
+    icon: string;
+    text: string;
+}
+
+// Pure selection: returns the care fields to render, in careFields order,
+// for the selected keys that have non-empty text on the entity.
+export const selectCareInfo = (
+    attributes: Record<string, unknown> | undefined,
+    showCare: string[] | undefined,
+): CareEntry[] => {
+    if (!attributes || !showCare || showCare.length === 0) return [];
+    return careFields
+        .filter(field => showCare.includes(field.value))
+        .map(field => ({
+            key: field.value,
+            label: field.label,
+            icon: careIcons[field.value],
+            text: attributes[field.value],
+        }))
+        .filter((entry): entry is CareEntry =>
+            typeof entry.text === 'string' && entry.text.trim() !== '');
+};
 
 /**
  * Check if a unit indicates PPFD (not lux).
