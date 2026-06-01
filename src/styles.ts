@@ -219,4 +219,30 @@ export const style = css`
     display: none;
   }
 }
+.care-info {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.care-item {
+  display: flex;
+  flex-direction: column;
+}
+.care-heading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+.care-heading ha-icon {
+  color: var(--secondary-text-color);
+}
+.care-text {
+  white-space: normal;
+  overflow-wrap: break-word;
+  line-height: 1.4;
+  color: var(--secondary-text-color);
+}
 `;

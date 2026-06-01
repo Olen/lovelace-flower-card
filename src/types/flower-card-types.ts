@@ -22,6 +22,7 @@ export interface FlowerCardConfig extends LovelaceCardConfig {
     hide_species?: boolean;
     hide_image?: boolean;
     extra_badges?: ExtraBadge[];
+    show_care?: string[];      // selected care_* attribute keys to display (default: none)
     battery_warn_level?: number;   // Below this → red (default: 20)
     battery_ok_level?: number;     // Above this → green (default: 40)
 }

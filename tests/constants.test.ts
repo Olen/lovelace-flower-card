@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CARD_NAME, default_show_bars, missingImage, plantAttributes } from '../src/utils/constants';
+import { CARD_NAME, default_show_bars, missingImage, plantAttributes, careFields, careIcons } from '../src/utils/constants';
 
 describe('constants', () => {
   describe('CARD_NAME', () => {
@@ -55,6 +55,37 @@ describe('constants', () => {
       default_show_bars.forEach((bar) => {
         expect(attrValues).toContain(bar);
       });
+    });
+  });
+
+  describe('careFields', () => {
+    it('has the five OpenPlantbook care fields with care_ prefixed values', () => {
+      const values = careFields.map(f => f.value);
+      expect(values).toEqual([
+        'care_watering',
+        'care_sunlight',
+        'care_soil',
+        'care_pruning',
+        'care_fertilization',
+      ]);
+    });
+
+    it('has a label and value for each field', () => {
+      careFields.forEach(f => {
+        expect(typeof f.label).toBe('string');
+        expect(typeof f.value).toBe('string');
+      });
+    });
+
+    it('has a matching mdi icon for every care field', () => {
+      careFields.forEach(f => {
+        expect(careIcons[f.value]).toMatch(/^mdi:/);
+      });
+    });
+
+    it('has no icon keys that are not care fields', () => {
+      const fieldValues = careFields.map(f => f.value).sort();
+      expect(Object.keys(careIcons).sort()).toEqual(fieldValues);
     });
   });
 });
