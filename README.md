@@ -220,6 +220,12 @@ extra_badges:
 
 For the full reference with all badge types and options, see **[EXTRA_BADGES.md](EXTRA_BADGES.md)**.
 
+### Example card with all bars, various badges and care info
+
+<img width="531" height="574" alt="image" src="https://github.com/user-attachments/assets/8452d48d-baf3-40f4-9979-fbb48860260d" />
+
+
+
 ---
 
 ## 🎨 Other Options
