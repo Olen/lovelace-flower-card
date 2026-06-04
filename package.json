@@ -11,7 +11,7 @@
   "module": "flower-card.js",
   "license": "MIT",
   "dependencies": {
-    "babel-loader": "^9.2.1",
+    "babel-loader": "^10.1.1",
     "compression-webpack-plugin": "^12.0.0",
     "custom-card-helpers": "^1.9.0",
     "home-assistant-js-websocket": "^9.6.0",
