@@ -85,14 +85,12 @@ export const style = css`
   font-weight: bold;
   width: 100%;
   margin-top: 16px;
-  text-transform: capitalize;
   display: block;
 }
 .header-compact > #name {
   font-weight: bold;
   width: 100%;
   margin-top: 8px;
-  text-transform: capitalize;
   display: block;
   white-space: nowrap;
 }
