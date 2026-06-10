@@ -324,7 +324,9 @@ export const renderAttribute = (card: FlowerCard, attr: DisplayedAttribute) => {
     const showUnits = !(card.config?.hide_units ?? isCompact);
     const useFullWidth = barsPerRow === 1;
 
-    const attributeCssClass = `attribute tooltip ${useFullWidth ? 'width-100' : ''}`;
+    // In full-width mode, mark when the value/unit header is shown so the
+    // bar can leave room for it (see .has-units in styles.ts).
+    const attributeCssClass = `attribute tooltip ${useFullWidth ? 'width-100' : ''}${useFullWidth && showUnits ? ' has-units' : ''}`;
 
     return html`
         <div class="${attributeCssClass}" @click="${() => moreInfo(card, attr.sensor)}">

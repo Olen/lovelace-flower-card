@@ -136,8 +136,8 @@ export const style = css`
 .attribute.tooltip.width-100 .meter.green {
   max-width: 90%;
 }
-.attribute.tooltip.width-100 .header {
-  display: none;
+.attribute.tooltip.width-100.has-units .meter.green {
+  max-width: 70%;
 }
 .meter > span {
   grid-row: 1;
@@ -205,12 +205,9 @@ export const style = css`
           transform: translateX(-50%) translateY(-200%);
 }
 .width-100 {
-  width: 100%;    
+  width: 100%;
   margin-bottom: 3px;
   margin-right: 5px;
-}
-.width-100 .header {
-  display: none;
 }
 @media (max-width: 600px) {
   .header > .unit {
