@@ -32,9 +32,12 @@ export const selectCareInfo = (
 };
 
 export const renderCareInfo = (card: FlowerCard): TemplateResult => {
-    const entity = card.config.entity;
+    const config = card.config;
+    if (!config) return html``;
+
+    const entity = config.entity;
     const attributes = entity ? card._hass.states[entity]?.attributes : undefined;
-    const entries = selectCareInfo(attributes, card.config.show_care);
+    const entries = selectCareInfo(attributes, config.show_care);
     if (entries.length === 0) return html``;
 
     return html`
@@ -63,14 +66,16 @@ export const isPpfdUnit = (unit: string | undefined | null): boolean => {
 };
 
 export const renderBattery = (card: FlowerCard) => {
-    if(!card.config.battery_sensor) return html``;
+    const config = card.config;
+    if(!config?.battery_sensor) return html``;
+    const batterySensor = config.battery_sensor;
 
-    const battery_sensor = card._hass.states[card.config.battery_sensor];
+    const battery_sensor = card._hass.states[batterySensor];
     if(!battery_sensor) return html``;
 
     const state = parseInt(battery_sensor.state);
-    const warnLevel = card.config.battery_warn_level ?? 20;
-    const okLevel = card.config.battery_ok_level ?? 40;
+    const warnLevel = config.battery_warn_level ?? 20;
+    const okLevel = config.battery_ok_level ?? 40;
 
     const getColor = (threshold: number): string => {
         if (threshold >= okLevel) return "green";
@@ -97,7 +102,7 @@ export const renderBattery = (card: FlowerCard) => {
     const color = getColor(state);
 
     return html`
-        <div class="battery tooltip" @click="${(e: Event) => { e.stopPropagation(); moreInfo(card, card.config.battery_sensor)}}">
+        <div class="battery tooltip" @click="${(e: Event) => { e.stopPropagation(); moreInfo(card, batterySensor)}}">
             <div class="tip" style="text-align:center;">${state}%</div>
             <ha-icon .icon="${icon}" style="color: ${color}"></ha-icon>
         </div>
@@ -142,11 +147,12 @@ export const renderExtraBadge = (card: FlowerCard, badge: ExtraBadge) => {
 
     // Handle entity-based badge
     if (!badge.entity) return html``;
+    const badgeEntity = badge.entity;
 
-    const entity = card._hass.states[badge.entity];
+    const entity = card._hass.states[badgeEntity];
     if (!entity) return html``;
 
-    const isBinarySensor = badge.entity.startsWith('binary_sensor.');
+    const isBinarySensor = badgeEntity.startsWith('binary_sensor.');
     const state = entity.state;
     const friendlyName = entity.attributes.friendly_name || badge.entity;
 
@@ -245,7 +251,7 @@ export const renderExtraBadge = (card: FlowerCard, badge: ExtraBadge) => {
     const tooltipText = `${tooltipLabel}: ${displayValue}`;
 
     return html`
-        <div class="extra-badge tooltip" @click="${(e: Event) => { e.stopPropagation(); moreInfo(card, badge.entity)}}">
+        <div class="extra-badge tooltip" @click="${(e: Event) => { e.stopPropagation(); moreInfo(card, badgeEntity)}}">
             <div class="tip" style="text-align:center;">${tooltipText}</div>
             <ha-icon .icon="${icon}" style="color: ${color}"></ha-icon>
             ${badge.show_state ? html`<span class="badge-text">${displayValue}</span>` : ''}
@@ -254,16 +260,17 @@ export const renderExtraBadge = (card: FlowerCard, badge: ExtraBadge) => {
 }
 
 export const renderExtraBadges = (card: FlowerCard) => {
-    if (!card.config.extra_badges || card.config.extra_badges.length === 0) {
+    const extraBadges = card.config?.extra_badges;
+    if (!extraBadges || extraBadges.length === 0) {
         return html``;
     }
 
-    return card.config.extra_badges.map(badge => renderExtraBadge(card, badge));
+    return extraBadges.map(badge => renderExtraBadge(card, badge));
 }
 
 export const renderAttributes = (card: FlowerCard): TemplateResult[] => {
     const displayed: DisplayedAttributes = {};
-    const monitored = card.config.show_bars || default_show_bars;
+    const monitored = card.config?.show_bars || default_show_bars;
 
     if (card.plantinfo && card.plantinfo.result) {
         const result = card.plantinfo.result;
@@ -312,9 +319,9 @@ export const renderAttribute = (card: FlowerCard, attr: DisplayedAttribute) => {
     const toolTipText = aval ? `${attr.name}: ${val} ${unitTooltip}<br>(${min} ~ ${max} ${unitTooltip})` : card._hass.localize('state.default.unavailable');
     const label = (attr.name === 'dli' || attr.name === 'dli_24h') ? '<math style="display: inline-grid;" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mfrac><mrow><mn>mol</mn></mrow><mrow><mn>d</mn><mn>⋅</mn><msup><mn>m</mn><mn>2</mn></msup></mrow></mfrac></mrow></math>' : unitTooltip
     // Determine settings with explicit overrides taking precedence over display_type defaults
-    const isCompact = card.config.display_type === DisplayType.Compact;
-    const barsPerRow = card.config.bars_per_row ?? (isCompact ? 1 : 2);
-    const showUnits = !(card.config.hide_units ?? isCompact);
+    const isCompact = card.config?.display_type === DisplayType.Compact;
+    const barsPerRow = card.config?.bars_per_row ?? (isCompact ? 1 : 2);
+    const showUnits = !(card.config?.hide_units ?? isCompact);
     const useFullWidth = barsPerRow === 1;
 
     const attributeCssClass = `attribute tooltip ${useFullWidth ? 'width-100' : ''}`;
@@ -351,12 +358,12 @@ export const getChunkedDisplayed = (displayed: DisplayedAttributes, attributesPe
       }
       acc[index].push(curr);
       return acc;
-    }, []);
+    }, [] as DisplayedAttribute[][]);
 }
 
 export const renderAttributeChunks = (card: FlowerCard, displayed: DisplayedAttributes): TemplateResult[] => {
-    const isCompact = card.config.display_type === DisplayType.Compact;
-    const barsPerRow = card.config.bars_per_row ?? (isCompact ? 1 : 2);
+    const isCompact = card.config?.display_type === DisplayType.Compact;
+    const barsPerRow = card.config?.bars_per_row ?? (isCompact ? 1 : 2);
     const useFullWidth = barsPerRow === 1;
 
     const chunkedDisplayed = getChunkedDisplayed(displayed, barsPerRow);
