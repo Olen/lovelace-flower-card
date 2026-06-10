@@ -45,7 +45,7 @@ export default class FlowerCard extends LitElement {
     @property() config?: FlowerCardConfig;
 
     private stateObj: HomeAssistantEntity | undefined;
-    private previousFetchDate: number;
+    private previousFetchDate = 0;
     private _lastEntityPicture: string | undefined;
     private _resolvedImageUrl: string | undefined;
 
@@ -61,9 +61,6 @@ export default class FlowerCard extends LitElement {
             this._resolveEntityPicture(hass, entityPicture);
         }
 
-        if (!this.previousFetchDate) {
-            this.previousFetchDate = 0;
-        }
         // Only fetch once every second at max. HA is flooded with websocket requests
         if (Date.now() > this.previousFetchDate + 1000) {
             this.previousFetchDate = Date.now();
@@ -224,9 +221,10 @@ export default class FlowerCard extends LitElement {
                 </hui-warning>
               `;
         }
+        const stateObj = this.stateObj;
 
-        const species = this.stateObj.attributes.species;
-        const displayName = this.config.name || this.stateObj.attributes.friendly_name;
+        const species = stateObj.attributes.species;
+        const displayName = this.config.name || stateObj.attributes.friendly_name;
         const hideSpecies = this.config.hide_species ?? false;
         const hideImage = this.config.hide_image ?? false;
         const headerCssClass = this.config.display_type === DisplayType.Compact ? "header-compact" : "header";
@@ -236,9 +234,9 @@ export default class FlowerCard extends LitElement {
         return html`
             <ha-card class="${haCardCssClass}">
             <div class="${headerCssClass}${noImageClass}" @click="${() =>
-                moreInfo(this, this.stateObj.entity_id)}">
+                moreInfo(this, stateObj.entity_id)}">
                 ${!hideImage ? html`<img src="${this._resolvedImageUrl || missingImage}">` : ''}
-                <span id="name"> ${displayName} <ha-icon .icon="mdi:${this.stateObj.state.toLowerCase() == "problem"
+                <span id="name"> ${displayName} <ha-icon .icon="mdi:${stateObj.state.toLowerCase() == "problem"
                 ? "alert-circle-outline"
                 : ""
             }"></ha-icon>

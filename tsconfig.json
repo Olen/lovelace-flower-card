@@ -1,13 +1,13 @@
 {
     "compilerOptions": {
       "experimentalDecorators": true,
-      "module": "CommonJS",
+      "module": "ESNext",
       "noImplicitAny": true,
       "removeComments": true,
       "resolveJsonModule": true,
       "preserveConstEnums": true,
       "sourceMap": true,
-      "moduleResolution": "Node",
+      "moduleResolution": "Bundler",
       "target": "es6",
       "lib": ["ES2020", "DOM", "DOM.Iterable"],
       "types": ["vitest/globals"]
