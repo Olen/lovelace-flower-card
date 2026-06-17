@@ -29,12 +29,12 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@vitest/coverage-v8": "^4.1.8",
-    "eslint": "^10.4.1",
+    "@vitest/coverage-v8": "^4.1.9",
+    "eslint": "^10.5.0",
     "jsdom": "^29.1.1",
-    "ts-loader": "^9.6.0",
+    "ts-loader": "^9.6.1",
     "typescript": "<6.1.0",
-    "typescript-eslint": "^8.61.0",
+    "typescript-eslint": "^8.61.1",
     "vitest": "^4.1.7",
     "webpack-cli": "^7.0.3"
   }
