@@ -172,7 +172,35 @@ extra_badges:
 ```
 
 **Step 3:** Create an automation for the button press:
+Using UI, go to Settings > Automation & scenes > Automation > Create automation
+```yaml
+alias: Water plant when button pressed
+description: ""
+triggers:
+  - trigger: state
+    entity_id:
+      - input_button.water_plant
+conditions: []
+actions:
+  - action: switch.turn_on
+    metadata: {}
+    target:
+      entity_id: switch.plant_water_pump
+    data: {}
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 25
+      milliseconds: 0
+  - action: switch.turn_off
+    metadata: {}
+    target:
+      entity_id: switch.plant_water_pump
+    data: {}
+mode: single
 
+```
+It is also possible to write your automations directly inside configuration.yaml on hacs
 ```yaml
 automation:
   - alias: "Water plant when button pressed"
