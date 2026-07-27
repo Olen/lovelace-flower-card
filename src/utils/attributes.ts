@@ -31,6 +31,18 @@ export const selectCareInfo = (
             typeof entry.text === 'string' && entry.text.trim() !== '');
 };
 
+export const renderCareItems = (entries: CareEntry[]): TemplateResult => html`
+    ${entries.map(entry => html`
+        <div class="care-item">
+            <div class="care-heading">
+                <ha-icon .icon="${entry.icon}"></ha-icon>
+                <span>${entry.label}</span>
+            </div>
+            <div class="care-text">${entry.text}</div>
+        </div>
+    `)}
+`;
+
 export const renderCareInfo = (card: FlowerCard): TemplateResult => {
     const config = card.config;
     if (!config) return html``;
@@ -42,15 +54,7 @@ export const renderCareInfo = (card: FlowerCard): TemplateResult => {
 
     return html`
         <div class="care-info">
-            ${entries.map(entry => html`
-                <div class="care-item">
-                    <div class="care-heading">
-                        <ha-icon .icon="${entry.icon}"></ha-icon>
-                        <span>${entry.label}</span>
-                    </div>
-                    <div class="care-text">${entry.text}</div>
-                </div>
-            `)}
+            ${renderCareItems(entries)}
         </div>
     `;
 };
@@ -82,6 +86,16 @@ export const careBadgeVisual = (
     color: badge.color ?? 'var(--secondary-text-color)',
     tip: badge.title ?? 'Care',
 });
+
+export const renderCareBadge = (card: FlowerCard, badge: ExtraBadge): TemplateResult => {
+    const { icon, color, tip } = careBadgeVisual(badge);
+    return html`
+        <div class="extra-badge tooltip" @click="${(e: Event) => { e.stopPropagation(); card.openCareDialog(badge); }}">
+            <div class="tip" style="text-align:center;">${tip}</div>
+            <ha-icon .icon="${icon}" style="color: ${color}"></ha-icon>
+        </div>
+    `;
+};
 
 /**
  * Check if a unit indicates PPFD (not lux).
@@ -138,6 +152,11 @@ export const renderBattery = (card: FlowerCard) => {
 }
 
 export const renderExtraBadge = (card: FlowerCard, badge: ExtraBadge) => {
+    // Care info badge - opens a dialog with care details
+    if (isCareBadge(badge)) {
+        return renderCareBadge(card, badge);
+    }
+
     // Handle static text badge
     if (badge.text) {
         const hideIcon = badge.icon?.toLowerCase() === 'none';
