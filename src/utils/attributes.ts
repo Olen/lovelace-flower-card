@@ -62,6 +62,9 @@ export const renderCareInfo = (card: FlowerCard): TemplateResult => {
 /** Discriminator value for the care-info badge (extra_badges: - type: care_info). */
 export const CARE_BADGE_TYPE = 'care_info';
 
+/** Default title for care dialog when badge title is undefined. */
+export const CARE_DIALOG_DEFAULT_TITLE = 'Care';
+
 /** True when an extra_badges item is the care-info badge. */
 export const isCareBadge = (badge: ExtraBadge): boolean => badge.type === CARE_BADGE_TYPE;
 
@@ -75,7 +78,7 @@ export const computeCareDialogState = (
 ): { open: boolean; fields: string[]; title: string } => ({
     open: true,
     fields: resolveCareBadgeFields(badge),
-    title: badge.title ?? 'Care',
+    title: badge.title ?? CARE_DIALOG_DEFAULT_TITLE,
 });
 
 /** Badge icon/color/tooltip for a care badge, with defaults. */
@@ -84,7 +87,7 @@ export const careBadgeVisual = (
 ): { icon: string; color: string; tip: string } => ({
     icon: badge.icon ?? 'mdi:sprout',
     color: badge.color ?? 'var(--secondary-text-color)',
-    tip: badge.title ?? 'Care',
+    tip: badge.title ?? CARE_DIALOG_DEFAULT_TITLE,
 });
 
 export const renderCareBadge = (card: FlowerCard, badge: ExtraBadge): TemplateResult => {

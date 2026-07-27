@@ -4,7 +4,7 @@ import { HomeAssistant } from 'custom-card-helpers';
 import { style } from './styles';
 import { DisplayType, EntitySuggestion, ExtraBadge, FlowerCardConfig, HomeAssistantEntity, PlantInfo } from './types/flower-card-types';
 import * as packageJson from '../package.json';
-import { computeCareDialogState, renderAttributes, renderBattery, renderCareInfo, renderCareItems, renderExtraBadges, selectCareInfo } from './utils/attributes';
+import { CARE_DIALOG_DEFAULT_TITLE, computeCareDialogState, renderAttributes, renderBattery, renderCareInfo, renderCareItems, renderExtraBadges, selectCareInfo } from './utils/attributes';
 import { CARD_NAME, careFields, default_show_bars, missingImage, plantAttributes } from './utils/constants';
 import { isMediaSourceUrl, moreInfo, resolveMediaSource } from './utils/utils';
 
@@ -45,7 +45,7 @@ export default class FlowerCard extends LitElement {
     @property() config?: FlowerCardConfig;
     @state() private _careDialogOpen = false;
     @state() private _careDialogFields: string[] = [];
-    @state() private _careDialogTitle = 'Care';
+    @state() private _careDialogTitle = CARE_DIALOG_DEFAULT_TITLE;
 
     private stateObj: HomeAssistantEntity | undefined;
     private previousFetchDate = 0;
@@ -242,6 +242,7 @@ export default class FlowerCard extends LitElement {
         if (!this.config || !this._hass) return html``;
 
         if (!this.stateObj) {
+            this._careDialogOpen = false;
             return html`
                 <hui-warning>
                 Entity not available: ${this.config.entity}
