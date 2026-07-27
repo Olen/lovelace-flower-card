@@ -41,3 +41,9 @@ export const resolveMediaSource = async (
         return ""; // Return empty string on failure, will fall back to missingImage
     }
 };
+
+/** True when the thumbnail should open a lightbox (real image present and not hidden). */
+export const shouldEnableImageLightbox = (
+    hideImage: boolean,
+    resolvedImageUrl: string | undefined,
+): boolean => !hideImage && !!resolvedImageUrl;

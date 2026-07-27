@@ -6,7 +6,7 @@ import { DisplayType, EntitySuggestion, ExtraBadge, FlowerCardConfig, HomeAssist
 import * as packageJson from '../package.json';
 import { CARE_DIALOG_DEFAULT_TITLE, computeCareDialogState, renderAttributes, renderBattery, renderCareInfo, renderCareItems, renderExtraBadges, selectCareInfo } from './utils/attributes';
 import { CARD_NAME, careFields, default_show_bars, missingImage, plantAttributes } from './utils/constants';
-import { isMediaSourceUrl, moreInfo, resolveMediaSource } from './utils/utils';
+import { isMediaSourceUrl, moreInfo, resolveMediaSource, shouldEnableImageLightbox } from './utils/utils';
 
 console.info(
     `%c FLOWER-CARD %c ${packageJson.version}`,
@@ -46,6 +46,7 @@ export default class FlowerCard extends LitElement {
     @state() private _careDialogOpen = false;
     @state() private _careDialogFields: string[] = [];
     @state() private _careDialogTitle = CARE_DIALOG_DEFAULT_TITLE;
+    @state() private _imageDialogOpen = false;
 
     private stateObj: HomeAssistantEntity | undefined;
     private previousFetchDate = 0;
@@ -238,11 +239,32 @@ export default class FlowerCard extends LitElement {
         `;
     }
 
+    openImageDialog(): void {
+        this._imageDialogOpen = true;
+    }
+
+    private _closeImageDialog(): void {
+        this._imageDialogOpen = false;
+    }
+
+    private renderImageDialog(): HTMLTemplateResult {
+        const displayName = this.config?.name || this.stateObj?.attributes.friendly_name || '';
+        return html`
+            <ha-dialog open @closed="${() => this._closeImageDialog()}">
+                <div class="image-dialog">
+                    <img src="${this._resolvedImageUrl}" alt="${displayName}">
+                    ${displayName ? html`<div class="image-dialog-caption">${displayName}</div>` : ''}
+                </div>
+            </ha-dialog>
+        `;
+    }
+
     render(): HTMLTemplateResult {
         if (!this.config || !this._hass) return html``;
 
         if (!this.stateObj) {
             this._careDialogOpen = false;
+            this._imageDialogOpen = false;
             return html`
                 <hui-warning>
                 Entity not available: ${this.config.entity}
@@ -255,6 +277,7 @@ export default class FlowerCard extends LitElement {
         const displayName = this.config.name || stateObj.attributes.friendly_name;
         const hideSpecies = this.config.hide_species ?? false;
         const hideImage = this.config.hide_image ?? false;
+        const imageLightbox = shouldEnableImageLightbox(hideImage, this._resolvedImageUrl);
         const headerCssClass = this.config.display_type === DisplayType.Compact ? "header-compact" : "header";
         const haCardCssClass = (this.config.display_type === DisplayType.Compact || hideImage) ? "" : "card-margin-top";
         const noImageClass = hideImage ? " no-image" : "";
@@ -263,7 +286,14 @@ export default class FlowerCard extends LitElement {
             <ha-card class="${haCardCssClass}">
             <div class="${headerCssClass}${noImageClass}" @click="${() =>
                 moreInfo(this, stateObj.entity_id)}">
-                ${!hideImage ? html`<img src="${this._resolvedImageUrl || missingImage}">` : ''}
+                ${!hideImage ? html`<img
+                    src="${this._resolvedImageUrl || missingImage}"
+                    class="${imageLightbox ? 'has-lightbox' : ''}"
+                    @click="${(e: Event) => {
+                        if (!imageLightbox) return;
+                        e.stopPropagation();
+                        this.openImageDialog();
+                    }}">` : ''}
                 <span id="name"> ${displayName} <ha-icon .icon="mdi:${stateObj.state.toLowerCase() == "problem"
                 ? "alert-circle-outline"
                 : ""
@@ -277,6 +307,7 @@ export default class FlowerCard extends LitElement {
             ${renderCareInfo(this)}
             </ha-card>
             ${this._careDialogOpen ? this.renderCareDialog() : html``}
+            ${this._imageDialogOpen ? this.renderImageDialog() : html``}
             `;
     }
 

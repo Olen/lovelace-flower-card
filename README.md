@@ -20,6 +20,7 @@ A Lovelace card for displaying plant data from the [Plant Monitor](https://githu
   - [🌿 Care Info](#-care-info)
   - [🔋 Battery Sensor](#-battery-sensor)
   - [🏷️ Extra Badges](#️-extra-badges)
+  - [🔍 Image Lightbox](#-image-lightbox)
   - [🎨 Other Options](#-other-options)
   - [☕ Support](#-support)
 
@@ -225,6 +226,16 @@ For the full reference with all badge types and options, see **[EXTRA_BADGES.md]
 <img width="531" height="574" alt="image" src="https://github.com/user-attachments/assets/8452d48d-baf3-40f4-9979-fbb48860260d" />
 
 
+
+---
+
+## 🔍 Image Lightbox
+
+Tap the plant's thumbnail to open the full-size image in a popup, with the plant's name shown below it — handy for telling apart multiple plants of the same species that have different photos. Tap the plant **name** (or anywhere else in the header) to open the standard more-info dialog.
+
+> **Note:** This changed the previous behavior, where tapping the image opened more-info. Cards with no image or with `hide_image: true` are unaffected — tapping still opens more-info.
+
+No configuration is needed; the lightbox is enabled automatically whenever the card shows a real plant image (not the placeholder).
 
 ---
 
