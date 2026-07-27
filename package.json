@@ -16,7 +16,7 @@
     "custom-card-helpers": "^2.0.0",
     "home-assistant-js-websocket": "^9.6.0",
     "lit": "^3.3.3",
-    "webpack": "^5.95.0",
+    "webpack": "^5.108.3",
     "yarn": "^1.22.22"
   },
   "scripts": {
