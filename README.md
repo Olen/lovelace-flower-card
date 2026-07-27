@@ -235,7 +235,7 @@ Tap the plant's thumbnail to open the full-size image in a popup, with the plant
 
 > **Note:** This changed the previous behavior, where tapping the image opened more-info. Cards with no image or with `hide_image: true` are unaffected — tapping still opens more-info.
 
-No configuration is needed; the lightbox is enabled automatically whenever the card shows an image.
+No configuration is needed; the lightbox is enabled automatically whenever the card shows a real plant image (not the placeholder).
 
 ---
 
