@@ -247,4 +247,23 @@ export const style = css`
   padding: 8px 4px;
   color: var(--secondary-text-color);
 }
+.has-lightbox {
+  cursor: pointer;
+}
+.image-dialog {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.image-dialog img {
+  max-width: 100%;
+  max-height: 80vh;
+  object-fit: contain;
+}
+.image-dialog-caption {
+  margin-top: 8px;
+  text-align: center;
+  color: var(--primary-text-color);
+  font-weight: 500;
+}
 `;
