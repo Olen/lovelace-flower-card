@@ -240,4 +240,11 @@ export const style = css`
   line-height: 1.4;
   color: var(--secondary-text-color);
 }
+.care-info--dialog {
+  padding: 4px 4px 8px;
+}
+.care-info-empty {
+  padding: 8px 4px;
+  color: var(--secondary-text-color);
+}
 `;
