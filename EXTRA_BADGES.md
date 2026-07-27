@@ -18,6 +18,7 @@ By default, only the icon is displayed. Hovering shows a tooltip with the entity
   - [📋 Attribute Badge](#-attribute-badge)
   - [🏷️ Static Icon/Text Badge](#️-static-icontext-badge)
   - [🔲 Action Button Badge](#-action-button-badge)
+  - [🌿 Care Info Badge](#-care-info-badge)
   - [🧩 Combined Example](#-combined-example)
 
 ---
@@ -34,6 +35,9 @@ By default, only the icon is displayed. Hovering shows a tooltip with the entity
 | `color_on` | string | Icon color when binary_sensor is "on" (default: primary color) |
 | `color_off` | string | Icon color when binary_sensor is "off" (default: disabled color) |
 | `show_state` | boolean | Show the entity's state value next to the icon (default: `false`) |
+| `type` | string | Badge type discriminator. Set to `care_info` for the care popup badge. |
+| `fields` | string[] | (`care_info`) Care fields shown in the popup. Default: all care fields. |
+| `title` | string | (`care_info`) Dialog heading. Default: `Care`. |
 
 ---
 
@@ -215,6 +219,37 @@ This lets you control plant-related devices (pumps, grow lights, etc.) directly 
 
 ---
 
+## 🌿 Care Info Badge
+
+Show the plant's care information in a popup dialog instead of inline on the card — keeps the card uncluttered while care details stay one tap away. Independent of the inline [Care Info](README.md) (`show_care`) block: you can show a short teaser inline and the full set in the popup.
+
+Minimal — the popup shows **all** available care fields:
+
+```yaml
+extra_badges:
+  - type: care_info
+```
+
+Customized — curate the fields, icon, color, and dialog title:
+
+```yaml
+extra_badges:
+  - type: care_info
+    fields:
+      - care_watering
+      - care_sunlight
+      - care_soil
+    icon: mdi:sprout        # default: mdi:sprout
+    color: green            # default: theme secondary text color
+    title: Plant Care       # default: "Care"
+```
+
+Available `fields` values: `care_watering`, `care_sunlight`, `care_soil`, `care_pruning`, `care_fertilization`. Only fields the plant actually provides are shown; an explicit empty list (`fields: []`) shows nothing.
+
+Tapping the badge opens a modal dialog with the selected care text. The badge is fully independent of the inline `show_care` setting.
+
+---
+
 ## 🧩 Combined Example
 
 ```yaml
@@ -231,4 +266,6 @@ extra_badges:
   - text: Kitchen
     icon: mdi:silverware-fork-knife
   - entity: input_button.water_plant
+  - type: care_info
+    icon: mdi:sprout
 ```

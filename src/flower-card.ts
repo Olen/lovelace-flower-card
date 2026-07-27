@@ -1,10 +1,10 @@
 import { CSSResult, HTMLTemplateResult, LitElement, html } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 import { HomeAssistant } from 'custom-card-helpers';
 import { style } from './styles';
-import { DisplayType, EntitySuggestion, FlowerCardConfig, HomeAssistantEntity, PlantInfo } from './types/flower-card-types';
+import { DisplayType, EntitySuggestion, ExtraBadge, FlowerCardConfig, HomeAssistantEntity, PlantInfo } from './types/flower-card-types';
 import * as packageJson from '../package.json';
-import { renderAttributes, renderBattery, renderCareInfo, renderExtraBadges } from './utils/attributes';
+import { CARE_DIALOG_DEFAULT_TITLE, computeCareDialogState, renderAttributes, renderBattery, renderCareInfo, renderCareItems, renderExtraBadges, selectCareInfo } from './utils/attributes';
 import { CARD_NAME, careFields, default_show_bars, missingImage, plantAttributes } from './utils/constants';
 import { isMediaSourceUrl, moreInfo, resolveMediaSource } from './utils/utils';
 
@@ -43,6 +43,9 @@ export const getEntitySuggestion = (hass: HomeAssistant, entityId: string): Enti
 export default class FlowerCard extends LitElement {
     @property() _hass?: any;
     @property() config?: FlowerCardConfig;
+    @state() private _careDialogOpen = false;
+    @state() private _careDialogFields: string[] = [];
+    @state() private _careDialogTitle = CARE_DIALOG_DEFAULT_TITLE;
 
     private stateObj: HomeAssistantEntity | undefined;
     private previousFetchDate = 0;
@@ -211,10 +214,35 @@ export default class FlowerCard extends LitElement {
         this.config = config;
     }
 
+    openCareDialog(badge: ExtraBadge): void {
+        const { open, fields, title } = computeCareDialogState(badge);
+        this._careDialogFields = fields;
+        this._careDialogTitle = title;
+        this._careDialogOpen = open;
+    }
+
+    private _closeCareDialog(): void {
+        this._careDialogOpen = false;
+    }
+
+    private renderCareDialog(): HTMLTemplateResult {
+        const entity = this.config?.entity;
+        const attributes = entity ? this._hass?.states[entity]?.attributes : undefined;
+        const entries = selectCareInfo(attributes, this._careDialogFields);
+        return html`
+            <ha-dialog open heading="${this._careDialogTitle}" @closed="${() => this._closeCareDialog()}">
+                ${entries.length > 0
+                    ? html`<div class="care-info care-info--dialog">${renderCareItems(entries)}</div>`
+                    : html`<div class="care-info-empty">No care information available.</div>`}
+            </ha-dialog>
+        `;
+    }
+
     render(): HTMLTemplateResult {
         if (!this.config || !this._hass) return html``;
 
         if (!this.stateObj) {
+            this._careDialogOpen = false;
             return html`
                 <hui-warning>
                 Entity not available: ${this.config.entity}
@@ -248,6 +276,7 @@ export default class FlowerCard extends LitElement {
             ${renderAttributes(this)}
             ${renderCareInfo(this)}
             </ha-card>
+            ${this._careDialogOpen ? this.renderCareDialog() : html``}
             `;
     }
 

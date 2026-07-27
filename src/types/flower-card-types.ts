@@ -2,6 +2,9 @@ import { LovelaceCardConfig } from "custom-card-helpers";
 import { HassEntity } from "home-assistant-js-websocket";
 
 export interface ExtraBadge {
+    type?: string;        // Badge type discriminator (e.g. "care_info")
+    fields?: string[];    // care_info: care fields shown in the popup (default: all)
+    title?: string;       // care_info: dialog heading (default: "Care")
     entity?: string;      // Entity ID for sensor/binary_sensor
     attribute?: string;   // Entity attribute to display instead of state (e.g., "last_changed")
     icon?: string;        // Icon to display (default: entity's icon or mdi:information)

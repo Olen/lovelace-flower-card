@@ -31,6 +31,18 @@ export const selectCareInfo = (
             typeof entry.text === 'string' && entry.text.trim() !== '');
 };
 
+export const renderCareItems = (entries: CareEntry[]): TemplateResult => html`
+    ${entries.map(entry => html`
+        <div class="care-item">
+            <div class="care-heading">
+                <ha-icon .icon="${entry.icon}"></ha-icon>
+                <span>${entry.label}</span>
+            </div>
+            <div class="care-text">${entry.text}</div>
+        </div>
+    `)}
+`;
+
 export const renderCareInfo = (card: FlowerCard): TemplateResult => {
     const config = card.config;
     if (!config) return html``;
@@ -42,15 +54,48 @@ export const renderCareInfo = (card: FlowerCard): TemplateResult => {
 
     return html`
         <div class="care-info">
-            ${entries.map(entry => html`
-                <div class="care-item">
-                    <div class="care-heading">
-                        <ha-icon .icon="${entry.icon}"></ha-icon>
-                        <span>${entry.label}</span>
-                    </div>
-                    <div class="care-text">${entry.text}</div>
-                </div>
-            `)}
+            ${renderCareItems(entries)}
+        </div>
+    `;
+};
+
+/** Discriminator value for the care-info badge (extra_badges: - type: care_info). */
+export const CARE_BADGE_TYPE = 'care_info';
+
+/** Default title for care dialog when badge title is undefined. */
+export const CARE_DIALOG_DEFAULT_TITLE = 'Care';
+
+/** True when an extra_badges item is the care-info badge. */
+export const isCareBadge = (badge: ExtraBadge): boolean => badge.type === CARE_BADGE_TYPE;
+
+/** Popup field list for a care badge: its `fields`, or ALL care fields when omitted. */
+export const resolveCareBadgeFields = (badge: ExtraBadge): string[] =>
+    badge.fields ?? careFields.map(f => f.value);
+
+/** Open-dialog state derived from a tapped care badge. */
+export const computeCareDialogState = (
+    badge: ExtraBadge,
+): { open: boolean; fields: string[]; title: string } => ({
+    open: true,
+    fields: resolveCareBadgeFields(badge),
+    title: badge.title ?? CARE_DIALOG_DEFAULT_TITLE,
+});
+
+/** Badge icon/color/tooltip for a care badge, with defaults. */
+export const careBadgeVisual = (
+    badge: ExtraBadge,
+): { icon: string; color: string; tip: string } => ({
+    icon: badge.icon ?? 'mdi:sprout',
+    color: badge.color ?? 'var(--secondary-text-color)',
+    tip: badge.title ?? CARE_DIALOG_DEFAULT_TITLE,
+});
+
+export const renderCareBadge = (card: FlowerCard, badge: ExtraBadge): TemplateResult => {
+    const { icon, color, tip } = careBadgeVisual(badge);
+    return html`
+        <div class="extra-badge tooltip" @click="${(e: Event) => { e.stopPropagation(); card.openCareDialog(badge); }}">
+            <div class="tip" style="text-align:center;">${tip}</div>
+            <ha-icon .icon="${icon}" style="color: ${color}"></ha-icon>
         </div>
     `;
 };
@@ -110,6 +155,11 @@ export const renderBattery = (card: FlowerCard) => {
 }
 
 export const renderExtraBadge = (card: FlowerCard, badge: ExtraBadge) => {
+    // Care info badge - opens a dialog with care details
+    if (isCareBadge(badge)) {
+        return renderCareBadge(card, badge);
+    }
+
     // Handle static text badge
     if (badge.text) {
         const hideIcon = badge.icon?.toLowerCase() === 'none';
