@@ -55,6 +55,34 @@ export const renderCareInfo = (card: FlowerCard): TemplateResult => {
     `;
 };
 
+/** Discriminator value for the care-info badge (extra_badges: - type: care_info). */
+export const CARE_BADGE_TYPE = 'care_info';
+
+/** True when an extra_badges item is the care-info badge. */
+export const isCareBadge = (badge: ExtraBadge): boolean => badge.type === CARE_BADGE_TYPE;
+
+/** Popup field list for a care badge: its `fields`, or ALL care fields when omitted. */
+export const resolveCareBadgeFields = (badge: ExtraBadge): string[] =>
+    badge.fields ?? careFields.map(f => f.value);
+
+/** Open-dialog state derived from a tapped care badge. */
+export const computeCareDialogState = (
+    badge: ExtraBadge,
+): { open: boolean; fields: string[]; title: string } => ({
+    open: true,
+    fields: resolveCareBadgeFields(badge),
+    title: badge.title ?? 'Care',
+});
+
+/** Badge icon/color/tooltip for a care badge, with defaults. */
+export const careBadgeVisual = (
+    badge: ExtraBadge,
+): { icon: string; color: string; tip: string } => ({
+    icon: badge.icon ?? 'mdi:sprout',
+    color: badge.color ?? 'var(--secondary-text-color)',
+    tip: badge.title ?? 'Care',
+});
+
 /**
  * Check if a unit indicates PPFD (not lux).
  * Covers: µmol/s⋅m², μmol/s⋅m², mol/s⋅m², etc.
