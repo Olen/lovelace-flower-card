@@ -2,7 +2,16 @@
 name: "Test & Lint"
 
 on:
+  # PRs to main are tested via pull_request; push runs only on main (which the
+  # Auto Release workflow keys on). Previously this ran on every push to every
+  # branch and had no pull_request trigger, so PRs weren't gated on their own
+  # event and unrelated branch pushes ran the full job.
   push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 # Least-privilege: this workflow only checks out and builds.
 permissions:
