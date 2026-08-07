@@ -1,7 +1,8 @@
 import { DisplayType, DisplayedAttribute, DisplayedAttributes, ExtraBadge, Limits } from "../types/flower-card-types";
 import { TemplateResult, html } from "lit";
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
-import { careFields, careIcons, default_show_bars } from "./constants";
+import { careFields, careIcons, default_show_bars, getCareFields } from "./constants";
+import { getHassLanguage, getTranslation } from "./translations";
 import { moreInfo } from "./utils";
 import FlowerCard from "../flower-card";
 
@@ -17,9 +18,10 @@ export interface CareEntry {
 export const selectCareInfo = (
     attributes: Record<string, unknown> | undefined,
     showCare: string[] | undefined,
+    language = 'en',
 ): CareEntry[] => {
     if (!attributes || !showCare || showCare.length === 0) return [];
-    return careFields
+    return getCareFields(language)
         .filter(field => showCare.includes(field.value))
         .map(field => ({
             key: field.value,
@@ -49,7 +51,7 @@ export const renderCareInfo = (card: FlowerCard): TemplateResult => {
 
     const entity = config.entity;
     const attributes = entity ? card._hass.states[entity]?.attributes : undefined;
-    const entries = selectCareInfo(attributes, config.show_care);
+    const entries = selectCareInfo(attributes, config.show_care, getHassLanguage(card._hass));
     if (entries.length === 0) return html``;
 
     return html`
@@ -84,14 +86,15 @@ export const computeCareDialogState = (
 /** Badge icon/color/tooltip for a care badge, with defaults. */
 export const careBadgeVisual = (
     badge: ExtraBadge,
+    language = 'en',
 ): { icon: string; color: string; tip: string } => ({
     icon: badge.icon ?? 'mdi:sprout',
     color: badge.color ?? 'var(--secondary-text-color)',
-    tip: badge.title ?? CARE_DIALOG_DEFAULT_TITLE,
+    tip: badge.title ?? getTranslation('care', language),
 });
 
 export const renderCareBadge = (card: FlowerCard, badge: ExtraBadge): TemplateResult => {
-    const { icon, color, tip } = careBadgeVisual(badge);
+    const { icon, color, tip } = careBadgeVisual(badge, getHassLanguage(card._hass));
     return html`
         <div class="extra-badge tooltip" @click="${(e: Event) => { e.stopPropagation(); card.openCareDialog(badge); }}">
             <div class="tip" style="text-align:center;">${tip}</div>
@@ -366,7 +369,8 @@ export const renderAttribute = (card: FlowerCard, attr: DisplayedAttribute) => {
     const pct = useLinear
         ? 100 * Math.max(0, Math.min(1, (val - min) / (max - min)))
         : 100 * Math.max(0, Math.min(1, (Math.log(val) - Math.log(min)) / (Math.log(max) - Math.log(min))));
-    const toolTipText = aval ? `${attr.name}: ${val} ${unitTooltip}<br>(${min} ~ ${max} ${unitTooltip})` : card._hass.localize('state.default.unavailable');
+    const translatedName = getTranslation(attr.name, getHassLanguage(card._hass));
+    const toolTipText = aval ? `${translatedName}: ${val} ${unitTooltip}<br>(${min} ~ ${max} ${unitTooltip})` : card._hass.localize('state.default.unavailable');
     const label = (attr.name === 'dli' || attr.name === 'dli_24h') ? '<math style="display: inline-grid;" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mfrac><mrow><mn>mol</mn></mrow><mrow><mn>d</mn><mn>⋅</mn><msup><mn>m</mn><mn>2</mn></msup></mrow></mfrac></mrow></math>' : unitTooltip
     // Determine settings with explicit overrides taking precedence over display_type defaults
     const isCompact = card.config?.display_type === DisplayType.Compact;
