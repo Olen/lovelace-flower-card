@@ -5,7 +5,8 @@ import { style } from './styles';
 import { DisplayType, EntitySuggestion, ExtraBadge, FlowerCardConfig, HomeAssistantEntity, PlantInfo } from './types/flower-card-types';
 import * as packageJson from '../package.json';
 import { CARE_DIALOG_DEFAULT_TITLE, computeCareDialogState, renderAttributes, renderBattery, renderCareInfo, renderCareItems, renderExtraBadges, selectCareInfo } from './utils/attributes';
-import { CARD_NAME, careFields, default_show_bars, missingImage, plantAttributes } from './utils/constants';
+import { CARD_NAME, default_show_bars, getCareFields, getPlantAttributes, missingImage } from './utils/constants';
+import { getHassLanguage, getTranslation } from './utils/translations';
 import { isMediaSourceUrl, moreInfo, resolveMediaSource, shouldEnableImageLightbox } from './utils/utils';
 
 console.info(
@@ -13,6 +14,11 @@ console.info(
     'color: cyan; background: black; font-weight: bold;',
     'color: darkblue; background: white; font-weight: bold;'
 );
+
+const getConfigFormLanguage = (): string => {
+    if (typeof document === 'undefined') return 'en';
+    return document.documentElement?.lang || 'en';
+};
 
 // Suggests flower-card in Home Assistant's card picker when a plant entity is
 // selected (HA 2026.6+). Returns null for any non-plant entity so the card only
@@ -89,6 +95,7 @@ export default class FlowerCard extends LitElement {
     }
 
     static getConfigForm() {
+        const language = getConfigFormLanguage();
         return {
             schema: [
                 {
@@ -107,14 +114,14 @@ export default class FlowerCard extends LitElement {
                 {
                     type: "expandable",
                     name: "",
-                    title: "Bars",
+                    title: getTranslation('settings_bars', language),
                     schema: [
                         {
                             name: "show_bars",
                             selector: {
                                 select: {
                                     multiple: true,
-                                    options: plantAttributes
+                                    options: getPlantAttributes(language)
                                 }
                             }
                         }
@@ -123,14 +130,14 @@ export default class FlowerCard extends LitElement {
                 {
                     type: "expandable",
                     name: "",
-                    title: "Care Info",
+                    title: getTranslation('settings_care_info', language),
                     schema: [
                         {
                             name: "show_care",
                             selector: {
                                 select: {
                                     multiple: true,
-                                    options: careFields
+                                    options: getCareFields(language)
                                 }
                             }
                         }
@@ -139,15 +146,15 @@ export default class FlowerCard extends LitElement {
                 {
                     type: "expandable",
                     name: "",
-                    title: "Appearance",
+                    title: getTranslation('settings_appearance', language),
                     schema: [
                         {
                             name: "display_type",
                             selector: {
                                 select: {
                                     options: [
-                                        { value: "full", label: "Full" },
-                                        { value: "compact", label: "Compact" }
+                                        { value: "full", label: getTranslation('settings_full', language) },
+                                        { value: "compact", label: getTranslation('settings_compact', language) }
                                     ]
                                 }
                             }
@@ -169,15 +176,15 @@ export default class FlowerCard extends LitElement {
             ],
             computeLabel: (schema: { name: string }) => {
                 const labels: Record<string, string> = {
-                    entity: "Entity",
-                    name: "Display Name",
-                    display_type: "Display Type",
-                    battery_sensor: "Battery Sensor",
-                    show_bars: "Show Bars",
-                    show_care: "Show Care Info",
-                    hide_species: "Hide Species",
-                    hide_image: "Hide Image",
-                    hide_units: "Hide Units"
+                    entity: getTranslation('settings_entity', language),
+                    name: getTranslation('settings_display_name', language),
+                    display_type: getTranslation('settings_display_type', language),
+                    battery_sensor: getTranslation('settings_battery_sensor', language),
+                    show_bars: getTranslation('settings_show_bars', language),
+                    show_care: getTranslation('settings_show_care_info', language),
+                    hide_species: getTranslation('settings_hide_species', language),
+                    hide_image: getTranslation('settings_hide_image', language),
+                    hide_units: getTranslation('settings_hide_units', language)
                 };
                 return labels[schema.name] || schema.name;
             }
@@ -229,12 +236,13 @@ export default class FlowerCard extends LitElement {
     private renderCareDialog(): HTMLTemplateResult {
         const entity = this.config?.entity;
         const attributes = entity ? this._hass?.states[entity]?.attributes : undefined;
-        const entries = selectCareInfo(attributes, this._careDialogFields);
+        const language = getHassLanguage(this._hass);
+        const entries = selectCareInfo(attributes, this._careDialogFields, language);
         return html`
-            <ha-dialog open heading="${this._careDialogTitle}" @closed="${() => this._closeCareDialog()}">
+            <ha-dialog open heading="${this._careDialogTitle || getTranslation('care', language)}" @closed="${() => this._closeCareDialog()}">
                 ${entries.length > 0
                     ? html`<div class="care-info care-info--dialog">${renderCareItems(entries)}</div>`
-                    : html`<div class="care-info-empty">No care information available.</div>`}
+                    : html`<div class="care-info-empty">${getTranslation('no_care_info', language)}</div>`}
             </ha-dialog>
         `;
     }
