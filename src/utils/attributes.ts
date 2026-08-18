@@ -2,7 +2,7 @@ import { DisplayType, DisplayedAttribute, DisplayedAttributes, ExtraBadge, Limit
 import { TemplateResult, html } from "lit";
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { careFields, careIcons, default_show_bars, getCareFields } from "./constants";
-import { getHassLanguage, getTranslation } from "./translations";
+import { getHassLanguage, localize, localizeReading } from "../localize/localize";
 import { moreInfo } from "./utils";
 import FlowerCard from "../flower-card";
 
@@ -90,7 +90,7 @@ export const careBadgeVisual = (
 ): { icon: string; color: string; tip: string } => ({
     icon: badge.icon ?? 'mdi:sprout',
     color: badge.color ?? 'var(--secondary-text-color)',
-    tip: badge.title ?? getTranslation('care', language),
+    tip: badge.title ?? localize({ language }, 'care'),
 });
 
 export const renderCareBadge = (card: FlowerCard, badge: ExtraBadge): TemplateResult => {
@@ -369,7 +369,7 @@ export const renderAttribute = (card: FlowerCard, attr: DisplayedAttribute) => {
     const pct = useLinear
         ? 100 * Math.max(0, Math.min(1, (val - min) / (max - min)))
         : 100 * Math.max(0, Math.min(1, (Math.log(val) - Math.log(min)) / (Math.log(max) - Math.log(min))));
-    const translatedName = getTranslation(attr.name, getHassLanguage(card._hass));
+    const translatedName = localizeReading(card._hass, attr.name);
     const toolTipText = aval ? `${translatedName}: ${val} ${unitTooltip}<br>(${min} ~ ${max} ${unitTooltip})` : card._hass.localize('state.default.unavailable');
     const label = (attr.name === 'dli' || attr.name === 'dli_24h') ? '<math style="display: inline-grid;" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mfrac><mrow><mn>mol</mn></mrow><mrow><mn>d</mn><mn>⋅</mn><msup><mn>m</mn><mn>2</mn></msup></mrow></mfrac></mrow></math>' : unitTooltip
     // Determine settings with explicit overrides taking precedence over display_type defaults

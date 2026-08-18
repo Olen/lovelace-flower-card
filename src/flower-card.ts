@@ -6,7 +6,7 @@ import { DisplayType, EntitySuggestion, ExtraBadge, FlowerCardConfig, HomeAssist
 import * as packageJson from '../package.json';
 import { CARE_DIALOG_DEFAULT_TITLE, computeCareDialogState, renderAttributes, renderBattery, renderCareInfo, renderCareItems, renderExtraBadges, selectCareInfo } from './utils/attributes';
 import { CARD_NAME, default_show_bars, getCareFields, getPlantAttributes, missingImage } from './utils/constants';
-import { getHassLanguage, getTranslation } from './utils/translations';
+import { getHassLanguage, localize } from './localize/localize';
 import { isMediaSourceUrl, moreInfo, resolveMediaSource, shouldEnableImageLightbox } from './utils/utils';
 
 console.info(
@@ -114,7 +114,7 @@ export default class FlowerCard extends LitElement {
                 {
                     type: "expandable",
                     name: "",
-                    title: getTranslation('settings_bars', language),
+                    title: localize({ language }, 'settings_bars'),
                     schema: [
                         {
                             name: "show_bars",
@@ -130,7 +130,7 @@ export default class FlowerCard extends LitElement {
                 {
                     type: "expandable",
                     name: "",
-                    title: getTranslation('settings_care_info', language),
+                    title: localize({ language }, 'settings_care_info'),
                     schema: [
                         {
                             name: "show_care",
@@ -146,15 +146,15 @@ export default class FlowerCard extends LitElement {
                 {
                     type: "expandable",
                     name: "",
-                    title: getTranslation('settings_appearance', language),
+                    title: localize({ language }, 'settings_appearance'),
                     schema: [
                         {
                             name: "display_type",
                             selector: {
                                 select: {
                                     options: [
-                                        { value: "full", label: getTranslation('settings_full', language) },
-                                        { value: "compact", label: getTranslation('settings_compact', language) }
+                                        { value: "full", label: localize({ language }, 'settings_full') },
+                                        { value: "compact", label: localize({ language }, 'settings_compact') }
                                     ]
                                 }
                             }
@@ -176,15 +176,15 @@ export default class FlowerCard extends LitElement {
             ],
             computeLabel: (schema: { name: string }) => {
                 const labels: Record<string, string> = {
-                    entity: getTranslation('settings_entity', language),
-                    name: getTranslation('settings_display_name', language),
-                    display_type: getTranslation('settings_display_type', language),
-                    battery_sensor: getTranslation('settings_battery_sensor', language),
-                    show_bars: getTranslation('settings_show_bars', language),
-                    show_care: getTranslation('settings_show_care_info', language),
-                    hide_species: getTranslation('settings_hide_species', language),
-                    hide_image: getTranslation('settings_hide_image', language),
-                    hide_units: getTranslation('settings_hide_units', language)
+                    entity: localize({ language }, 'settings_entity'),
+                    name: localize({ language }, 'settings_display_name'),
+                    display_type: localize({ language }, 'settings_display_type'),
+                    battery_sensor: localize({ language }, 'settings_battery_sensor'),
+                    show_bars: localize({ language }, 'settings_show_bars'),
+                    show_care: localize({ language }, 'settings_show_care_info'),
+                    hide_species: localize({ language }, 'settings_hide_species'),
+                    hide_image: localize({ language }, 'settings_hide_image'),
+                    hide_units: localize({ language }, 'settings_hide_units')
                 };
                 return labels[schema.name] || schema.name;
             }
@@ -239,10 +239,10 @@ export default class FlowerCard extends LitElement {
         const language = getHassLanguage(this._hass);
         const entries = selectCareInfo(attributes, this._careDialogFields, language);
         return html`
-            <ha-dialog open heading="${this._careDialogTitle || getTranslation('care', language)}" @closed="${() => this._closeCareDialog()}">
+            <ha-dialog open heading="${this._careDialogTitle || localize({ language }, 'care')}" @closed="${() => this._closeCareDialog()}">
                 ${entries.length > 0
                     ? html`<div class="care-info care-info--dialog">${renderCareItems(entries)}</div>`
-                    : html`<div class="care-info-empty">${getTranslation('no_care_info', language)}</div>`}
+                    : html`<div class="care-info-empty">${localize({ language }, 'no_care_info')}</div>`}
             </ha-dialog>
         `;
     }
