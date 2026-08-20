@@ -39,3 +39,8 @@ updates:
     labels:
       - "dependencies"
       - "npm"
+    ignore:
+      # typescript-eslint 8.67.0 still declares peer typescript ">=4.8.4 <6.1.0",
+      # which package.json mirrors. Drop this once it supports TS 7.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
