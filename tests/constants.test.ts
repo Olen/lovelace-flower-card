@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CARD_NAME, default_show_bars, missingImage, plantAttributes, careFields, careIcons } from '../src/utils/constants';
+import { CARD_NAME, default_show_bars, missingImage, plantAttributes, careFields, careIcons, getPlantAttributes, getCareFields } from '../src/utils/constants';
 
 describe('constants', () => {
   describe('CARD_NAME', () => {
@@ -87,5 +87,23 @@ describe('constants', () => {
       const fieldValues = careFields.map(f => f.value).sort();
       expect(Object.keys(careIcons).sort()).toEqual(fieldValues);
     });
+  });
+});
+
+describe('localized dropdowns', () => {
+  it('translates the labels and keeps the values canonical', () => {
+    const attrs = getPlantAttributes('de');
+    expect(attrs.find(a => a.value === 'moisture')?.label).toBe('Bodenfeuchtigkeit');
+    expect(attrs.map(a => a.value)).toEqual(plantAttributes.map(a => a.value));
+
+    const care = getCareFields('de');
+    expect(care.find(f => f.value === 'care_watering')?.label).toBe('Bewässerung');
+    expect(care.map(f => f.value)).toEqual(careFields.map(f => f.value));
+  });
+
+  it('matches the plant integration wording for readings', () => {
+    const attrs = getPlantAttributes('en');
+    expect(attrs.find(a => a.value === 'moisture')?.label).toBe('Soil moisture');
+    expect(attrs.find(a => a.value === 'humidity')?.label).toBe('Air humidity');
   });
 });

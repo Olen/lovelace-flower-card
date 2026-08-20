@@ -41,6 +41,9 @@ describe('care badge logic', () => {
         open: true, fields: ALL, title: 'Care',
       });
     });
+    it('translates the default title', () => {
+      expect(computeCareDialogState({ type: CARE_BADGE_TYPE }, 'de').title).toBe('Pflege');
+    });
     it('honors fields and title overrides', () => {
       const badge: ExtraBadge = { type: CARE_BADGE_TYPE, fields: ['care_watering'], title: 'Plant Care' };
       expect(computeCareDialogState(badge)).toEqual({
