@@ -4,7 +4,7 @@ import { HomeAssistant } from 'custom-card-helpers';
 import { style } from './styles';
 import { DisplayType, EntitySuggestion, ExtraBadge, FlowerCardConfig, HomeAssistantEntity, PlantInfo } from './types/flower-card-types';
 import * as packageJson from '../package.json';
-import { CARE_DIALOG_DEFAULT_TITLE, computeCareDialogState, renderAttributes, renderBattery, renderCareInfo, renderCareItems, renderExtraBadges, selectCareInfo } from './utils/attributes';
+import { computeCareDialogState, renderAttributes, renderBattery, renderCareInfo, renderCareItems, renderExtraBadges, selectCareInfo } from './utils/attributes';
 import { CARD_NAME, default_show_bars, getCareFields, getPlantAttributes, missingImage } from './utils/constants';
 import { getHassLanguage, localize } from './localize/localize';
 import { isMediaSourceUrl, moreInfo, resolveMediaSource, shouldEnableImageLightbox } from './utils/utils';
@@ -51,7 +51,7 @@ export default class FlowerCard extends LitElement {
     @property() config?: FlowerCardConfig;
     @state() private _careDialogOpen = false;
     @state() private _careDialogFields: string[] = [];
-    @state() private _careDialogTitle = CARE_DIALOG_DEFAULT_TITLE;
+    @state() private _careDialogTitle = '';
     @state() private _imageDialogOpen = false;
 
     private stateObj: HomeAssistantEntity | undefined;
@@ -223,7 +223,7 @@ export default class FlowerCard extends LitElement {
     }
 
     openCareDialog(badge: ExtraBadge): void {
-        const { open, fields, title } = computeCareDialogState(badge);
+        const { open, fields, title } = computeCareDialogState(badge, getHassLanguage(this._hass));
         this._careDialogFields = fields;
         this._careDialogTitle = title;
         this._careDialogOpen = open;
@@ -239,7 +239,7 @@ export default class FlowerCard extends LitElement {
         const language = getHassLanguage(this._hass);
         const entries = selectCareInfo(attributes, this._careDialogFields, language);
         return html`
-            <ha-dialog open heading="${this._careDialogTitle || localize({ language }, 'care')}" @closed="${() => this._closeCareDialog()}">
+            <ha-dialog open heading="${this._careDialogTitle}" @closed="${() => this._closeCareDialog()}">
                 ${entries.length > 0
                     ? html`<div class="care-info care-info--dialog">${renderCareItems(entries)}</div>`
                     : html`<div class="care-info-empty">${localize({ language }, 'no_care_info')}</div>`}

@@ -2,12 +2,15 @@ import { describe, expect, it, vi } from 'vitest';
 import { getHassLanguage, localize, localizeReading } from '../src/localize/localize';
 
 describe('localize', () => {
-  it('uses the locale language before legacy language properties', () => {
+  it('uses the locale language before the legacy language property', () => {
     expect(getHassLanguage({
       locale: { language: 'de-DE' },
       language: 'en',
-      selectedLanguage: 'en',
     })).toBe('de-DE');
+  });
+
+  it('translates a card string for a supported language', () => {
+    expect(localize({ language: 'de' }, 'settings_compact')).toBe('Kompakt');
   });
 
   it('falls back to English for an unsupported language', () => {

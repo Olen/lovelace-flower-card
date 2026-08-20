@@ -1,10 +1,10 @@
+import { localize } from '../localize/localize';
+
 // A selectable option (label/value pair) for the card's config-form selectors.
 export interface DropdownOption {
     label: string;
     value: string;
 }
-
-import { localize } from '../localize/localize';
 
 export const CARD_NAME = "flower-card";
 
