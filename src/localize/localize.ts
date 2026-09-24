@@ -1,5 +1,6 @@
 import en from './languages/en.json';
 import de from './languages/de.json';
+import nl from './languages/nl.json';
 
 export interface HassLanguageContext {
   language?: string;
@@ -11,7 +12,7 @@ export interface HassLanguageContext {
 
 type Language = Record<string, string>;
 
-const languages: Record<string, Language> = { en, de };
+const languages: Record<string, Language> = { en, de, nl };
 
 export const getHassLanguage = (hass: HassLanguageContext | undefined, fallback = 'en'): string => {
   const language = hass?.locale?.language || hass?.language;

@@ -13,8 +13,12 @@ describe('localize', () => {
     expect(localize({ language: 'de' }, 'settings_compact')).toBe('Kompakt');
   });
 
+  it('translates a card string for Dutch', () => {
+    expect(localize({ language: 'nl' }, 'settings_full')).toBe('Volledig');
+  });
+
   it('falls back to English for an unsupported language', () => {
-    expect(localize({ language: 'nl' }, 'settings_compact')).toBe('Compact');
+    expect(localize({ language: 'fr' }, 'settings_compact')).toBe('Compact');
   });
 
   it('falls back to the key for an unknown card string', () => {
