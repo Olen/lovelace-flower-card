@@ -18,7 +18,8 @@ describe('localize', () => {
   });
 
   it('falls back to English for an unsupported language', () => {
-    expect(localize({ language: 'fr' }, 'settings_compact')).toBe('Compact');
+    // qaa is reserved for local use in ISO 639, so no translation will ever claim it
+    expect(localize({ language: 'qaa' }, 'settings_compact')).toBe('Compact');
   });
 
   it('falls back to the key for an unknown card string', () => {
