@@ -9,7 +9,7 @@
     "custom-cards"
   ],
   "module": "flower-card.js",
-  "license": "MIT",
+  "license": "GPL-3.0-only",
   "dependencies": {
     "babel-loader": "^10.1.1",
     "compression-webpack-plugin": "^12.0.0",
