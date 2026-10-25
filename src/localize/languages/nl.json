@@ -28,6 +28,7 @@
   "settings_hide_species": "Soortnaam verbergen",
   "settings_hide_image": "Afbeelding verbergen",
   "settings_hide_units": "Eenheden verbergen",
+  "settings_show_limits": "Min/Max-waarden tonen",
   "settings_full": "Volledig",
   "settings_compact": "Compact"
 }

@@ -28,6 +28,7 @@
   "settings_hide_species": "Spezies ausblenden",
   "settings_hide_image": "Bild ausblenden",
   "settings_hide_units": "Einheiten ausblenden",
+  "settings_show_limits": "Min/Max-Werte anzeigen",
   "settings_full": "Voll",
   "settings_compact": "Kompakt"
 }

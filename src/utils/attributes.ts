@@ -1,5 +1,6 @@
 import { DisplayType, DisplayedAttribute, DisplayedAttributes, ExtraBadge, Limits } from "../types/flower-card-types";
 import { TemplateResult, html } from "lit";
+import { FrontendLocaleData, formatNumber } from "custom-card-helpers";
 import { careFields, careIcons, default_show_bars, getCareFields } from "./constants";
 import { getHassLanguage, localize, localizeReading } from "../localize/localize";
 import { entityDisplayName, moreInfo } from "./utils";
@@ -355,6 +356,10 @@ export const renderAttributes = (card: FlowerCard): TemplateResult[] => {
 
 const DLI_UNIT = html`<math style="display: inline-grid;" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mfrac><mrow><mn>mol</mn></mrow><mrow><mn>d</mn><mn>⋅</mn><msup><mn>m</mn><mn>2</mn></msup></mrow></mfrac></mrow></math>`;
 
+/** Format a min/max threshold with the user's thousands/decimal separators, keeping all decimals. */
+export const formatLimit = (value: number, locale?: FrontendLocaleData): string =>
+    formatNumber(value, locale, { maximumFractionDigits: 10 });
+
 export const renderAttribute = (card: FlowerCard, attr: DisplayedAttribute) => {
     const { max, min } = attr.limits;
     const unitTooltip = attr.unit_of_measurement;
@@ -377,11 +382,12 @@ export const renderAttribute = (card: FlowerCard, attr: DisplayedAttribute) => {
     const isCompact = card.config?.display_type === DisplayType.Compact;
     const barsPerRow = card.config?.bars_per_row ?? (isCompact ? 1 : 2);
     const showUnits = !(card.config?.hide_units ?? isCompact);
+    const showLimits = card.config?.show_limits ?? false;
     const useFullWidth = barsPerRow === 1;
 
     // In full-width mode, mark when the value/unit header is shown so the
     // bar can leave room for it (see .has-units in styles.ts).
-    const attributeCssClass = `attribute tooltip ${useFullWidth ? 'width-100' : ''}${useFullWidth && showUnits ? ' has-units' : ''}`;
+    const attributeCssClass = `attribute tooltip ${useFullWidth ? 'width-100' : ''}${useFullWidth && showUnits ? ' has-units' : ''}${showLimits ? ' has-limits' : ''}`;
 
     return html`
         <div class="${attributeCssClass}" @click="${() => moreInfo(card, attr.sensor)}">
@@ -392,10 +398,13 @@ export const renderAttribute = (card: FlowerCard, attr: DisplayedAttribute) => {
                     aval ? (val < min || val > max ? "bad" : "good") : "unavailable"
                 }" style="width: 100%;"></span>
             </div>
-            <div class="meter green">
-                <span class="${
-                    aval ? (val > max ? "bad" : "good") : "unavailable"
-                }" style="width:${aval ? pct : "0"}%;"></span>
+            <div class="meter-wrap">
+                <div class="meter green">
+                    <span class="${
+                        aval ? (val > max ? "bad" : "good") : "unavailable"
+                    }" style="width:${aval ? pct : "0"}%;"></span>
+                </div>
+                ${showLimits ? html`<div class="limits"><span class="min">${formatLimit(min, card._hass?.locale)}</span><span class="max">${formatLimit(max, card._hass?.locale)}</span></div>` : ''}
             </div>
             <div class="meter red">
                 <span class="bad" style="width:${
