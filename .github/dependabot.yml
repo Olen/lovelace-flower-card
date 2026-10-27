@@ -24,6 +24,12 @@ updates:
       interval: "weekly"
     open-pull-requests-limit: 5
     groups:
+      # vitest and @vitest/* pin each other's exact version, so they must move
+      # together; listed first so a major bump is not split across two PRs.
+      vitest:
+        patterns:
+          - "vitest"
+          - "@vitest/*"
       production-dependencies:
         dependency-type: "production"
         update-types:
