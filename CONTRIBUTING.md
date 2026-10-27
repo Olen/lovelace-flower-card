@@ -54,6 +54,7 @@ Add a label so your change lands in the right section of the changelog:
 | `bug` or `fix` | 🐛 Bug Fixes |
 | `documentation` | 📚 Documentation |
 | `dependencies`, `github_actions`, `ci`, `chore` | 🧹 Maintenance & CI |
+| `release` | _(excluded: release PRs only)_ |
 | _(no label)_ | Other Changes |
 
 Pick the single label that best describes the PR's primary intent. Unlabeled PRs

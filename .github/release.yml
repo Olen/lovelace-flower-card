@@ -3,6 +3,11 @@
 # label every PR so it lands in the right category. Unlabeled PRs fall into
 # "Other Changes". See CONTRIBUTING.md.
 changelog:
+  # `release` marks the version bump and the built-bundle PR; neither is a
+  # change of its own.
+  exclude:
+    labels:
+      - release
   categories:
     - title: 🚀 Features & Enhancements
       labels:
