@@ -94,7 +94,8 @@ jobs:
 
           [skip ci]" \
             --base main \
-            --head "$BRANCH_NAME"
+            --head "$BRANCH_NAME" \
+            --label release
           gh pr merge "$BRANCH_NAME" --merge --admin --delete-branch
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
