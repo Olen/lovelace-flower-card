@@ -28,10 +28,12 @@ A Lovelace card for displaying plant data from the [Plant Monitor](https://githu
 
 ## 📦 Installation
 
-### Via HACS *(recommended)*
+### Via the Marketplace *(recommended, HACS before Home Assistant 2026.11)*
 
-1. Add this repo as a [Custom Repository](https://hacs.xyz/docs/faq/custom_repositories/) with type **Dashboard**
-2. Click **Install** in the "Flower Card" card in HACS
+[![Open your Home Assistant instance and open this repository in the Marketplace.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Olen&repository=lovelace-flower-card&category=plugin)
+
+1. Select the button above, or add [this repo](https://github.com/Olen/lovelace-flower-card) as a custom repository with type **Dashboard**
+2. Click **Install** in the "Flower Card" repository
 3. Refresh the frontend (shift-reload your browser)
 
 ### Manual Installation
