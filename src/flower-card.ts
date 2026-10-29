@@ -238,8 +238,14 @@ export default class FlowerCard extends LitElement {
         const attributes = entity ? this._hass?.states[entity]?.attributes : undefined;
         const language = getHassLanguage(this._hass);
         const entries = selectCareInfo(attributes, this._careDialogFields, language);
+        // ha-dialog takes its title from header-title; older HA read heading
         return html`
-            <ha-dialog open heading="${this._careDialogTitle}" @closed="${() => this._closeCareDialog()}">
+            <ha-dialog
+                open
+                header-title="${this._careDialogTitle}"
+                heading="${this._careDialogTitle}"
+                @closed="${() => this._closeCareDialog()}"
+            >
                 ${entries.length > 0
                     ? html`<div class="care-info care-info--dialog">${renderCareItems(entries)}</div>`
                     : html`<div class="care-info-empty">${localize({ language }, 'no_care_info')}</div>`}
