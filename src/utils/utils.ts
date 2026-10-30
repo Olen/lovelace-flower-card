@@ -1,4 +1,5 @@
 import { fireEvent, HomeAssistant } from "custom-card-helpers";
+import { HassEntity } from "home-assistant-js-websocket";
 import FlowerCard from "../flower-card";
 
 export const moreInfo = (card: FlowerCard, entityId: string): void => {
@@ -47,3 +48,17 @@ export const shouldEnableImageLightbox = (
     hideImage: boolean,
     resolvedImageUrl: string | undefined,
 ): boolean => !hideImage && !!resolvedImageUrl;
+
+/** The name HA's own cards show: a configured name, else hass.formatEntityName (HA 2025.10+), else friendly_name. */
+export const entityDisplayName = (
+    hass: HomeAssistant,
+    stateObj: HassEntity,
+    name?: string,
+): string => {
+    if (name) return name;
+    const format = (hass as HomeAssistant & {
+        formatEntityName?: (stateObj: HassEntity) => string;
+    }).formatEntityName;
+    if (typeof format === "function") return format(stateObj);
+    return stateObj.attributes.friendly_name || stateObj.entity_id;
+};

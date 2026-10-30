@@ -7,7 +7,7 @@ import * as packageJson from '../package.json';
 import { computeCareDialogState, renderAttributes, renderBattery, renderCareInfo, renderCareItems, renderExtraBadges, selectCareInfo } from './utils/attributes';
 import { CARD_NAME, default_show_bars, getCareFields, getPlantAttributes, missingImage } from './utils/constants';
 import { getHassLanguage, localize } from './localize/localize';
-import { isMediaSourceUrl, moreInfo, resolveMediaSource, shouldEnableImageLightbox } from './utils/utils';
+import { entityDisplayName, isMediaSourceUrl, moreInfo, resolveMediaSource, shouldEnableImageLightbox } from './utils/utils';
 
 console.info(
     `%c FLOWER-CARD %c ${packageJson.version}`,
@@ -262,7 +262,7 @@ export default class FlowerCard extends LitElement {
     }
 
     private renderImageDialog(): HTMLTemplateResult {
-        const displayName = this.config?.name || this.stateObj?.attributes.friendly_name || '';
+        const displayName = this.stateObj ? entityDisplayName(this._hass, this.stateObj, this.config?.name) : '';
         return html`
             <ha-dialog open @closed="${() => this._closeImageDialog()}">
                 <div class="image-dialog">
@@ -288,7 +288,7 @@ export default class FlowerCard extends LitElement {
         const stateObj = this.stateObj;
 
         const species = stateObj.attributes.species;
-        const displayName = this.config.name || stateObj.attributes.friendly_name;
+        const displayName = entityDisplayName(this._hass, stateObj, this.config.name);
         const hideSpecies = this.config.hide_species ?? false;
         const hideImage = this.config.hide_image ?? false;
         const imageLightbox = shouldEnableImageLightbox(hideImage, this._resolvedImageUrl);
