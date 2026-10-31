@@ -53,7 +53,8 @@ Add a label so your change lands in the right section of the changelog:
 | `enhancement` or `feature` | 🚀 Features & Enhancements |
 | `bug` or `fix` | 🐛 Bug Fixes |
 | `documentation` | 📚 Documentation |
-| `dependencies`, `github_actions`, `ci`, `chore` | 🧹 Maintenance & CI |
+| `chore` | 🧹 Maintenance |
+| `ci`, `github_actions`, `dependencies` | _(excluded — build plumbing)_ |
 | `release` | _(excluded: release PRs only)_ |
 | _(no label)_ | Other Changes |
 
