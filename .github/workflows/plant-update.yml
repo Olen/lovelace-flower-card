@@ -1,0 +1,37 @@
+---
+name: "Update plant"
+
+# Re-sends a published card release to the plant integration, e.g. after the
+# release workflow failed to open the plant PR.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Card version, e.g. 2026.11.1"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  update-plant:
+    name: "Update plant"
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "✏️ Checkout scripts"
+        uses: actions/checkout@v7
+
+      - name: "📥 Download the published build"
+        run: |
+          gh release download "v$VERSION" --dir release \
+            --pattern flower-card.js --pattern flower-card.js.LICENSE.txt
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ inputs.version }}
+
+      - name: "🌸 Update plant"
+        working-directory: release
+        run: ../scripts/plant-pr.sh "$VERSION"
+        env:
+          GH_TOKEN: ${{ secrets.PLANT_REPO_TOKEN }}
+          VERSION: ${{ inputs.version }}

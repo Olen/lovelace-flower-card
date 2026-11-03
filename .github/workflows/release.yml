@@ -15,8 +15,11 @@ jobs:
   release:
     name: "Create Release"
     runs-on: "ubuntu-latest"
-    # Only run if Test & Lint succeeded
-    if: github.event.workflow_run.conclusion == 'success'
+    # Only after Test & Lint succeeds on a push to this repository (a fork's branch can also be named main)
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_repository.full_name == github.repository
     steps:
       - name: "✏️ Checkout code"
         uses: actions/checkout@v7
@@ -123,6 +126,7 @@ jobs:
           files: |
             flower-card.js
             flower-card.js.gz
+            flower-card.js.LICENSE.txt
         if: steps.check_package.outputs.changed == 'true' && steps.check_tag.outputs.exists != 'true' && contains(env.COMPONENT_VERSION, 'beta') == false
 
       - name: "🤞 Create Beta release"
@@ -135,4 +139,12 @@ jobs:
           files: |
             flower-card.js
             flower-card.js.gz
+            flower-card.js.LICENSE.txt
         if: steps.check_package.outputs.changed == 'true' && steps.check_tag.outputs.exists != 'true' && contains(env.COMPONENT_VERSION, 'beta') == true
+
+      - name: "🌸 Update plant"
+        run: scripts/plant-pr.sh "$VERSION"
+        env:
+          GH_TOKEN: ${{ secrets.PLANT_REPO_TOKEN }}
+          VERSION: ${{ env.COMPONENT_VERSION }}
+        if: steps.check_package.outputs.changed == 'true' && steps.check_tag.outputs.exists != 'true'

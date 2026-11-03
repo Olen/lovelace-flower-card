@@ -1,5 +1,5 @@
 import { CSSResult, HTMLTemplateResult, LitElement, html } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { property, state } from 'lit/decorators.js';
 import { HomeAssistant } from 'custom-card-helpers';
 import { style } from './styles';
 import { DisplayType, EntitySuggestion, ExtraBadge, FlowerCardConfig, HomeAssistantEntity, PlantInfo } from './types/flower-card-types';
@@ -36,17 +36,20 @@ export const getEntitySuggestion = (hass: HomeAssistant, entityId: string): Enti
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 (window as any).customCards = (window as any).customCards || [];
-(window as any).customCards.push({
-    type: CARD_NAME,
-    name: 'Flower card',
-    preview: true,
-    description: 'Custom flower card for https://github.com/Olen/homeassistant-plant',
-    getEntitySuggestion,
-});
-/* eslint-disable @typescript-eslint/no-explicit-any */
+const alreadyListed = (window as any).customCards.some((card: { type: string }) => card.type === CARD_NAME);
+if (!alreadyListed) {
+    (window as any).customCards.push({
+        type: CARD_NAME,
+        name: 'Flower card',
+        preview: true,
+        description: 'Custom flower card for https://github.com/Olen/homeassistant-plant',
+        getEntitySuggestion,
+    });
+}
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
-@customElement(CARD_NAME)
 export default class FlowerCard extends LitElement {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     @property() _hass?: any;
     @property() config?: FlowerCardConfig;
     @state() private _careDialogOpen = false;
@@ -346,4 +349,9 @@ export default class FlowerCard extends LitElement {
     static get styles(): CSSResult {
         return style;
     }
+}
+
+// Plant serves its own copy, so another copy may already have defined the card
+if (!customElements.get(CARD_NAME)) {
+    customElements.define(CARD_NAME, FlowerCard);
 }
