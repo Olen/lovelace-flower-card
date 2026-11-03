@@ -2,7 +2,7 @@ import { DisplayType, DisplayedAttribute, DisplayedAttributes, ExtraBadge, Limit
 import { TemplateResult, html } from "lit";
 import { careFields, careIcons, default_show_bars, getCareFields } from "./constants";
 import { getHassLanguage, localize, localizeReading } from "../localize/localize";
-import { moreInfo } from "./utils";
+import { entityDisplayName, moreInfo } from "./utils";
 import FlowerCard from "../flower-card";
 
 export interface CareEntry {
@@ -204,7 +204,7 @@ export const renderExtraBadge = (card: FlowerCard, badge: ExtraBadge) => {
 
     const isBinarySensor = badgeEntity.startsWith('binary_sensor.');
     const state = entity.state;
-    const friendlyName = entity.attributes.friendly_name || badge.entity;
+    const friendlyName = entityDisplayName(card._hass, entity);
 
     // Determine icon - use provided icon, entity's custom icon, or derive from device_class
     let icon = badge.icon || entity.attributes.icon;
