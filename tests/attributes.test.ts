@@ -1,5 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
-import { getChunkedDisplayed, isPpfdUnit } from '../src/utils/attributes';
+import { render } from 'lit';
+import { getChunkedDisplayed, isPpfdUnit, renderAttribute } from '../src/utils/attributes';
+import FlowerCard from '../src/flower-card';
 import { DisplayedAttribute, DisplayedAttributes, ExtraBadge } from '../src/types/flower-card-types';
 
 describe('percentage calculation', () => {
@@ -583,5 +585,46 @@ describe('PPFD percentage calculation', () => {
 
     // Log scale gives higher percentage for lower values in the range
     expect(logPct).toBeGreaterThan(linearPct);
+  });
+});
+
+describe('renderAttribute escaping', () => {
+  const card = { _hass: { localize: () => '' }, config: {} } as unknown as FlowerCard;
+
+  const renderWithUnit = (name: string, unit: string): HTMLElement => {
+    const attr: DisplayedAttribute = {
+      name,
+      current: 50,
+      limits: { min: 10, max: 90 },
+      icon: 'mdi:water',
+      sensor: 'sensor.moisture',
+      unit_of_measurement: unit,
+      display_state: '50',
+    };
+    const container = document.createElement('div');
+    render(renderAttribute(card, attr), container);
+    return container;
+  };
+
+  it('renders a unit containing markup as text', () => {
+    const container = renderWithUnit('moisture', '<img src=x onerror=alert(1)>');
+
+    expect(container.querySelector('img')).toBeNull();
+    expect(container.querySelector('.tip')?.textContent).toContain('50 <img src=x onerror=alert(1)>');
+    expect(container.querySelector('.unit')?.textContent).toBe('<img src=x onerror=alert(1)>');
+  });
+
+  it('keeps the line break in the tooltip', () => {
+    const container = renderWithUnit('moisture', '%');
+
+    expect(container.querySelector('.tip br')).not.toBeNull();
+    expect(container.querySelector('.tip')?.textContent).toContain('(10 ~ 90 %)');
+  });
+
+  it('renders the DLI unit as MathML', () => {
+    const container = renderWithUnit('dli', 'mol/d⋅m²');
+
+    const math = container.querySelector('.unit math');
+    expect(math?.namespaceURI).toBe('http://www.w3.org/1998/Math/MathML');
   });
 });
