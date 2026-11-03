@@ -28,16 +28,23 @@ A Lovelace card for displaying plant data from the [Plant Monitor](https://githu
 
 ## 📦 Installation
 
-The card comes with the [Plant Monitor](https://github.com/Olen/homeassistant-plant) integration. Install Plant Monitor and the card is ready to use on your dashboards. There is nothing else to install.
+From version 2026.11.0, the card comes with the [Plant Monitor](https://github.com/Olen/homeassistant-plant) integration. Install Plant Monitor and the card is ready to use on your dashboards. There is nothing else to install.
 
 ### Moving from the HACS copy
 
-If you installed the card from HACS, or added `flower-card.js` under **Settings** → **Dashboards** → **Resources** yourself, Home Assistant shows a repair asking you to remove that copy:
+When you update to a Plant Monitor version that includes the card, and you installed the card from HACS or added `flower-card.js` under **Settings** → **Dashboards** → **Resources** yourself, Home Assistant shows a repair asking you to remove that copy:
 
 1. Uninstall **Flower Card** in HACS, or delete its resource under **Resources** if you added it by hand
 2. Refresh the browser
 
 Your dashboards keep working the whole time, and they need no changes.
+
+### Older Plant Monitor versions
+
+Plant Monitor before 2026.11.0 does not include the card. Install it yourself:
+
+- **Via HACS:** add this repo as a [Custom Repository](https://hacs.xyz/docs/faq/custom_repositories/) with type **Dashboard**, click **Install** in the "Flower Card" card, and refresh the browser.
+- **Manually:** download `flower-card.js` into your `<config>/www/` folder, add `/local/<path to>/flower-card.js` as a **JavaScript Module** under **Settings** → **Dashboards** → **Resources**, and refresh the browser.
 
 ---
 

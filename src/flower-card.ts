@@ -49,6 +49,7 @@ if (!alreadyListed) {
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
 export default class FlowerCard extends LitElement {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     @property() _hass?: any;
     @property() config?: FlowerCardConfig;
     @state() private _careDialogOpen = false;

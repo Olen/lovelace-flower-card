@@ -1,0 +1,51 @@
+---
+name: "Update plant"
+
+# Re-sends a published card release to the plant integration, e.g. after the
+# release workflow failed to open the plant PR.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Card version, e.g. 2026.11.1"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  update-plant:
+    name: "Update plant"
+    runs-on: "ubuntu-latest"
+    concurrency:
+      group: plant-update
+      cancel-in-progress: false
+    steps:
+      - name: "✏️ Checkout scripts"
+        uses: actions/checkout@v7
+
+      - name: "✏️ Checkout the release"
+        uses: actions/checkout@v7
+        with:
+          ref: "v${{ inputs.version }}"
+          path: release
+
+      - name: "📦 Setup Node.js"
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: release/package-lock.json
+
+      - name: "🔨 Build the release"
+        working-directory: release
+        run: |
+          npm ci
+          npm run build
+
+      - name: "🌸 Update plant"
+        working-directory: release
+        run: ../scripts/plant-pr.sh "$VERSION"
+        env:
+          GH_TOKEN: ${{ secrets.PLANT_REPO_TOKEN }}
+          VERSION: ${{ inputs.version }}

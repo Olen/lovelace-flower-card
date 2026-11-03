@@ -18,7 +18,7 @@ if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-beta[0-9]+)?$ ]]; then
     exit 1
 fi
 
-card_js="$(pwd)/flower-card.js"
+card_build="$(pwd)"
 
 title="Flower card $version"
 if [[ "$version" == *beta* ]]; then
@@ -38,7 +38,13 @@ notes="$new_notes"
 if [ -n "$existing_pr" ]; then
     old_body=$(gh pr view "$existing_pr" --repo "$PLANT_REPO" --json body --jq .body)
     old_notes=$(printf '%s\n' "$old_body" | sed -n "/$NOTES_START/,/$NOTES_END/p" | sed '1d;$d')
-    notes="$old_notes"$'\n'"$new_notes"
+    notes="$old_notes"
+    # A rerun for the same release must not list its changes twice
+    while IFS= read -r line; do
+        if ! printf '%s\n' "$old_notes" | grep -Fxq -- "$line"; then
+            notes="$notes"$'\n'"$line"
+        fi
+    done <<< "$new_notes"
 fi
 
 body=$(printf 'Bundles flower card %s.\n\n%s\n%s\n%s\n' "$version" "$NOTES_START" "$notes" "$NOTES_END")
@@ -63,10 +69,15 @@ else
     git checkout --quiet -B "$BRANCH" origin/main
 fi
 
-cp "$card_js" "$WWW/flower-card.js"
+mkdir -p "$WWW"
+cp "$card_build/flower-card.js" "$card_build/flower-card.js.LICENSE.txt" "$WWW/"
 echo "$version" > "$WWW/flower-card.version"
 git add "$WWW"
-git commit --quiet -m "Flower card $version"
+if git diff --cached --quiet; then
+    echo "Plant already has flower card $version"
+else
+    git commit --quiet -m "Flower card $version"
+fi
 if [ -n "$existing_pr" ]; then
     git push --quiet origin "$BRANCH"
 else
