@@ -56,7 +56,9 @@ if [ -z "$new_notes" ]; then
     new_notes="* Flower card $version"
 fi
 
-existing_pr=$(gh pr list --repo "$PLANT_REPO" --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
+# --head matches the branch name in forks too, so keep only plant's own branch
+existing_pr=$(gh pr list --repo "$PLANT_REPO" --head "$BRANCH" --state open \
+    --json number,isCrossRepository --jq '[.[] | select(.isCrossRepository == false)][0].number // empty')
 
 main_version=$(plant_card_version main)
 newest="$main_version"
@@ -126,19 +128,21 @@ if [ -n "$existing_pr" ]; then
 else
     git push --quiet --force origin "$BRANCH"
 fi
+pushed=$(git rev-parse HEAD)
 
 # The PR may have been merged while this ran; then this build needs a PR of its own
 if [ -n "$existing_pr" ]; then
     state=$(gh pr view "$existing_pr" --repo "$PLANT_REPO" --json state --jq .state)
     if [ "$state" = "OPEN" ]; then
         gh pr edit "$existing_pr" --repo "$PLANT_REPO" --title "$title" --body "$body"
-        gh pr merge "$existing_pr" --repo "$PLANT_REPO" --auto --merge
+        gh pr merge "$existing_pr" --repo "$PLANT_REPO" --auto --merge --match-head-commit "$pushed"
         exit 0
     fi
     body=$(printf 'Bundles flower card %s.\n\n%s\n%s\n%s\n' "$version" "$NOTES_START" "$new_notes" "$NOTES_END")
 fi
 
-gh pr create --repo "$PLANT_REPO" --base main --head "$BRANCH" \
-    --title "$title" --body "$body" --label flower-card
+pr_url=$(gh pr create --repo "$PLANT_REPO" --base main --head "$BRANCH" \
+    --title "$title" --body "$body" --label flower-card)
+echo "$pr_url"
 # Reviewed here already; plant merges it once its required checks pass (also set above, for retries)
-gh pr merge "$BRANCH" --repo "$PLANT_REPO" --auto --merge
+gh pr merge "${pr_url##*/}" --repo "$PLANT_REPO" --auto --merge --match-head-commit "$pushed"
