@@ -26,7 +26,8 @@ if [[ "$version" == *beta* ]]; then
 fi
 
 # Only the change lines: the release's own headings would nest inside plant's section
-new_notes=$(gh release view "v$version" --repo "$CARD_REPO" --json body --jq .body | grep '^\* ' || true)
+release_body=$(gh release view "v$version" --repo "$CARD_REPO" --json body --jq .body)
+new_notes=$(printf '%s\n' "$release_body" | grep '^\* ' || true)
 if [ -z "$new_notes" ]; then
     new_notes="* Flower card $version"
 fi
@@ -58,6 +59,7 @@ if [ -n "$existing_pr" ]; then
     git fetch --quiet origin "$BRANCH"
     git checkout --quiet -B "$BRANCH" "origin/$BRANCH"
 else
+    # No open PR: a branch left by a closed one is stale, start over from main
     git checkout --quiet -B "$BRANCH" origin/main
 fi
 
@@ -65,7 +67,11 @@ cp "$card_js" "$WWW/flower-card.js"
 echo "$version" > "$WWW/flower-card.version"
 git add "$WWW"
 git commit --quiet -m "Flower card $version"
-git push --quiet origin "$BRANCH"
+if [ -n "$existing_pr" ]; then
+    git push --quiet origin "$BRANCH"
+else
+    git push --quiet --force origin "$BRANCH"
+fi
 
 if [ -n "$existing_pr" ]; then
     gh pr edit "$existing_pr" --repo "$PLANT_REPO" --title "$title" --body "$body"
