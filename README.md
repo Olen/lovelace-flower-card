@@ -28,24 +28,26 @@ A Lovelace card for displaying plant data from the [Plant Monitor](https://githu
 
 ## 📦 Installation
 
-### Via the Marketplace *(recommended, HACS before Home Assistant 2026.11)*
+From version 2026.11.0, the card comes with the [Plant Monitor](https://github.com/Olen/homeassistant-plant) integration. Install Plant Monitor and the card is ready to use on your dashboards. There is nothing else to install.
 
-[![Open your Home Assistant instance and open this repository in the Marketplace.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Olen&repository=lovelace-flower-card&category=plugin)
+### Moving from the HACS copy
 
-1. Select the button above, or add [this repo](https://github.com/Olen/lovelace-flower-card) as a custom repository with type **Dashboard**
-2. Click **Install** in the "Flower Card" repository
-3. Refresh the frontend (shift-reload your browser)
+When you update to a Plant Monitor version that includes the card, and you installed the card from HACS or added `flower-card.js` under **Settings** → **Dashboards** → **Resources** yourself, Home Assistant shows a repair asking you to remove that copy:
 
-### Manual Installation
+1. Uninstall **Flower Card** in HACS, or delete its resource under **Resources** if you added it by hand
+2. Refresh the browser
 
-1. Download `flower-card.js` and place it in your `<config>/www/` folder
-2. Go to **Settings** → **Dashboards** → **Resources**
-3. Add the resource:
-   ```yaml
-   Url: /local/<path to>/flower-card.js
-   Resource type: JavaScript Module
-   ```
-4. Refresh the frontend
+Your dashboards keep working the whole time, and they need no changes.
+
+### Older Plant Monitor versions
+
+Plant Monitor before 2026.11.0 does not include the card. Install it yourself:
+
+- **Via the Marketplace** (HACS before Home Assistant 2026.11): select the button below, or add [this repo](https://github.com/Olen/lovelace-flower-card) as a custom repository with type **Dashboard**. Click **Install** in the "Flower Card" repository and refresh the browser.
+
+  [![Open your Home Assistant instance and open this repository in the Marketplace.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Olen&repository=lovelace-flower-card&category=plugin)
+
+- **Manually:** download `flower-card.js` into your `<config>/www/` folder, add `/local/<path to>/flower-card.js` as a **JavaScript Module** under **Settings** → **Dashboards** → **Resources**, and refresh the browser.
 
 ---
 

@@ -1,6 +1,6 @@
 {
   "name": "flower-card",
-  "version": "2026.10.0",
+  "version": "2026.11.1",
   "description": "Custom flower card for https://github.com/Olen/homeassistant-plant",
   "keywords": [
     "home-assistant",
@@ -20,7 +20,7 @@
     "yarn": "^1.22.22"
   },
   "scripts": {
-    "lint": "eslint src/**/*.ts tests/**/*.ts",
+    "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
