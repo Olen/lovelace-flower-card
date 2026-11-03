@@ -428,3 +428,24 @@ describe('FlowerCard logic', () => {
     });
   });
 });
+
+describe('getConfigForm name field', () => {
+  const nameField = async (version: string) => {
+    const root = document.createElement('home-assistant') as HTMLElement & { hass?: unknown };
+    root.hass = { config: { version } };
+    document.body.appendChild(root);
+    const { default: FlowerCard } = await import('../src/flower-card');
+    const field = FlowerCard.getConfigForm().schema.find((item: { name?: string }) => item.name === 'name');
+    root.remove();
+    return field;
+  };
+
+  it('uses the name picker on HA 2025.11+', async () => {
+    expect(await nameField('2026.11.0')).toEqual({
+      name: 'name', selector: { entity_name: {} }, context: { entity: 'entity' },
+    });
+  });
+  it('uses a text field on older HA', async () => {
+    expect(await nameField('2025.10.2')).toEqual({ name: 'name', selector: { text: {} } });
+  });
+});

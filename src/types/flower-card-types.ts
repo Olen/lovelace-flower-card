@@ -15,13 +15,21 @@ export interface ExtraBadge {
     show_state?: boolean; // Show state value next to icon (default: false)
 }
 
+/** One part of a name, composed by Home Assistant (HA 2025.11+). */
+export type EntityNameItem =
+    | { type: 'entity' | 'device' | 'area' | 'floor' }
+    | { type: 'text'; text: string };
+
+/** A card name: typed text, or parts that Home Assistant composes per entity. */
+export type CardName = string | EntityNameItem | EntityNameItem[];
+
 export interface FlowerCardConfig extends LovelaceCardConfig {
     entity?: string;
     battery_sensor?: string;
     display_type?: DisplayType;
     hide_units?: boolean;      // Hide value/unit next to bars (default: false for full, true for compact)
     bars_per_row?: number;     // Number of bars per row: 1 or 2 (default: 2 for full, 1 for compact)
-    name?: string;
+    name?: CardName;
     hide_species?: boolean;
     hide_image?: boolean;
     extra_badges?: ExtraBadge[];
