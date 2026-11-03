@@ -139,3 +139,5 @@ fi
 
 gh pr create --repo "$PLANT_REPO" --base main --head "$BRANCH" \
     --title "$title" --body "$body" --label flower-card
+# Reviewed here already; plant merges it once its required checks pass
+gh pr merge "$BRANCH" --repo "$PLANT_REPO" --auto --merge
