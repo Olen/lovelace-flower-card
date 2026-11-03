@@ -15,10 +15,6 @@ jobs:
   release:
     name: "Create Release"
     runs-on: "ubuntu-latest"
-    # Shared with the Update plant workflow: one plant update at a time
-    concurrency:
-      group: plant-update
-      cancel-in-progress: false
     # Only after Test & Lint succeeds on a push to this repository (a fork's branch can also be named main)
     if: >-
       github.event.workflow_run.conclusion == 'success' &&
@@ -130,6 +126,7 @@ jobs:
           files: |
             flower-card.js
             flower-card.js.gz
+            flower-card.js.LICENSE.txt
         if: steps.check_package.outputs.changed == 'true' && steps.check_tag.outputs.exists != 'true' && contains(env.COMPONENT_VERSION, 'beta') == false
 
       - name: "🤞 Create Beta release"
@@ -142,6 +139,7 @@ jobs:
           files: |
             flower-card.js
             flower-card.js.gz
+            flower-card.js.LICENSE.txt
         if: steps.check_package.outputs.changed == 'true' && steps.check_tag.outputs.exists != 'true' && contains(env.COMPONENT_VERSION, 'beta') == true
 
       - name: "🌸 Update plant"

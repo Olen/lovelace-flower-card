@@ -17,31 +17,17 @@ jobs:
   update-plant:
     name: "Update plant"
     runs-on: "ubuntu-latest"
-    concurrency:
-      group: plant-update
-      cancel-in-progress: false
     steps:
       - name: "✏️ Checkout scripts"
         uses: actions/checkout@v7
 
-      - name: "✏️ Checkout the release"
-        uses: actions/checkout@v7
-        with:
-          ref: "v${{ inputs.version }}"
-          path: release
-
-      - name: "📦 Setup Node.js"
-        uses: actions/setup-node@v7
-        with:
-          node-version: '22'
-          cache: 'npm'
-          cache-dependency-path: release/package-lock.json
-
-      - name: "🔨 Build the release"
-        working-directory: release
+      - name: "📥 Download the published build"
         run: |
-          npm ci
-          npm run build
+          gh release download "v$VERSION" --dir release \
+            --pattern flower-card.js --pattern flower-card.js.LICENSE.txt
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ inputs.version }}
 
       - name: "🌸 Update plant"
         working-directory: release

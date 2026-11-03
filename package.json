@@ -20,7 +20,7 @@
     "yarn": "^1.22.22"
   },
   "scripts": {
-    "lint": "eslint 'src/**/*.ts' 'tests/**/*.ts'",
+    "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
