@@ -132,6 +132,7 @@ if [ -n "$existing_pr" ]; then
     state=$(gh pr view "$existing_pr" --repo "$PLANT_REPO" --json state --jq .state)
     if [ "$state" = "OPEN" ]; then
         gh pr edit "$existing_pr" --repo "$PLANT_REPO" --title "$title" --body "$body"
+        gh pr merge "$existing_pr" --repo "$PLANT_REPO" --auto --merge
         exit 0
     fi
     body=$(printf 'Bundles flower card %s.\n\n%s\n%s\n%s\n' "$version" "$NOTES_START" "$new_notes" "$NOTES_END")
@@ -139,5 +140,5 @@ fi
 
 gh pr create --repo "$PLANT_REPO" --base main --head "$BRANCH" \
     --title "$title" --body "$body" --label flower-card
-# Reviewed here already; plant merges it once its required checks pass
+# Reviewed here already; plant merges it once its required checks pass (also set above, for retries)
 gh pr merge "$BRANCH" --repo "$PLANT_REPO" --auto --merge
