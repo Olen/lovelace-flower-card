@@ -7,7 +7,7 @@ import * as packageJson from '../package.json';
 import { computeCareDialogState, renderAttributes, renderBattery, renderCareInfo, renderCareItems, renderExtraBadges, selectCareInfo } from './utils/attributes';
 import { CARD_NAME, default_show_bars, getCareFields, getPlantAttributes, missingImage } from './utils/constants';
 import { getHassLanguage, localize } from './localize/localize';
-import { entityDisplayName, isMediaSourceUrl, moreInfo, resolveMediaSource, shouldEnableImageLightbox } from './utils/utils';
+import { entityDisplayName, isMediaSourceUrl, moreInfo, nameSelector, resolveMediaSource, shouldEnableImageLightbox } from './utils/utils';
 
 console.info(
     `%c FLOWER-CARD %c ${packageJson.version}`,
@@ -18,6 +18,13 @@ console.info(
 const getConfigFormLanguage = (): string => {
     if (typeof document === 'undefined') return 'en';
     return document.documentElement?.lang || 'en';
+};
+
+// getConfigForm is static, so it has no hass of its own; read the version from the page
+const getHaVersion = (): string | undefined => {
+    if (typeof document === 'undefined') return undefined;
+    const root = document.querySelector('home-assistant') as (Element & { hass?: HomeAssistant }) | null;
+    return root?.hass?.config?.version;
 };
 
 // Suggests flower-card in Home Assistant's card picker when a plant entity is
@@ -106,10 +113,7 @@ export default class FlowerCard extends LitElement {
                     required: true,
                     selector: { entity: { domain: "plant" } }
                 },
-                {
-                    name: "name",
-                    selector: { text: {} }
-                },
+                nameSelector(getHaVersion()),
                 {
                     name: "battery_sensor",
                     selector: { entity: { domain: "sensor", device_class: "battery" } }

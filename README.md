@@ -69,7 +69,7 @@ entity: plant.my_plant
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `entity` | string | **Required** | The plant entity ID |
-| `name` | string | Entity name | Custom display name |
+| `name` | string or name parts | Home Assistant's name for the plant | Text, or the parts to build the name from (see [Custom Name](#custom-name)) |
 | `display_type` | string | `full` | Display mode: `full` or `compact` |
 | `hide_units` | boolean | Based on display_type | Hide value/unit next to bars |
 | `bars_per_row` | number | Based on display_type | Number of bars per row (1 or 2) |
@@ -247,9 +247,23 @@ No configuration is needed; the lightbox is enabled automatically whenever the c
 
 ### Custom Name
 
+Type your own name:
+
 ```yaml
 name: "Living Room Monstera"
 ```
+
+Or, on Home Assistant 2025.11 and later, pick the parts Home Assistant builds the name from, the same way as on its own cards. The same `name` works on every flower card, and each card fills in its own plant's area, device and name:
+
+```yaml
+name:
+  - type: area
+  - type: text
+    text: " · "
+  - type: entity
+```
+
+The parts are `entity`, `device`, `area`, `floor` and `text`. The card editor offers the same name picker as Home Assistant's own cards. On older versions the card shows Home Assistant's default name instead.
 
 ### Hide Species / Image
 
