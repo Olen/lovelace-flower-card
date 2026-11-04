@@ -43,7 +43,10 @@ Your dashboards keep working the whole time, and they need no changes.
 
 Plant Monitor before 2026.11.0 does not include the card. Install it yourself:
 
-- **Via HACS:** add this repo as a [Custom Repository](https://hacs.xyz/docs/faq/custom_repositories/) with type **Dashboard**, click **Install** in the "Flower Card" card, and refresh the browser.
+- **Via the Marketplace** (HACS before Home Assistant 2026.11): select the button below, or add [this repo](https://github.com/Olen/lovelace-flower-card) as a custom repository with type **Dashboard**. Click **Install** in the "Flower Card" repository and refresh the browser.
+
+  [![Open your Home Assistant instance and open this repository in the Marketplace.](https://my.home-assistant.io/badges/marketplace_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=Olen&repository=lovelace-flower-card&category=plugin)
+
 - **Manually:** download `flower-card.js` into your `<config>/www/` folder, add `/local/<path to>/flower-card.js` as a **JavaScript Module** under **Settings** → **Dashboards** → **Resources**, and refresh the browser.
 
 ---
