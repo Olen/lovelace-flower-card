@@ -28,6 +28,7 @@
   "settings_hide_species": "Hide Species",
   "settings_hide_image": "Hide Image",
   "settings_hide_units": "Hide Units",
+  "settings_show_limits": "Show Min/Max Values",
   "settings_full": "Full",
   "settings_compact": "Compact"
 }

@@ -177,6 +177,10 @@ export default class FlowerCard extends LitElement {
                         {
                             name: "hide_units",
                             selector: { boolean: {} }
+                        },
+                        {
+                            name: "show_limits",
+                            selector: { boolean: {} }
                         }
                     ]
                 }
@@ -191,7 +195,8 @@ export default class FlowerCard extends LitElement {
                     show_care: localize({ language }, 'settings_show_care_info'),
                     hide_species: localize({ language }, 'settings_hide_species'),
                     hide_image: localize({ language }, 'settings_hide_image'),
-                    hide_units: localize({ language }, 'settings_hide_units')
+                    hide_units: localize({ language }, 'settings_hide_units'),
+                    show_limits: localize({ language }, 'settings_show_limits')
                 };
                 return labels[schema.name] || schema.name;
             }

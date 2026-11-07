@@ -73,6 +73,7 @@ entity: plant.my_plant
 | `display_type` | string | `full` | Display mode: `full` or `compact` |
 | `hide_units` | boolean | Based on display_type | Hide value/unit next to bars |
 | `bars_per_row` | number | Based on display_type | Number of bars per row (1 or 2) |
+| `show_limits` | boolean | `false` | Show the min and max thresholds under each bar |
 | `battery_sensor` | string | — | Entity ID of a battery sensor |
 | `show_bars` | list | All | Measurement bars to show |
 | `show_care` | list | — | Care guidance text boxes to show ([details](#-care-info)) |

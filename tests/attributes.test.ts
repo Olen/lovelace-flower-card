@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render } from 'lit';
-import { getChunkedDisplayed, isPpfdUnit, renderAttribute } from '../src/utils/attributes';
+import { formatLimit, getChunkedDisplayed, isPpfdUnit, renderAttribute } from '../src/utils/attributes';
 import FlowerCard from '../src/flower-card';
 import { DisplayedAttribute, DisplayedAttributes, ExtraBadge } from '../src/types/flower-card-types';
 
@@ -626,5 +626,57 @@ describe('renderAttribute escaping', () => {
 
     const math = container.querySelector('.unit math');
     expect(math?.namespaceURI).toBe('http://www.w3.org/1998/Math/MathML');
+  });
+});
+
+describe('formatLimit', () => {
+  it('adds thousands separators', () => {
+    expect(formatLimit(20000, { language: 'en', number_format: 'language' } as never)).toBe('20,000');
+  });
+
+  it('keeps all decimals of small thresholds', () => {
+    expect(formatLimit(0.0185, { language: 'en', number_format: 'language' } as never)).toBe('0.0185');
+  });
+
+  it('follows the user locale', () => {
+    expect(formatLimit(1234.5, { language: 'de', number_format: 'language' } as never)).toBe('1.234,5');
+  });
+
+  it('formats when no locale is available', () => {
+    expect(formatLimit(350)).toBe('350');
+  });
+});
+
+describe('renderAttribute limits', () => {
+  const attr: DisplayedAttribute = {
+    name: 'illuminance',
+    current: 185,
+    limits: { min: 600, max: 20000 },
+    icon: 'mdi:brightness-6',
+    sensor: 'sensor.illuminance',
+    unit_of_measurement: 'lx',
+    display_state: '185',
+  };
+
+  const renderWithConfig = (config: Record<string, unknown>): HTMLElement => {
+    const card = {
+      _hass: { localize: () => '', locale: { language: 'en', number_format: 'language' } },
+      config,
+    } as unknown as FlowerCard;
+    const container = document.createElement('div');
+    render(renderAttribute(card, attr), container);
+    return container;
+  };
+
+  it('hides the limits by default', () => {
+    expect(renderWithConfig({}).querySelector('.limits')).toBeNull();
+  });
+
+  it('shows formatted min and max when show_limits is set', () => {
+    const container = renderWithConfig({ show_limits: true });
+
+    expect(container.querySelector('.limits .min')?.textContent).toBe('600');
+    expect(container.querySelector('.limits .max')?.textContent).toBe('20,000');
+    expect(container.querySelector('.attribute')?.classList.contains('has-limits')).toBe(true);
   });
 });
