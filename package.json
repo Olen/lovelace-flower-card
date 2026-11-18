@@ -13,7 +13,7 @@
   "dependencies": {
     "babel-loader": "^10.1.1",
     "compression-webpack-plugin": "^12.0.0",
-    "custom-card-helpers": "^2.0.0",
+    "custom-card-helpers": "^2.1.0",
     "home-assistant-js-websocket": "^9.8.1",
     "lit": "^3.3.3",
     "webpack": "^5.112.2",
