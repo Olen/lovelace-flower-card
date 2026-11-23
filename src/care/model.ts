@@ -305,7 +305,12 @@ export function rowKeysFromShowCare(showCare: unknown): Set<RowKey> {
 }
 
 export function initiallyExpanded(displayType: string | undefined): boolean {
-  return displayType !== 'compact';
+  return displayType !== 'compact' && displayType !== 'folded';
+}
+
+/** `folded` keeps the full header; only `compact` uses the small one. */
+export function careHeaderDisplayType(displayType: string | undefined): 'full' | 'compact' {
+  return displayType === 'compact' ? 'compact' : 'full';
 }
 
 function textsOf(key: RowKey, attributes: Record<string, unknown>): string[] {

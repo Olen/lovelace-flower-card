@@ -56,6 +56,17 @@ export const careStyle = css`
   padding: 8px;
   margin: 2px 0;
 }
+/* Folded rows sit as tight as the flower card's bars, so the two cards line up */
+.care-row.folded {
+  padding: 3px 4px;
+}
+.care-row.folded .care-row-head {
+  min-height: 28px;
+}
+.care-row.alert.folded {
+  padding: 3px 8px;
+  margin: 1px 0;
+}
 .care-row.alert .care-row-head ha-icon,
 .care-row.alert .care-row-title,
 .care-row.alert .care-row-status {

@@ -39,9 +39,12 @@ export interface FlowerCardConfig extends LovelaceCardConfig {
     battery_ok_level?: number;     // Above this → green (default: 40)
 }
 
+export type CareDisplayType = 'full' | 'folded' | 'compact';
+export const CARE_DISPLAY_TYPES: CareDisplayType[] = ['full', 'folded', 'compact'];
+
 export interface FlowerCareCardConfig extends LovelaceCardConfig {
     entity: string;
-    display_type?: DisplayType;
+    display_type?: CareDisplayType;
     name?: CardName;
     hide_species?: boolean;
     hide_image?: boolean;

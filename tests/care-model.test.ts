@@ -12,6 +12,7 @@ import {
   doneConfirmation,
   formatCareDate,
   initiallyExpanded,
+  careHeaderDisplayType,
   msUntilMidnight,
   predictionDays,
   progressFraction,
@@ -449,8 +450,9 @@ describe('msUntilMidnight', () => {
 });
 
 describe('initiallyExpanded', () => {
-  it('is false only for compact', () => {
+  it('is false for folded and compact', () => {
     expect(initiallyExpanded('compact')).toBe(false);
+    expect(initiallyExpanded('folded')).toBe(false);
     expect(initiallyExpanded('full')).toBe(true);
     expect(initiallyExpanded(undefined)).toBe(true);
   });
@@ -690,5 +692,14 @@ describe('rowKeysFromShowCare', () => {
 
   it('lists the valid values when rejecting', () => {
     expect(() => rowKeysFromShowCare(['care_misting'])).toThrow(/care_watering.*care_soil/);
+  });
+});
+
+describe('careHeaderDisplayType', () => {
+  it('uses the compact header only for compact', () => {
+    expect(careHeaderDisplayType('compact')).toBe('compact');
+    expect(careHeaderDisplayType('folded')).toBe('full');
+    expect(careHeaderDisplayType('full')).toBe('full');
+    expect(careHeaderDisplayType(undefined)).toBe('full');
   });
 });

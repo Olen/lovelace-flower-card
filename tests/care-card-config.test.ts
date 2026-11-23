@@ -40,3 +40,14 @@ describe('validateCareCardConfig', () => {
     expect(() => validateCareCardConfig(config)).toThrow('show_care must be a list of:');
   });
 });
+
+describe('validateCareCardConfig display_type', () => {
+  it('accepts full, folded and compact', () => {
+    for (const display_type of ['full', 'folded', 'compact'] as const) {
+      expect(validateCareCardConfig({ entity: 'plant.x', display_type }).display_type).toBe(display_type);
+    }
+  });
+  it('rejects an unknown display_type, naming the valid ones', () => {
+    expect(() => validateCareCardConfig({ entity: 'plant.x', display_type: 'tiny' as never })).toThrow(/tiny.*full, folded, compact/);
+  });
+});

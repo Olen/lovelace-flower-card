@@ -10,6 +10,7 @@ import {
     CareInfo,
     CareRow,
     doneConfirmation,
+    careHeaderDisplayType,
     formatCareDate,
     initiallyExpanded,
     msUntilMidnight,
@@ -21,7 +22,7 @@ import {
     statusLabel,
     TodoItem,
 } from './care/model';
-import { DisplayType, EntitySuggestion, ExtraBadge, FlowerCareCardConfig, HomeAssistantEntity } from './types/flower-card-types';
+import { CARE_DISPLAY_TYPES, EntitySuggestion, ExtraBadge, FlowerCareCardConfig, HomeAssistantEntity } from './types/flower-card-types';
 import { computeCareDialogState, renderBattery, renderCareDialog, renderExtraBadges } from './utils/attributes';
 import { CARE_CARD_NAME, careRowIcons, getCareAreaFields } from './utils/constants';
 import { getHassLanguage, localize, localizeWith } from './localize/localize';
@@ -49,6 +50,9 @@ export function validateCareCardConfig(config: Partial<FlowerCareCardConfig>): F
         throw new Error("You need to define an entity");
     }
     rowKeysFromShowCare(config.show_care);
+    if (config.display_type !== undefined && !CARE_DISPLAY_TYPES.includes(config.display_type)) {
+        throw new Error(`Unknown display_type "${config.display_type}"; use one of: ${CARE_DISPLAY_TYPES.join(', ')}`);
+    }
     return config as FlowerCareCardConfig;
 }
 
@@ -57,8 +61,9 @@ export const getCareCardEntitySuggestion = (hass: HomeAssistant, entityId: strin
         return null;
     }
     return [
-        { label: 'Full', config: { type: `custom:${CARE_CARD_NAME}`, entity: entityId, display_type: DisplayType.Full } },
-        { label: 'Compact', config: { type: `custom:${CARE_CARD_NAME}`, entity: entityId, display_type: DisplayType.Compact } },
+        { label: 'Full', config: { type: `custom:${CARE_CARD_NAME}`, entity: entityId, display_type: 'full' } },
+        { label: 'Folded', config: { type: `custom:${CARE_CARD_NAME}`, entity: entityId, display_type: 'folded' } },
+        { label: 'Compact', config: { type: `custom:${CARE_CARD_NAME}`, entity: entityId, display_type: 'compact' } },
     ];
 };
 
@@ -243,6 +248,7 @@ export default class FlowerCareCard extends LitElement {
                                 select: {
                                     options: [
                                         { value: "full", label: localize({ language }, 'settings_full') },
+                                        { value: "folded", label: localize({ language }, 'settings_folded') },
                                         { value: "compact", label: localize({ language }, 'settings_compact') }
                                     ]
                                 }
@@ -278,7 +284,7 @@ export default class FlowerCareCard extends LitElement {
         const plantId = Object.keys(ha.states).find((entityId) => entityId.startsWith('plant.'));
         return {
             entity: plantId ?? 'plant.my_plant',
-            display_type: DisplayType.Full,
+            display_type: 'full',
         };
     }
 
@@ -494,7 +500,7 @@ export default class FlowerCareCard extends LitElement {
     private renderRow(row: CareRow, now: Date): HTMLTemplateResult {
         const expanded = this.expanded.has(row.key);
         return html`
-            <div class="care-row care-row-${row.key} ${row.alert ? 'alert' : ''}">
+            <div class="care-row care-row-${row.key} ${row.alert ? 'alert' : ''} ${expanded ? '' : 'folded'}">
                 <div class="care-row-head" @click="${() => this.toggleRow(row.key)}">
                     <ha-icon .icon="${careRowIcons[row.key]}"></ha-icon>
                     <span class="care-row-title">${localize(this._hass, `care_row_${row.key}`)}</span>
@@ -566,14 +572,14 @@ export default class FlowerCareCard extends LitElement {
         const stateObj = this.stateObj;
         const hideSpecies = this.config.hide_species ?? false;
         const hideImage = this.config.hide_image ?? false;
-        const haCardCssClass = (this.config.display_type === DisplayType.Compact || hideImage) ? "" : "card-margin-top";
+        const haCardCssClass = (careHeaderDisplayType(this.config.display_type) === 'compact' || hideImage) ? "" : "card-margin-top";
 
         return html`
             <ha-card class="${haCardCssClass}">
             ${renderPlantHeader({
                 hass: this._hass,
                 stateObj,
-                displayType: this.config.display_type,
+                displayType: careHeaderDisplayType(this.config.display_type),
                 hideImage,
                 hideSpecies,
                 name: this.config.name,

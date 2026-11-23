@@ -207,7 +207,7 @@ display_type: full   # or compact
 | Option | Default | Description |
 |--------|---------|-------------|
 | `entity` | *(required)* | A `plant.…` entity |
-| `display_type` | `full` | `full` shows every row unfolded; `compact` uses the small header and folds the rows (tap a row to unfold it) |
+| `display_type` | `full` | `full` shows every row unfolded; `folded` keeps the normal header but folds the rows, so the card fits next to a flower card; `compact` uses the small header and folds the rows (tap a row to unfold it) |
 | `name` | Entity name | As on the flower card, see [Custom Name](#custom-name) |
 | `battery_sensor` | — | As on the flower card, see [Battery Sensor](#-battery-sensor) |
 | `extra_badges` | — | As on the flower card, see [Extra Badges](#️-extra-badges) |
