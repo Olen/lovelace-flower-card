@@ -1,5 +1,56 @@
 import { css } from 'lit';
 
+/** Done buttons and the early-Done dialog, shared by both cards. */
+export const careButtonStyle = css`
+.care-button {
+  font: inherit;
+  font-size: 0.9em;
+  padding: 4px 12px;
+  border-radius: 16px;
+  border: 1px solid var(--primary-color);
+  cursor: pointer;
+}
+.care-button.outlined {
+  background: none;
+  color: var(--primary-color);
+}
+.care-button.solid {
+  background-color: var(--primary-color);
+  color: var(--text-primary-color, #fff);
+}
+.care-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}
+`;
+
+export const nextCareStyle = css`
+.next-care {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  padding: 0 8px 8px;
+}
+.next-care-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--secondary-text-color);
+}
+.next-care-item ha-icon {
+  --mdc-icon-size: 20px;
+  margin-left: 5px;
+}
+.next-care-item.alert {
+  color: var(--error-color, #db4437);
+}
+.next-care-item .care-button {
+  padding: 2px 10px;
+}
+`;
+
 export const careStyle = css`
 :host {
   display: block;
@@ -103,22 +154,6 @@ export const careStyle = css`
 .care-progress > div.overdue {
   background-color: var(--error-color, #db4437);
 }
-.care-button {
-  font: inherit;
-  font-size: 0.9em;
-  padding: 4px 12px;
-  border-radius: 16px;
-  border: 1px solid var(--primary-color);
-  cursor: pointer;
-}
-.care-button.outlined {
-  background: none;
-  color: var(--primary-color);
-}
-.care-button.solid {
-  background-color: var(--primary-color);
-  color: var(--text-primary-color, #fff);
-}
 .care-icon-button {
   background: none;
   border: none;
@@ -136,11 +171,5 @@ export const careStyle = css`
   grid-column: 1 / -1;
   padding: 8px 4px;
   color: var(--secondary-text-color);
-}
-.care-confirm-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 16px;
 }
 `;

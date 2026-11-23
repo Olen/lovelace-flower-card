@@ -1,26 +1,17 @@
 import { CSSResult, HTMLTemplateResult, LitElement, html, nothing } from 'lit';
 import { state } from 'lit/decorators.js';
 import { HomeAssistant } from 'custom-card-helpers';
-import { UnsubscribeFunc } from 'home-assistant-js-websocket';
 import { style } from './styles';
-import { careStyle } from './care/styles';
+import { careButtonStyle, careStyle } from './care/styles';
+import { CareTasksController } from './care/controller';
 import {
-    buildCareRows,
-    careDatesFromStates,
     CareInfo,
     CareRow,
-    doneConfirmation,
     careHeaderDisplayType,
     formatCareDate,
     initiallyExpanded,
-    msUntilMidnight,
-    Readings,
-    readingsFromPlantInfo,
     RowKey,
     rowKeysFromShowCare,
-    snoozedDue,
-    statusLabel,
-    TodoItem,
 } from './care/model';
 import { CARE_DISPLAY_TYPES, EntitySuggestion, ExtraBadge, FlowerCareCardConfig, HomeAssistantEntity } from './types/flower-card-types';
 import { computeCareDialogState, renderBattery, renderCareDialog, renderExtraBadges } from './utils/attributes';
@@ -38,11 +29,7 @@ const SNOOZE_CHOICES: { days: number; label: string }[] = [
 ];
 
 interface PlantCareInfoReply {
-    result: Record<string, unknown> & { care?: CareInfo };
-}
-
-interface TodoSubscriptionMessage {
-    items: TodoItem[];
+    result: Record<string, unknown>;
 }
 
 export function validateCareCardConfig(config: Partial<FlowerCareCardConfig>): FlowerCareCardConfig {
@@ -85,15 +72,8 @@ export default class FlowerCareCard extends LitElement {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     @state() _hass?: any;
     @state() config?: FlowerCareCardConfig;
-    // undefined until plant/get_info has answered; null when plant sends no care block
-    @state() private care: CareInfo | null | undefined = undefined;
-    @state() private items: TodoItem[] = [];
-    @state() private readings: Readings = {};
     @state() private expanded: Set<RowKey> = new Set();
     @state() private _snoozeMenuRow: RowKey | null = null;
-    @state() private _confirmDialogOpen = false;
-    @state() private _confirmRow: CareRow | null = null;
-    @state() private _confirmText = '';
     @state() private _careDialogOpen = false;
     @state() private _imageDialogOpen = false;
     @state() private _careDialogFields: string[] = [];
@@ -103,12 +83,11 @@ export default class FlowerCareCard extends LitElement {
     private previousFetchDate = 0;
     private _lastEntityPicture: string | undefined;
     private _resolvedImageUrl: string | undefined;
-    private _subscribedList: string | null = null;
-    private _unsubscribeTodo: Promise<UnsubscribeFunc> | null = null;
-    private _midnightTimer: ReturnType<typeof setTimeout> | undefined;
+    private careTasks = new CareTasksController(this, 'Flower care card');
 
     set hass(hass: HomeAssistant) {
         this._hass = hass;
+        this.careTasks.hass = hass;
         this.stateObj = this.config?.entity ? hass.states[this.config.entity] as HomeAssistantEntity : undefined;
 
         const entityPicture = this.stateObj?.attributes.entity_picture;
@@ -142,70 +121,7 @@ export default class FlowerCareCard extends LitElement {
             console.warn(`Flower care card: Failed to fetch data for ${this.config?.entity}:`, err);
             return;
         }
-        this.care = reply.result.care ?? null;
-        this.readings = readingsFromPlantInfo(reply.result);
-        this.syncTodoSubscription();
-    }
-
-    private syncTodoSubscription(): void {
-        if (!this.isConnected || this.care === undefined) {
-            return;
-        }
-        const wanted = this.care === null ? null : this.care.todo_list;
-        if (wanted === this._subscribedList) {
-            return;
-        }
-        this.unsubscribeTodo();
-        this.items = [];
-        this._subscribedList = wanted;
-        if (wanted === null) {
-            return;
-        }
-        const subscription = this._hass.connection.subscribeMessage(
-            (message: TodoSubscriptionMessage) => {
-                // Messages for a list we have just left can still arrive before the unsubscribe lands
-                if (this._subscribedList === wanted) {
-                    this.items = message.items;
-                }
-            },
-            { type: 'todo/item/subscribe', entity_id: wanted },
-        ) as Promise<UnsubscribeFunc>;
-        subscription.catch((err: unknown) => {
-            console.warn(`Flower care card: Failed to subscribe to ${wanted}:`, err);
-        });
-        this._unsubscribeTodo = subscription;
-    }
-
-    private unsubscribeTodo(): void {
-        const subscription = this._unsubscribeTodo;
-        this._unsubscribeTodo = null;
-        this._subscribedList = null;
-        if (subscription === null) {
-            return;
-        }
-        // A failed subscription has already been reported; there is nothing to undo
-        subscription.then((unsubscribe) => unsubscribe(), () => undefined);
-    }
-
-    connectedCallback(): void {
-        super.connectedCallback();
-        this.armMidnightTimer();
-        this.syncTodoSubscription();
-    }
-
-    disconnectedCallback(): void {
-        super.disconnectedCallback();
-        clearTimeout(this._midnightTimer);
-        this._midnightTimer = undefined;
-        this.unsubscribeTodo();
-    }
-
-    private armMidnightTimer(): void {
-        clearTimeout(this._midnightTimer);
-        this._midnightTimer = setTimeout(() => {
-            this.requestUpdate();
-            this.armMidnightTimer();
-        }, msUntilMidnight(new Date()));
+        this.careTasks.setPlantInfo(reply.result);
     }
 
     static getConfigForm() {
@@ -317,36 +233,8 @@ export default class FlowerCareCard extends LitElement {
     }
 
     private snooze(row: CareRow, days: number): void {
-        const snooze = row.snooze;
-        if (snooze === null || !this.care?.todo_list) {
-            throw new Error(`Cannot snooze the ${row.key} row`);
-        }
-        const dueDate = snoozedDue(snooze.due, days, new Date());
-        for (const uid of snooze.uids) {
-            this._hass.callService('todo', 'update_item', { item: uid, due_date: dueDate }, { entity_id: this.care.todo_list })
-                .catch((err: unknown) => console.warn(`Flower care card: Failed to snooze ${row.key} for ${this.config?.entity}:`, err));
-        }
+        this.careTasks.snooze(row, days);
         this._snoozeMenuRow = null;
-    }
-
-    private pressDone(row: CareRow): void {
-        const confirmation = doneConfirmation(row);
-        if (confirmation === null) {
-            this.completeRow(row);
-            return;
-        }
-        this.openConfirmDialog(row, confirmation.date);
-    }
-
-    private completeRow(row: CareRow): void {
-        const done = row.done;
-        if (done === null || !this.care?.todo_list) {
-            throw new Error(`Cannot complete the ${row.key} row`);
-        }
-        for (const uid of done.uids) {
-            this._hass.callService('todo', 'update_item', { item: uid, status: 'completed' }, { entity_id: this.care.todo_list })
-                .catch((err: unknown) => console.warn(`Flower care card: Failed to mark ${row.key} as done for ${this.config?.entity}:`, err));
-        }
     }
 
     openCareDialog(badge: ExtraBadge): void {
@@ -376,61 +264,6 @@ export default class FlowerCareCard extends LitElement {
     private renderImageDialog(): HTMLTemplateResult {
         const displayName = this.stateObj ? entityDisplayName(this._hass, this.stateObj, this.config?.name) : '';
         return renderImageDialog(this._resolvedImageUrl, displayName, () => this._closeImageDialog());
-    }
-
-    openConfirmDialog(row: CareRow, date: string | null): void {
-        this._confirmRow = row;
-        if (date === null) {
-            this._confirmText = localize(this._hass, 'care_confirm_early_undated');
-        } else {
-            this._confirmText = localizeWith(this._hass, 'care_confirm_early', { date: formatCareDate(date, getHassLanguage(this._hass)) });
-        }
-        this._confirmDialogOpen = true;
-    }
-
-    private _closeConfirmDialog(): void {
-        this._confirmDialogOpen = false;
-        this._confirmRow = null;
-    }
-
-    private confirmDone(): void {
-        const row = this._confirmRow;
-        if (row === null) {
-            throw new Error('No row to confirm');
-        }
-        this.completeRow(row);
-        this._closeConfirmDialog();
-    }
-
-    private renderConfirmDialog(): HTMLTemplateResult {
-        return html`
-            <ha-dialog open @closed="${() => this._closeConfirmDialog()}">
-                <div>${this._confirmText}</div>
-                <div class="care-confirm-actions">
-                    <button class="care-button outlined" @click="${() => this._closeConfirmDialog()}">
-                        ${localize(this._hass, 'care_cancel')}
-                    </button>
-                    <button class="care-button solid" @click="${() => this.confirmDone()}">
-                        ${localize(this._hass, 'care_confirm_done')}
-                    </button>
-                </div>
-            </ha-dialog>
-        `;
-    }
-
-    private statusText(row: CareRow, now: Date): string {
-        const label = statusLabel(row.status, now);
-        if (label === null) {
-            return '';
-        }
-        const values: Record<string, string | number> = {};
-        if (label.n !== undefined) {
-            values.n = label.n;
-        }
-        if (label.date !== undefined) {
-            values.date = formatCareDate(label.date, getHassLanguage(this._hass));
-        }
-        return localizeWith(this._hass, label.key, values);
     }
 
     private renderSubLine(row: CareRow): HTMLTemplateResult | typeof nothing {
@@ -506,7 +339,7 @@ export default class FlowerCareCard extends LitElement {
         }
         return html`
             <button class="care-button ${row.done.emphasis}"
-                @click="${(e: Event) => { e.stopPropagation(); this.pressDone(row); }}">
+                @click="${(e: Event) => { e.stopPropagation(); this.careTasks.pressDone(row); }}">
                 ${localize(this._hass, 'care_done')}
             </button>`;
     }
@@ -518,7 +351,7 @@ export default class FlowerCareCard extends LitElement {
                 <div class="care-row-head" @click="${() => this.toggleRow(row.key)}">
                     <ha-icon .icon="${careRowIcons[row.key]}"></ha-icon>
                     <span class="care-row-title">${localize(this._hass, `care_row_${row.key}`)}</span>
-                    <span class="care-row-status">${this.statusText(row, now)}</span>
+                    <span class="care-row-status">${this.careTasks.statusText(row, now)}</span>
                     <span class="care-row-actions">
                         ${this.renderSnoozeButton(row)}
                         ${this.renderDoneButton(row)}
@@ -545,21 +378,12 @@ export default class FlowerCareCard extends LitElement {
     }
 
     private renderBody(stateObj: HomeAssistantEntity): HTMLTemplateResult | typeof nothing {
-        const care = this.care;
+        const care = this.careTasks.care;
         if (care === undefined) {
             return nothing;
         }
         const now = new Date();
-        const dates = careDatesFromStates(care, this._hass.states);
-        const allRows = buildCareRows({
-            plantEntityId: stateObj.entity_id,
-            attributes: stateObj.attributes,
-            care,
-            items: this.items,
-            lastDone: dates.lastDone,
-            nextWatering: dates.nextWatering,
-            readings: this.readings,
-        }, now);
+        const allRows = this.careTasks.rows(stateObj, now);
         const shown = rowKeysFromShowCare(this.config?.show_care);
         const rows = allRows.filter((row) => shown.has(row.key));
         return html`
@@ -575,7 +399,7 @@ export default class FlowerCareCard extends LitElement {
         if (!this.config || !this._hass) return html``;
 
         if (!this.stateObj) {
-            this._confirmDialogOpen = false;
+            this.careTasks.closeDialogs();
             this._careDialogOpen = false;
             this._imageDialogOpen = false;
             return html`
@@ -607,14 +431,14 @@ export default class FlowerCareCard extends LitElement {
             <div class="divider"></div>
             ${this.renderBody(stateObj)}
             </ha-card>
-            ${this._confirmDialogOpen ? this.renderConfirmDialog() : html``}
+            ${this.careTasks.renderConfirmDialog()}
             ${this._careDialogOpen ? this.renderCareDialog() : html``}
             ${this._imageDialogOpen ? this.renderImageDialog() : html``}
             `;
     }
 
     static get styles(): CSSResult[] {
-        return [style, careStyle];
+        return [style, careStyle, careButtonStyle];
     }
 }
 

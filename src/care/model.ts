@@ -536,3 +536,39 @@ export function buildCareRows(input: CareRowInput, now: Date): CareRow[] {
   }
   return rows;
 }
+
+export const NEXT_CARE_LIMIT = 2;
+
+const CARE_ROW_KEYS = new Set<RowKey>(CARE_TYPES);
+
+/** Days until the row needs doing: negative when overdue, null when it has nothing to do. */
+function daysUntilCare(row: CareRow, now: Date): number | null {
+  switch (row.status.kind) {
+    case 'overdue':
+      return -row.status.days;
+    case 'due_today':
+      return 0;
+    case 'due':
+      return row.status.days;
+    case 'prediction':
+      return row.alert ? 0 : predictionDays(row.status.at, now);
+    case 'none':
+      return row.alert ? 0 : null;
+  }
+}
+
+/** The most urgent care tasks, soonest first; rows that are equally urgent keep their order. */
+export function nextCareRows(rows: CareRow[], now: Date): CareRow[] {
+  const candidates: { row: CareRow; days: number }[] = [];
+  for (const row of rows) {
+    if (!CARE_ROW_KEYS.has(row.key)) {
+      continue;
+    }
+    const days = daysUntilCare(row, now);
+    if (days !== null) {
+      candidates.push({ row, days });
+    }
+  }
+  candidates.sort((a, b) => a.days - b.days);
+  return candidates.slice(0, NEXT_CARE_LIMIT).map((candidate) => candidate.row);
+}

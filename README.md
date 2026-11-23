@@ -78,6 +78,7 @@ entity: plant.my_plant
 | `battery_sensor` | string | — | Entity ID of a battery sensor |
 | `show_bars` | list | All | Measurement bars to show |
 | `show_care` | list | — | Care guidance text boxes to show ([details](#-care-info)) |
+| `show_next_care` | boolean | `false` | One line under the bars with the two most urgent care tasks and their **Done** buttons, as on the [Flower Care Card](#-flower-care-card). Needs Plant Monitor 2026.12 or newer |
 | `hide_species` | boolean | `false` | Hide the species name |
 | `hide_image` | boolean | `false` | Hide the plant image |
 | `extra_badges` | list | — | Additional icons ([details](EXTRA_BADGES.md)) |

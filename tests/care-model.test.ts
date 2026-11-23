@@ -14,6 +14,7 @@ import {
   initiallyExpanded,
   careHeaderDisplayType,
   msUntilMidnight,
+  nextCareRows,
   predictionDays,
   progressFraction,
   readingsFromPlantInfo,
@@ -701,5 +702,71 @@ describe('careHeaderDisplayType', () => {
     expect(careHeaderDisplayType('folded')).toBe('full');
     expect(careHeaderDisplayType('full')).toBe('full');
     expect(careHeaderDisplayType(undefined)).toBe('full');
+  });
+});
+
+describe('nextCareRows', () => {
+  function careRow(key: RowKey, status: CareRow['status'], alert = false): CareRow {
+    return {
+      key,
+      alert,
+      status,
+      lastDone: null,
+      intervalDays: null,
+      texts: [],
+      done: null,
+      snooze: null,
+      progress: null,
+      reading: null,
+    };
+  }
+
+  it('puts the most overdue task first, then today, then the soonest due', () => {
+    const rows = [
+      careRow('water', { kind: 'due', days: 3, date: '2026-11-26' }),
+      careRow('fertilize', { kind: 'overdue', days: 2 }),
+      careRow('repot', { kind: 'overdue', days: 9 }),
+      careRow('prune', { kind: 'due_today' }),
+    ];
+    expect(nextCareRows(rows, now).map((r) => r.key)).toEqual(['repot', 'fertilize']);
+  });
+
+  it('shows at most two tasks', () => {
+    const rows = [
+      careRow('water', { kind: 'due', days: 1, date: '2026-11-24' }),
+      careRow('fertilize', { kind: 'due', days: 2, date: '2026-11-25' }),
+      careRow('prune', { kind: 'due', days: 3, date: '2026-11-26' }),
+    ];
+    expect(nextCareRows(rows, now).map((r) => r.key)).toEqual(['water', 'fertilize']);
+  });
+
+  it('ranks a predicted watering by its days left', () => {
+    const rows = [
+      careRow('water', { kind: 'prediction', at: '2026-11-28T10:00:00+01:00' }),
+      careRow('fertilize', { kind: 'due', days: 2, date: '2026-11-25' }),
+    ];
+    expect(nextCareRows(rows, now).map((r) => r.key)).toEqual(['fertilize', 'water']);
+  });
+
+  it('treats an active problem without a due date as due today', () => {
+    const rows = [
+      careRow('water', { kind: 'due', days: 1, date: '2026-11-24' }),
+      careRow('fertilize', { kind: 'none' }, true),
+    ];
+    expect(nextCareRows(rows, now).map((r) => r.key)).toEqual(['fertilize', 'water']);
+  });
+
+  it('keeps the row order for equally urgent tasks', () => {
+    const rows = [careRow('water', { kind: 'due_today' }), careRow('fertilize', { kind: 'due_today' })];
+    expect(nextCareRows(rows, now).map((r) => r.key)).toEqual(['water', 'fertilize']);
+  });
+
+  it('leaves out rows with nothing to do, and the Light and Soil rows', () => {
+    const rows = [
+      careRow('water', { kind: 'none' }),
+      careRow('light', { kind: 'none' }, true),
+      careRow('soil', { kind: 'none' }),
+    ];
+    expect(nextCareRows(rows, now)).toEqual([]);
   });
 });

@@ -35,6 +35,7 @@ export interface FlowerCardConfig extends LovelaceCardConfig {
     hide_image?: boolean;
     extra_badges?: ExtraBadge[];
     show_care?: string[];      // selected care_* attribute keys to display (default: none)
+    show_next_care?: boolean;  // one line with the most urgent care tasks (default: false)
     battery_warn_level?: number;   // Below this → red (default: 20)
     battery_ok_level?: number;     // Above this → green (default: 40)
 }
