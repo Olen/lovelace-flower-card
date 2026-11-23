@@ -42,6 +42,25 @@ export interface CareRow {
   done: DoneAction | null;
   snooze: { uids: string[]; due: string | null } | null;
   progress: number | null;
+  reading: RowReading | null;
+}
+
+export type ReadingKind = 'moisture' | 'conductivity';
+
+export interface Reading {
+  current: number;
+  min: number;
+  max: number;
+  unit: string;
+}
+
+export type Readings = Partial<Record<ReadingKind, Reading>>;
+
+export interface RowReading {
+  value: number;
+  min: number;
+  unit: string;
+  barFraction: number | null;
 }
 
 export interface CareRowInput {
@@ -51,6 +70,7 @@ export interface CareRowInput {
   items: TodoItem[];
   lastDone: Partial<Record<CareType, string>>;
   nextWatering: string | null;
+  readings: Readings;
 }
 
 export const SNOOZE_WINDOW_DAYS = 2;
@@ -71,6 +91,11 @@ const PROBLEM_ROW: Record<string, RowKey> = {
   conductivity: 'fertilize',
   illuminance: 'light',
   dli: 'light',
+};
+
+const READING_OF_ROW: Partial<Record<RowKey, ReadingKind>> = {
+  water: 'moisture',
+  fertilize: 'conductivity',
 };
 
 const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
@@ -234,9 +259,9 @@ export function statusLabel(status: RowStatus, now: Date): StatusLabel | null {
         return { key: 'care_status_prediction_today' };
       }
       if (days === 1) {
-        return { key: 'care_status_prediction_one' };
+        return { key: 'care_status_prediction_one', date: status.at };
       }
-      return { key: 'care_status_prediction', n: days };
+      return { key: 'care_status_prediction', n: days, date: status.at };
     }
     case 'due':
       if (status.days === 1) {
@@ -319,6 +344,65 @@ function earliestDue(openItems: TodoItem[]): string | null {
   return earliest;
 }
 
+function parsedNumber(value: unknown): number | null {
+  if (typeof value !== 'number' && typeof value !== 'string') {
+    return null;
+  }
+  if (typeof value === 'string' && value.trim() === '') {
+    return null;
+  }
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function readingOf(raw: unknown): Reading | null {
+  if (typeof raw !== 'object' || raw === null) {
+    return null;
+  }
+  const fields = raw as Record<string, unknown>;
+  const current = parsedNumber(fields.current);
+  const min = parsedNumber(fields.min);
+  const max = parsedNumber(fields.max);
+  if (current === null || min === null || max === null) {
+    return null;
+  }
+  const unit = typeof fields.unit_of_measurement === 'string' ? fields.unit_of_measurement : '';
+  return { current, min, max, unit };
+}
+
+export function readingsFromPlantInfo(result: Record<string, unknown>): Readings {
+  const readings: Readings = {};
+  for (const kind of ['moisture', 'conductivity'] as ReadingKind[]) {
+    if (!(kind in result)) {
+      continue;
+    }
+    const reading = readingOf(result[kind]);
+    if (reading === null) {
+      console.warn(`Ignoring unparsable ${kind} reading:`, result[kind]);
+      continue;
+    }
+    readings[kind] = reading;
+  }
+  return readings;
+}
+
+function rowReading(key: RowKey, readings: Readings): RowReading | null {
+  const kind = READING_OF_ROW[key];
+  if (kind === undefined) {
+    return null;
+  }
+  const reading = readings[kind];
+  if (reading === undefined) {
+    return null;
+  }
+  let barFraction: number | null = null;
+  if (reading.max > reading.min) {
+    const fraction = (reading.current - reading.min) / (reading.max - reading.min);
+    barFraction = Math.min(1, Math.max(0, fraction));
+  }
+  return { value: reading.current, min: reading.min, unit: reading.unit, barFraction };
+}
+
 function buildCareTypeRow(
   key: CareType,
   input: CareRowInput,
@@ -369,6 +453,7 @@ function buildCareTypeRow(
     done,
     snooze,
     progress: mode === 'interval' ? progressFraction(lastDone, due, now) : null,
+    reading: rowReading(key, input.readings),
   };
   return { row, hasOpenItems };
 }
@@ -384,6 +469,7 @@ function buildTextRow(key: 'light' | 'soil', input: CareRowInput, problems: Set<
     done: null,
     snooze: null,
     progress: null,
+    reading: null,
   };
 }
 

@@ -8,6 +8,7 @@ const CARE_CARD_KEYS = [
   'care_row_water', 'care_row_fertilize', 'care_row_repot', 'care_row_prune', 'care_row_light', 'care_row_soil',
   'care_status_prediction', 'care_status_prediction_today', 'care_status_prediction_one',
   'care_status_due', 'care_status_due_tomorrow', 'care_status_due_today', 'care_status_overdue',
+  'care_reading_moisture', 'care_reading_conductivity', 'care_reading_min',
   'care_last', 'care_not_recorded', 'care_every', 'care_done', 'care_no_list', 'care_needs_plant',
   'care_card_name', 'care_confirm_early', 'care_confirm_early_undated', 'care_confirm_done', 'care_cancel',
   'care_snooze', 'care_snooze_1d', 'care_snooze_3d', 'care_snooze_1w',

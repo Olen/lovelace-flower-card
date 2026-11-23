@@ -49,6 +49,13 @@ export const careStyle = css`
   flex: 1;
   min-width: 0;
 }
+.care-row.alert {
+  background: rgba(var(--rgb-error-color, 219, 68, 55), 0.12);
+  border-bottom-color: transparent;
+  border-radius: 6px;
+  padding: 8px;
+  margin: 2px 0;
+}
 .care-row.alert .care-row-head ha-icon,
 .care-row.alert .care-row-title,
 .care-row.alert .care-row-status {
@@ -78,6 +85,9 @@ export const careStyle = css`
 .care-progress > div {
   height: 100%;
   background-color: var(--primary-color);
+}
+.care-progress > div.moisture {
+  background-color: var(--info-color, #039be5);
 }
 .care-progress > div.overdue {
   background-color: var(--error-color, #db4437);

@@ -37,9 +37,9 @@
   "care_row_prune": "Prune",
   "care_row_light": "Light",
   "care_row_soil": "Soil",
-  "care_status_prediction": "~{n} days at this rate",
+  "care_status_prediction": "~{n} days at this rate ({date})",
   "care_status_prediction_today": "dry today at this rate",
-  "care_status_prediction_one": "~1 day at this rate",
+  "care_status_prediction_one": "~1 day at this rate ({date})",
   "care_status_due": "due in {n} days ({date})",
   "care_status_due_tomorrow": "due tomorrow ({date})",
   "care_status_due_today": "due today",
@@ -58,5 +58,8 @@
   "care_snooze": "Snooze",
   "care_snooze_1d": "1 day",
   "care_snooze_3d": "3 days",
-  "care_snooze_1w": "1 week"
+  "care_snooze_1w": "1 week",
+  "care_reading_moisture": "Moisture {value} {unit}",
+  "care_reading_conductivity": "Conductivity {value} {unit}",
+  "care_reading_min": "min {min}"
 }

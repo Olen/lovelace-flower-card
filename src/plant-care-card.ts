@@ -13,6 +13,8 @@ import {
     formatCareDate,
     initiallyExpanded,
     msUntilMidnight,
+    Readings,
+    readingsFromPlantInfo,
     RowKey,
     snoozedDue,
     statusLabel,
@@ -33,7 +35,7 @@ const SNOOZE_CHOICES: { days: number; label: string }[] = [
 ];
 
 interface PlantCareInfoReply {
-    result: { care?: CareInfo };
+    result: Record<string, unknown> & { care?: CareInfo };
 }
 
 interface TodoSubscriptionMessage {
@@ -78,6 +80,7 @@ export default class PlantCareCard extends LitElement {
     // undefined until plant/get_info has answered; null when plant sends no care block
     @state() private care: CareInfo | null | undefined = undefined;
     @state() private items: TodoItem[] = [];
+    @state() private readings: Readings = {};
     @state() private expanded: Set<RowKey> = new Set();
     @state() private _snoozeMenuRow: RowKey | null = null;
     @state() private _confirmDialogOpen = false;
@@ -128,6 +131,7 @@ export default class PlantCareCard extends LitElement {
             return;
         }
         this.care = reply.result.care ?? null;
+        this.readings = readingsFromPlantInfo(reply.result);
         this.syncTodoSubscription();
     }
 
@@ -350,7 +354,7 @@ export default class PlantCareCard extends LitElement {
         if (!CARE_ROW_KEYS.includes(row.key)) {
             return nothing;
         }
-        const parts: string[] = [];
+        const parts: string[] = this.readingParts(row);
         if (row.lastDone === null) {
             parts.push(localize(this._hass, 'care_not_recorded'));
         } else {
@@ -360,6 +364,25 @@ export default class PlantCareCard extends LitElement {
             parts.push(localizeWith(this._hass, 'care_every', { n: row.intervalDays }));
         }
         return html`<div class="care-row-sub">${parts.join(' · ')}</div>`;
+    }
+
+    private readingParts(row: CareRow): string[] {
+        const reading = row.reading;
+        if (reading === null) {
+            return [];
+        }
+        const key = row.key === 'water' ? 'care_reading_moisture' : 'care_reading_conductivity';
+        return [
+            localizeWith(this._hass, key, { value: reading.value, unit: reading.unit }),
+            localizeWith(this._hass, 'care_reading_min', { min: `${reading.min} ${reading.unit}` }),
+        ];
+    }
+
+    private renderMoistureBar(row: CareRow): HTMLTemplateResult | typeof nothing {
+        if (row.key !== 'water' || row.reading === null || row.reading.barFraction === null) {
+            return nothing;
+        }
+        return html`<div class="care-progress"><div class="moisture" style="width: ${row.reading.barFraction * 100}%"></div></div>`;
     }
 
     private renderProgress(row: CareRow): HTMLTemplateResult | typeof nothing {
@@ -420,6 +443,7 @@ export default class PlantCareCard extends LitElement {
                 </div>
                 ${this.renderSnoozeMenu(row)}
                 ${expanded ? html`
+                    ${this.renderMoistureBar(row)}
                     ${this.renderProgress(row)}
                     ${this.renderSubLine(row)}
                     ${row.texts.map((text) => html`<div class="care-text">${text}</div>`)}
@@ -451,6 +475,7 @@ export default class PlantCareCard extends LitElement {
             items: this.items,
             lastDone: dates.lastDone,
             nextWatering: dates.nextWatering,
+            readings: this.readings,
         }, now);
         return html`
             <div class="care-body">

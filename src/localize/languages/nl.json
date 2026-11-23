@@ -37,9 +37,9 @@
   "care_row_prune": "Snoeien",
   "care_row_light": "Licht",
   "care_row_soil": "Grond",
-  "care_status_prediction": "~{n} dagen in dit tempo",
+  "care_status_prediction": "~{n} dagen in dit tempo ({date})",
   "care_status_prediction_today": "vandaag droog in dit tempo",
-  "care_status_prediction_one": "~1 dag in dit tempo",
+  "care_status_prediction_one": "~1 dag in dit tempo ({date})",
   "care_status_due": "over {n} dagen ({date})",
   "care_status_due_tomorrow": "morgen ({date})",
   "care_status_due_today": "vandaag",
@@ -58,5 +58,8 @@
   "care_snooze": "Uitstellen",
   "care_snooze_1d": "1 dag",
   "care_snooze_3d": "3 dagen",
-  "care_snooze_1w": "1 week"
+  "care_snooze_1w": "1 week",
+  "care_reading_moisture": "Bodemvochtigheid {value} {unit}",
+  "care_reading_conductivity": "Geleidbaarheid {value} {unit}",
+  "care_reading_min": "min. {min}"
 }

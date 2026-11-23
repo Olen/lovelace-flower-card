@@ -37,9 +37,9 @@
   "care_row_prune": "Schneiden",
   "care_row_light": "Licht",
   "care_row_soil": "Erde",
-  "care_status_prediction": "~{n} Tage bei diesem Tempo",
+  "care_status_prediction": "~{n} Tage bei diesem Tempo ({date})",
   "care_status_prediction_today": "heute trocken bei diesem Tempo",
-  "care_status_prediction_one": "~1 Tag bei diesem Tempo",
+  "care_status_prediction_one": "~1 Tag bei diesem Tempo ({date})",
   "care_status_due": "fällig in {n} Tagen ({date})",
   "care_status_due_tomorrow": "morgen fällig ({date})",
   "care_status_due_today": "heute fällig",
@@ -58,5 +58,8 @@
   "care_snooze": "Verschieben",
   "care_snooze_1d": "1 Tag",
   "care_snooze_3d": "3 Tage",
-  "care_snooze_1w": "1 Woche"
+  "care_snooze_1w": "1 Woche",
+  "care_reading_moisture": "Bodenfeuchtigkeit {value} {unit}",
+  "care_reading_conductivity": "Leitfähigkeit {value} {unit}",
+  "care_reading_min": "min. {min}"
 }

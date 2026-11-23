@@ -15,6 +15,7 @@ import {
   msUntilMidnight,
   predictionDays,
   progressFraction,
+  readingsFromPlantInfo,
   RowKey,
   snoozedDue,
   statusLabel,
@@ -44,6 +45,7 @@ function input(overrides: Partial<CareRowInput> = {}): CareRowInput {
     items: [],
     lastDone: {},
     nextWatering: null,
+    readings: {},
     ...overrides,
   };
 }
@@ -530,6 +532,7 @@ describe('doneConfirmation', () => {
       done: null,
       snooze: null,
       progress: null,
+      reading: null,
       ...overrides,
     };
   }
@@ -567,12 +570,12 @@ describe('statusLabel', () => {
 
   it('uses the singular for a prediction of one day', () => {
     expect(statusLabel({ kind: 'prediction', at: new Date(2026, 10, 24, 8, 0).toISOString() }, now))
-      .toEqual({ key: 'care_status_prediction_one' });
+      .toEqual({ key: 'care_status_prediction_one', date: new Date(2026, 10, 24, 8, 0).toISOString() });
   });
 
   it('counts days for a longer prediction', () => {
     expect(statusLabel({ kind: 'prediction', at: new Date(2026, 10, 26, 8, 0).toISOString() }, now))
-      .toEqual({ key: 'care_status_prediction', n: 3 });
+      .toEqual({ key: 'care_status_prediction', n: 3, date: new Date(2026, 10, 26, 8, 0).toISOString() });
   });
 
   it('says tomorrow for a due date one day away', () => {
@@ -591,5 +594,61 @@ describe('statusLabel', () => {
 
   it('counts overdue days', () => {
     expect(statusLabel({ kind: 'overdue', days: 3 }, now)).toEqual({ key: 'care_status_overdue', n: 3 });
+  });
+});
+
+describe('readingsFromPlantInfo', () => {
+  it('takes moisture and conductivity readings from the plant info', () => {
+    const result = {
+      moisture: { current: 18, min: 15, max: 60, unit_of_measurement: '%', icon: 'mdi:water', sensor: 'sensor.m' },
+      conductivity: { current: '164', min: 350, max: 2000, unit_of_measurement: 'μS/cm', icon: 'mdi:spa', sensor: 'sensor.c' },
+      temperature: { current: 21, min: 10, max: 30, unit_of_measurement: '°C', icon: 'mdi:t', sensor: 'sensor.t' },
+    };
+    expect(readingsFromPlantInfo(result)).toEqual({
+      moisture: { current: 18, min: 15, max: 60, unit: '%' },
+      conductivity: { current: 164, min: 350, max: 2000, unit: 'μS/cm' },
+    });
+  });
+
+  it('has no reading for a sensor the plant does not have', () => {
+    expect(readingsFromPlantInfo({})).toEqual({});
+  });
+
+  it('drops a reading whose numbers do not parse', () => {
+    const result = {
+      moisture: { current: 'unavailable', min: 15, max: 60, unit_of_measurement: '%' },
+      conductivity: { current: 164, min: null, max: 2000, unit_of_measurement: 'μS/cm' },
+    };
+    expect(readingsFromPlantInfo(result)).toEqual({});
+  });
+});
+
+describe('readings on rows', () => {
+  it('shows moisture on Water and conductivity on Fertilize', () => {
+    const rows = buildCareRows(input({
+      readings: {
+        moisture: { current: 18, min: 15, max: 60, unit: '%' },
+        conductivity: { current: 164, min: 350, max: 2000, unit: 'μS/cm' },
+      },
+    }), now);
+    expect(row(rows, 'water').reading).toEqual({ value: 18, min: 15, unit: '%', barFraction: 3 / 45 });
+    expect(row(rows, 'fertilize').reading).toEqual({ value: 164, min: 350, unit: 'μS/cm', barFraction: 0 });
+    expect(row(rows, 'repot').reading).toBeNull();
+  });
+
+  it('has no reading without the sensor', () => {
+    expect(row(buildCareRows(input(), now), 'water').reading).toBeNull();
+  });
+
+  it('clamps the bar fraction at both ends', () => {
+    const above = buildCareRows(input({ readings: { moisture: { current: 80, min: 15, max: 60, unit: '%' } } }), now);
+    const below = buildCareRows(input({ readings: { moisture: { current: 5, min: 15, max: 60, unit: '%' } } }), now);
+    expect(row(above, 'water').reading?.barFraction).toBe(1);
+    expect(row(below, 'water').reading?.barFraction).toBe(0);
+  });
+
+  it('has no bar when min and max leave no range', () => {
+    const flat = buildCareRows(input({ readings: { moisture: { current: 20, min: 20, max: 20, unit: '%' } } }), now);
+    expect(row(flat, 'water').reading?.barFraction).toBeNull();
   });
 });
