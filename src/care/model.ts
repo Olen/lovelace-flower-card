@@ -284,15 +284,19 @@ const ROW_OF_SHOW_CARE = new Map<string, RowKey>([
   ['care_soil', 'soil'],
 ]);
 
-export function rowKeysFromShowCare(showCare: string[] | undefined): Set<RowKey> {
-  if (showCare === undefined) {
+export function rowKeysFromShowCare(showCare: unknown): Set<RowKey> {
+  const valid = [...ROW_OF_SHOW_CARE.keys()].join(', ');
+  // The editor writes [] when every chip is cleared; a bare `show_care:` in YAML is null
+  if (showCare === undefined || showCare === null || (Array.isArray(showCare) && showCare.length === 0)) {
     return new Set(ROW_OF_SHOW_CARE.values());
+  }
+  if (!Array.isArray(showCare)) {
+    throw new Error(`show_care must be a list of: ${valid}`);
   }
   const keys = new Set<RowKey>();
   for (const value of showCare) {
     const key = ROW_OF_SHOW_CARE.get(value);
     if (key === undefined) {
-      const valid = [...ROW_OF_SHOW_CARE.keys()].join(', ');
       throw new Error(`Unknown show_care value "${value}". Valid values: ${valid}`);
     }
     keys.add(key);

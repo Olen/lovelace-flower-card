@@ -659,6 +659,18 @@ describe('rowKeysFromShowCare', () => {
     expect(rowKeysFromShowCare(undefined)).toEqual(new Set(['water', 'fertilize', 'repot', 'prune', 'light', 'soil']));
   });
 
+  it('shows every area when show_care is null', () => {
+    expect(rowKeysFromShowCare(null)).toEqual(rowKeysFromShowCare(undefined));
+  });
+
+  it('shows every area when show_care is an empty list', () => {
+    expect(rowKeysFromShowCare([])).toEqual(rowKeysFromShowCare(undefined));
+  });
+
+  it('rejects a show_care that is not a list', () => {
+    expect(() => rowKeysFromShowCare('care_watering')).toThrow(/show_care must be a list of: care_watering, .*care_soil/);
+  });
+
   it('shows only the chosen areas', () => {
     expect(rowKeysFromShowCare(['care_watering', 'care_repotting'])).toEqual(new Set(['water', 'repot']));
   });

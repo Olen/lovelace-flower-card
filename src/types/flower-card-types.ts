@@ -49,7 +49,7 @@ export interface FlowerCareCardConfig extends LovelaceCardConfig {
     battery_warn_level?: number;
     battery_ok_level?: number;
     extra_badges?: ExtraBadge[];
-    show_care?: string[];      // care areas to show (default: all)
+    show_care?: string[] | null;   // care areas to show (default: all)
 }
 
 export enum DisplayType {

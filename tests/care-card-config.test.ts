@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { validateCareCardConfig } from '../src/flower-care-card';
-import { DisplayType } from '../src/types/flower-card-types';
+import { DisplayType, FlowerCareCardConfig } from '../src/types/flower-card-types';
 
 describe('validateCareCardConfig', () => {
   it('rejects a config without an entity', () => {
@@ -28,5 +28,15 @@ describe('validateCareCardConfig', () => {
 
   it('rejects an unknown show_care value', () => {
     expect(() => validateCareCardConfig({ entity: 'plant.x', show_care: ['care_misting'] })).toThrow(/care_misting/);
+  });
+
+  it('treats an empty or null show_care as showing all areas', () => {
+    expect(() => validateCareCardConfig({ entity: 'plant.x', show_care: [] })).not.toThrow();
+    expect(() => validateCareCardConfig({ entity: 'plant.x', show_care: null })).not.toThrow();
+  });
+
+  it('rejects a show_care that is not a list', () => {
+    const config = { entity: 'plant.x', show_care: 'care_watering' } as unknown as Partial<FlowerCareCardConfig>;
+    expect(() => validateCareCardConfig(config)).toThrow('show_care must be a list of:');
   });
 });
