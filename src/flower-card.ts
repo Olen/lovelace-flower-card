@@ -5,8 +5,9 @@ import { style } from './styles';
 import { DisplayType, EntitySuggestion, ExtraBadge, FlowerCardConfig, HomeAssistantEntity, PlantInfo } from './types/flower-card-types';
 import * as packageJson from '../package.json';
 import { computeCareDialogState, renderAttributes, renderBattery, renderCareInfo, renderCareItems, renderExtraBadges, selectCareInfo } from './utils/attributes';
-import { CARD_NAME, default_show_bars, getCareFields, getPlantAttributes, missingImage } from './utils/constants';
+import { CARD_NAME, default_show_bars, getCareFields, getPlantAttributes } from './utils/constants';
 import { getHassLanguage, localize } from './localize/localize';
+import { renderPlantHeader } from './utils/header';
 import { entityDisplayName, isMediaSourceUrl, moreInfo, nameSelector, resolveMediaSource, shouldEnableImageLightbox } from './utils/utils';
 
 console.info(
@@ -299,35 +300,26 @@ export default class FlowerCard extends LitElement {
         }
         const stateObj = this.stateObj;
 
-        const species = stateObj.attributes.species;
-        const displayName = entityDisplayName(this._hass, stateObj, this.config.name);
         const hideSpecies = this.config.hide_species ?? false;
         const hideImage = this.config.hide_image ?? false;
         const imageLightbox = shouldEnableImageLightbox(hideImage, this._resolvedImageUrl);
-        const headerCssClass = this.config.display_type === DisplayType.Compact ? "header-compact" : "header";
         const haCardCssClass = (this.config.display_type === DisplayType.Compact || hideImage) ? "" : "card-margin-top";
-        const noImageClass = hideImage ? " no-image" : "";
 
         return html`
             <ha-card class="${haCardCssClass}">
-            <div class="${headerCssClass}${noImageClass}" @click="${() =>
-                moreInfo(this, stateObj.entity_id)}">
-                ${!hideImage ? html`<img
-                    src="${this._resolvedImageUrl || missingImage}"
-                    class="${imageLightbox ? 'has-lightbox' : ''}"
-                    @click="${(e: Event) => {
-                        if (!imageLightbox) return;
-                        e.stopPropagation();
-                        this.openImageDialog();
-                    }}">` : ''}
-                <span id="name"> ${displayName} <ha-icon .icon="mdi:${stateObj.state.toLowerCase() == "problem"
-                ? "alert-circle-outline"
-                : ""
-            }"></ha-icon>
-                </span>
-                <span id="battery">${renderExtraBadges(this)}${renderBattery(this)}</span>
-                ${!hideSpecies ? html`<span id="species">${species}</span>` : ''}
-            </div>
+            ${renderPlantHeader({
+                hass: this._hass,
+                stateObj,
+                displayType: this.config.display_type,
+                hideImage,
+                hideSpecies,
+                name: this.config.name,
+                imageUrl: this._resolvedImageUrl,
+                badges: html`${renderExtraBadges(this)}${renderBattery(this)}`,
+                imageLightbox,
+                onImageClick: () => this.openImageDialog(),
+                onClick: () => moreInfo(this, stateObj.entity_id),
+            })}
             <div class="divider"></div>
             ${renderAttributes(this)}
             ${renderCareInfo(this)}
