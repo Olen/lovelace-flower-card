@@ -18,6 +18,7 @@ A Lovelace card for displaying plant data from the [Plant Monitor](https://githu
   - [🖼️ Display Types](#️-display-types)
   - [📊 Show Bars](#-show-bars)
   - [🌿 Care Info](#-care-info)
+  - [🪴 Plant Care Card](#-plant-care-card)
   - [🔋 Battery Sensor](#-battery-sensor)
   - [🏷️ Extra Badges](#️-extra-badges)
   - [🔍 Image Lightbox](#-image-lightbox)
@@ -188,6 +189,70 @@ Available fields: `care_watering`, `care_sunlight`, `care_soil`, `care_pruning`,
 Each selected field renders as a labeled text box — and only when the plant actually has that care attribute, so missing or empty fields are skipped automatically.
 
 > **Note:** Care text comes from [OpenPlantbook](https://open.plantbook.io/) via the [plant integration](https://github.com/Olen/homeassistant-plant). Existing plants need a **species refresh** before the `care_*` attributes appear (newly added plants get them automatically). You can confirm the data on your `plant.…` entity under **Developer Tools → States**.
+
+---
+
+## 🪴 Plant Care Card
+
+The flower card shows how your plant is doing right now. The **plant care card** shows what it needs from you: what to do, when, and how. Use them side by side.
+
+It comes with the flower card. If the flower card works, the plant care card is already installed.
+
+```yaml
+type: custom:plant-care-card
+entity: plant.monstera
+display_type: full   # or compact
+```
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `entity` | *(required)* | A `plant.…` entity |
+| `display_type` | `full` | `full` shows every row unfolded; `compact` uses the small header and folds the rows (tap a row to unfold it) |
+
+> **Note:** The card needs [Plant Monitor](https://github.com/Olen/homeassistant-plant) **2026.12 or newer**. With an older version it only shows the care advice. Task-related parts (due dates, the **Done** button, red rows for due tasks) appear only when the plant has a to-do list. Choose one under **Settings → Devices & Services → Plant Monitor → *your plant* → Configure → Care tasks**.
+
+### What the card shows
+
+The header is the same as on the flower card. Below it is one row per care area:
+
+| Row | Shows |
+|-----|-------|
+| 💧 **Water** | When the soil is expected to be dry at the current rate (if the plant has a moisture sensor), the moisture reading, when it was last watered, and the watering advice |
+| 🧪 **Fertilize** | The conductivity reading, when it was last fertilized, and the fertilizing advice |
+| 🪴 **Repot** | When it was last repotted, and when it is next due on a schedule |
+| ✂️ **Prune** | The pruning advice, and when it is next due on a schedule |
+| ☀️ **Light** | The light advice. Red when the plant has a light problem (illuminance or DLI) |
+| 🪨 **Soil** | The soil advice |
+
+The advice comes from [OpenPlantbook](https://open.plantbook.io/) and is shown as written; OpenPlantbook only provides it in English. A row with nothing to say is left out.
+
+### Sensor or schedule
+
+How a task row behaves depends on how the plant is set up. You choose with the plant's **"Use … as problem trigger"** checkboxes and the intervals under **Care tasks**. The [Plant Monitor documentation](https://github.com/Olen/homeassistant-plant#-care-tasks-preview) explains the details.
+
+- **The sensor decides** (checkbox checked): when the soil is too dry or the conductivity too low, the row turns red and says *due today*. There is no **Done** button: the task closes by itself when the sensor sees that you watered or fertilized.
+- **On a schedule** (checkbox unchecked, interval set): the row shows when the next task is due, with a bar running from the last time it was done to the due date, and a **Done** button.
+  - A **solid** button means the task is due or overdue. Press it when you have done the job.
+  - An **outlined** button means it is not due yet. Pressing it asks first, so a stray tap doesn't log a job you haven't done.
+- **Nothing** (checkbox unchecked, interval 0): the row only shows the advice.
+
+A watering or fertilizing the plant notices by itself ticks the task off too, whichever way you set it up.
+
+### Snooze
+
+A row with an open task has a ⏰ button. The button appears when the task is due within two days or overdue. It moves the task's due date by 1 day, 3 days or 1 week, counted from today if the task is overdue. Nothing else changes: the task stays in your to-do list with the new date.
+
+### Red rows
+
+A row turns red when its task is due today or overdue, or when the plant has an active problem for that row (moisture for Water, conductivity for Fertilize, illuminance or DLI for Light). Rows stay red when they are folded.
+
+### Wide cards
+
+The card arranges itself by its own width. When there is room, the rows are shown in two columns, in pairs: Water next to Fertilize, Repot next to Prune, and Light next to Soil. This works the same in Sections, Masonry and Panel views; in a Sections view, make the card 12 columns wide to get two columns.
+
+### Without a to-do list
+
+The card still shows the predicted watering, the readings, when things were last done (as far as the plant has noticed), and the advice. There are no due dates, no **Done** buttons and no red rows for tasks, and a short note at the bottom tells you where to add a list.
 
 ---
 
