@@ -386,24 +386,31 @@ describe('FlowerCard logic', () => {
     });
 
     describe('resolveEntityPicture', () => {
-      it('has no picture when the entity has none', async () => {
+      it('applies no picture at once when the entity has none', () => {
         const mockHass = { callWS: vi.fn() };
+        const apply = vi.fn();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        expect(await resolveEntityPicture(mockHass as any, undefined)).toBeUndefined();
+        resolveEntityPicture(mockHass as any, undefined, apply);
+        expect(apply).toHaveBeenCalledWith(undefined);
         expect(mockHass.callWS).not.toHaveBeenCalled();
       });
 
-      it('keeps a plain URL as it is', async () => {
+      it('applies a plain URL at once, as it is', () => {
         const mockHass = { callWS: vi.fn() };
+        const apply = vi.fn();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        expect(await resolveEntityPicture(mockHass as any, '/local/plant.jpg')).toBe('/local/plant.jpg');
+        resolveEntityPicture(mockHass as any, '/local/plant.jpg', apply);
+        expect(apply).toHaveBeenCalledWith('/local/plant.jpg');
         expect(mockHass.callWS).not.toHaveBeenCalled();
       });
 
-      it('resolves a media-source URL', async () => {
+      it('applies a media-source URL once it is resolved', async () => {
         const mockHass = { callWS: vi.fn().mockResolvedValue({ url: '/media/local/plant.jpg', mime_type: 'image/jpeg' }) };
+        const apply = vi.fn();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        expect(await resolveEntityPicture(mockHass as any, 'media-source://media_source/local/plant.jpg')).toBe('/media/local/plant.jpg');
+        resolveEntityPicture(mockHass as any, 'media-source://media_source/local/plant.jpg', apply);
+        expect(apply).not.toHaveBeenCalled();
+        await vi.waitFor(() => expect(apply).toHaveBeenCalledWith('/media/local/plant.jpg'));
       });
     });
 

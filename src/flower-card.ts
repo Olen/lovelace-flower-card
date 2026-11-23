@@ -87,9 +87,11 @@ export default class FlowerCard extends LitElement {
         }
     }
 
-    private async _resolveEntityPicture(hass: HomeAssistant, entityPicture: string | undefined): Promise<void> {
-        this._resolvedImageUrl = await resolveEntityPicture(hass, entityPicture);
-        this.requestUpdate();
+    private _resolveEntityPicture(hass: HomeAssistant, entityPicture: string | undefined): void {
+        resolveEntityPicture(hass, entityPicture, (url) => {
+            this._resolvedImageUrl = url;
+            this.requestUpdate();
+        });
     }
 
     static getConfigForm() {

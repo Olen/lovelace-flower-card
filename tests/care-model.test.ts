@@ -149,6 +149,23 @@ describe('buildCareRows water', () => {
     expect(water.done).toBeNull();
   });
 
+  it('W3 sensor mode with a moisture problem and no open item is an alert without Done', () => {
+    const water = row(
+      buildCareRows(
+        input({
+          care: careInfo({ water: 'sensor' }),
+          attributes: problems('moisture'),
+          nextWatering: '2026-11-25T10:00:00+01:00',
+        }),
+        now,
+      ),
+      'water',
+    );
+    expect(water.alert).toBe(true);
+    expect(water.status).toEqual({ kind: 'prediction', at: '2026-11-25T10:00:00+01:00' });
+    expect(water.done).toBeNull();
+  });
+
   it('W4 interval mode offers a solid Done when due today', () => {
     const care = careInfo({ water: 'interval' });
     care.intervals.water = 7;

@@ -47,7 +47,7 @@ export function validateCareCardConfig(config: Partial<PlantCareCardConfig>): Pl
     return config as PlantCareCardConfig;
 }
 
-export const getCareCardEntitySuggestion = (hass: HomeAssistant, entityId: string): EntitySuggestion[] | null => {
+export const getCareCardEntitySuggestion = (hass: HomeAssistant, entityId: string): EntitySuggestion<PlantCareCardConfig>[] | null => {
     if (entityId.split('.')[0] !== 'plant') {
         return null;
     }
@@ -109,9 +109,11 @@ export default class PlantCareCard extends LitElement {
         }
     }
 
-    private async _resolveEntityPicture(hass: HomeAssistant, entityPicture: string | undefined): Promise<void> {
-        this._resolvedImageUrl = await resolveEntityPicture(hass, entityPicture);
-        this.requestUpdate();
+    private _resolveEntityPicture(hass: HomeAssistant, entityPicture: string | undefined): void {
+        resolveEntityPicture(hass, entityPicture, (url) => {
+            this._resolvedImageUrl = url;
+            this.requestUpdate();
+        });
     }
 
     private async fetchCare(hass: HomeAssistant): Promise<void> {
@@ -263,7 +265,8 @@ export default class PlantCareCard extends LitElement {
         }
         const dueDate = snoozedDue(snooze.due, days, new Date());
         for (const uid of snooze.uids) {
-            this._hass.callService('todo', 'update_item', { item: uid, due_date: dueDate }, { entity_id: this.care.todo_list });
+            this._hass.callService('todo', 'update_item', { item: uid, due_date: dueDate }, { entity_id: this.care.todo_list })
+                .catch((err: unknown) => console.warn(`Plant care card: Failed to snooze ${row.key} for ${this.config?.entity}:`, err));
         }
         this._snoozeMenuRow = null;
     }
@@ -283,7 +286,8 @@ export default class PlantCareCard extends LitElement {
             throw new Error(`Cannot complete the ${row.key} row`);
         }
         for (const uid of done.uids) {
-            this._hass.callService('todo', 'update_item', { item: uid, status: 'completed' }, { entity_id: this.care.todo_list });
+            this._hass.callService('todo', 'update_item', { item: uid, status: 'completed' }, { entity_id: this.care.todo_list })
+                .catch((err: unknown) => console.warn(`Plant care card: Failed to mark ${row.key} as done for ${this.config?.entity}:`, err));
         }
     }
 
@@ -404,7 +408,7 @@ export default class PlantCareCard extends LitElement {
     private renderRow(row: CareRow, now: Date): HTMLTemplateResult {
         const expanded = this.expanded.has(row.key);
         return html`
-            <div class="care-row ${row.alert ? 'alert' : ''}">
+            <div class="care-row care-row-${row.key} ${row.alert ? 'alert' : ''}">
                 <div class="care-row-head" @click="${() => this.toggleRow(row.key)}">
                     <ha-icon .icon="${careRowIcons[row.key]}"></ha-icon>
                     <span class="care-row-title">${localize(this._hass, `care_row_${row.key}`)}</span>
@@ -449,9 +453,11 @@ export default class PlantCareCard extends LitElement {
             nextWatering: dates.nextWatering,
         }, now);
         return html`
-            <div class="care-rows">
-                ${rows.map((row) => this.renderRow(row, now))}
-                ${this.renderHint(care)}
+            <div class="care-body">
+                <div class="care-rows">
+                    ${rows.map((row) => this.renderRow(row, now))}
+                    ${this.renderHint(care)}
+                </div>
             </div>`;
     }
 

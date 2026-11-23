@@ -2,6 +2,9 @@ import { css } from 'lit';
 
 export const careStyle = css`
 :host {
+  display: block;
+}
+.care-body {
   container-type: inline-size;
 }
 .care-rows {
@@ -9,10 +12,17 @@ export const careStyle = css`
   grid-template-columns: 1fr;
   padding: 4px 8px 8px;
 }
-@container (min-width: 600px) {
+@container (min-width: 460px) {
   .care-rows {
     grid-template-columns: 1fr 1fr;
     column-gap: 28px;
+  }
+  /* Keeps Light | Soil paired when Prune or Light is hidden */
+  .care-row-light {
+    grid-column: 1;
+  }
+  .care-row-soil {
+    grid-column: 2;
   }
 }
 .care-row {

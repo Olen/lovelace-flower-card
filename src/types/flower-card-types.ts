@@ -51,9 +51,9 @@ export enum DisplayType {
 
 // Shape returned to Home Assistant's card picker via `getEntitySuggestion`.
 // `label` distinguishes variants when more than one is offered for an entity.
-export interface EntitySuggestion {
+export interface EntitySuggestion<Config extends LovelaceCardConfig = FlowerCardConfig> {
     label?: string;
-    config: FlowerCardConfig;
+    config: Config;
 }
 
 export interface HomeAssistantEntity extends HassEntity {

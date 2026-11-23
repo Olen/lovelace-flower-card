@@ -25,7 +25,7 @@ interface ResolvedMediaSource {
     mime_type: string;
 }
 
-export const isMediaSourceUrl = (url: string | undefined): boolean => {
+export const isMediaSourceUrl = (url: string | undefined): url is string => {
     return url?.startsWith(MEDIA_SOURCE_PREFIX) ?? false;
 };
 
@@ -49,14 +49,17 @@ export const resolveMediaSource = async (
     }
 };
 
-export const resolveEntityPicture = async (
+/** Passes the picture URL to `apply`: plain URLs at once, so the first render has them; media-source URLs once resolved. */
+export const resolveEntityPicture = (
     hass: HomeAssistant,
     entityPicture: string | undefined,
-): Promise<string | undefined> => {
-    if (!entityPicture) {
-        return undefined;
+    apply: (url: string | undefined) => void,
+): void => {
+    if (!isMediaSourceUrl(entityPicture)) {
+        apply(entityPicture || undefined);
+        return;
     }
-    return resolveMediaSource(hass, entityPicture);
+    resolveMediaSource(hass, entityPicture).then(apply);
 };
 
 /** True when the thumbnail should open a lightbox (real image present and not hidden). */
