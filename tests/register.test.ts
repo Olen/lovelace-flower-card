@@ -33,3 +33,17 @@ describe('care card registration', () => {
     expect(customElements.get('plant-care-card')).toBeUndefined();
   });
 });
+
+describe('care agenda registration', () => {
+  it('registers flower-care-agenda once, even when loaded twice', async () => {
+    vi.resetModules();
+    await import('../src/flower-card');
+    vi.resetModules();
+    await expect(import('../src/flower-card')).resolves.toBeDefined();
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const entries = (window as any).customCards.filter((card: { type: string }) => card.type === 'flower-care-agenda');
+    expect(entries).toHaveLength(1);
+    expect(customElements.get('flower-care-agenda')).toBeDefined();
+  });
+});

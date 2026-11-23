@@ -9,6 +9,7 @@ export interface DropdownOption {
 
 export const CARD_NAME = "flower-card";
 export const CARE_CARD_NAME = "flower-care-card";
+export const AGENDA_CARD_NAME = "flower-care-agenda";
 
 export const default_show_bars = [
     "moisture",

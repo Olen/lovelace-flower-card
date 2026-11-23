@@ -19,6 +19,7 @@ A Lovelace card for displaying plant data from the [Plant Monitor](https://githu
   - [📊 Show Bars](#-show-bars)
   - [🌿 Care Info](#-care-info)
   - [🪴 Flower Care Card](#-flower-care-card)
+  - [🗓️ Flower Care Agenda](#️-flower-care-agenda)
   - [🔋 Battery Sensor](#-battery-sensor)
   - [🏷️ Extra Badges](#️-extra-badges)
   - [🔍 Image Lightbox](#-image-lightbox)
@@ -260,6 +261,38 @@ The card arranges itself by its own width. When there is room, the rows are show
 ### Without a to-do list
 
 The card still shows the predicted watering, the readings, when things were last done (as far as the plant has noticed), and the advice. There are no due dates, no **Done** buttons and no red rows for tasks, and a short note at the bottom tells you where to add a list.
+
+---
+
+## 🗓️ Flower Care Agenda
+
+The **flower care agenda** lists the care tasks of all your plants in one card, soonest first: what needs doing today, this week, and in which room. Like the flower care card, it comes with the flower card.
+
+```yaml
+type: custom:flower-care-agenda
+area: stue        # leave out for the whole home
+```
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `title` | The area or floor name, or "Plants" | Card title |
+| `area` | — | Only plants in this area. A plant's area is its own, or else its device's |
+| `floor` | — | Only plants on this floor |
+| `label` | — | Only plants with this label |
+| `exclude_label` | — | Leave out plants with this label |
+| `group_by` | `due` | `due`: Overdue, Today, Tomorrow, This week. `area`: one block per room |
+| `days` | `7` | How far ahead to list tasks. Later tasks fold into "N more later" |
+| `show_care` | *(all)* | Which tasks to list: `care_watering`, `care_fertilization`, `care_repotting`, `care_pruning` |
+| `show_predictions` | `true` | List the predicted watering of plants with a moisture sensor |
+| `show_filters` | `false` | Chips under the title to filter by room and by type of task |
+
+> **Note:** Like the flower care card, the agenda needs [Plant Monitor](https://github.com/Olen/homeassistant-plant) **2026.12 or newer**.
+
+Each row shows the plant, the task and when it is due. Tap the plant to open it. The rows behave as on the [flower care card](#-flower-care-card): a **Done** button for tasks on a schedule (outlined and asking first when not due yet), no button for tasks the sensor closes by itself, the ⏰ snooze button when the task is due within two days, and a red background when a task is due, overdue, or the plant has a problem. A predicted watering is shown in italics and has no button: it is not a task, but it puts the week's watering in one list.
+
+When two or more plants on a watering schedule are due, a **Water all** button completes them in one go. With `group_by: area` the button is in each room's heading, for that room's plants.
+
+In a Sections view the card is 12 columns wide by default; from about 620 px it shows the tasks in two columns.
 
 ---
 

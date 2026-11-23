@@ -56,6 +56,19 @@ export interface FlowerCareCardConfig extends LovelaceCardConfig {
     show_care?: string[] | null;   // care areas to show (default: all)
 }
 
+export interface FlowerCareAgendaConfig extends LovelaceCardConfig {
+    title?: string;
+    area?: string;
+    floor?: string;
+    label?: string;
+    exclude_label?: string;
+    group_by?: 'due' | 'area';
+    days?: number;
+    show_care?: string[] | null;   // care types to list (default: all four)
+    show_predictions?: boolean;    // default: true
+    show_filters?: boolean;        // default: false
+}
+
 export enum DisplayType {
     Full = "full",
     Compact = "compact"

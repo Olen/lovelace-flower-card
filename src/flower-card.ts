@@ -8,6 +8,7 @@ import { CareRow, nextCareRows } from './care/model';
 import { DisplayType, EntitySuggestion, ExtraBadge, FlowerCardConfig, HomeAssistantEntity, PlantInfo } from './types/flower-card-types';
 import * as packageJson from '../package.json';
 import './flower-care-card';
+import './flower-care-agenda';
 import { computeCareDialogState, renderAttributes, renderBattery, renderCareDialog, renderCareInfo, renderExtraBadges } from './utils/attributes';
 import { CARD_NAME, careRowIcons, default_show_bars, getCareFields, getPlantAttributes } from './utils/constants';
 import { getHassLanguage, localize } from './localize/localize';
