@@ -26,8 +26,8 @@ import { CARE_DISPLAY_TYPES, EntitySuggestion, ExtraBadge, FlowerCareCardConfig,
 import { computeCareDialogState, renderBattery, renderCareDialog, renderExtraBadges } from './utils/attributes';
 import { CARE_CARD_NAME, careRowIcons, getCareAreaFields } from './utils/constants';
 import { getHassLanguage, localize, localizeWith } from './localize/localize';
-import { renderPlantHeader } from './utils/header';
-import { getConfigFormLanguage, getHaVersion, moreInfo, nameSelector, resolveEntityPicture } from './utils/utils';
+import { renderImageDialog, renderPlantHeader } from './utils/header';
+import { entityDisplayName, getConfigFormLanguage, getHaVersion, moreInfo, nameSelector, resolveEntityPicture, shouldEnableImageLightbox } from './utils/utils';
 
 const ALL_ROW_KEYS: RowKey[] = ['water', 'fertilize', 'repot', 'prune', 'light', 'soil'];
 const CARE_ROW_KEYS: RowKey[] = ['water', 'fertilize', 'repot', 'prune'];
@@ -95,6 +95,7 @@ export default class FlowerCareCard extends LitElement {
     @state() private _confirmRow: CareRow | null = null;
     @state() private _confirmText = '';
     @state() private _careDialogOpen = false;
+    @state() private _imageDialogOpen = false;
     @state() private _careDialogFields: string[] = [];
     @state() private _careDialogTitle = '';
 
@@ -364,6 +365,19 @@ export default class FlowerCareCard extends LitElement {
         return renderCareDialog(this._hass, attributes, this._careDialogFields, this._careDialogTitle, () => this._closeCareDialog());
     }
 
+    openImageDialog(): void {
+        this._imageDialogOpen = true;
+    }
+
+    private _closeImageDialog(): void {
+        this._imageDialogOpen = false;
+    }
+
+    private renderImageDialog(): HTMLTemplateResult {
+        const displayName = this.stateObj ? entityDisplayName(this._hass, this.stateObj, this.config?.name) : '';
+        return renderImageDialog(this._resolvedImageUrl, displayName, () => this._closeImageDialog());
+    }
+
     openConfirmDialog(row: CareRow, date: string | null): void {
         this._confirmRow = row;
         if (date === null) {
@@ -563,6 +577,7 @@ export default class FlowerCareCard extends LitElement {
         if (!this.stateObj) {
             this._confirmDialogOpen = false;
             this._careDialogOpen = false;
+            this._imageDialogOpen = false;
             return html`
                 <hui-warning>
                 Entity not available: ${this.config.entity}
@@ -585,7 +600,8 @@ export default class FlowerCareCard extends LitElement {
                 name: this.config.name,
                 imageUrl: this._resolvedImageUrl,
                 badges: html`${renderExtraBadges(this)}${renderBattery(this)}`,
-                imageLightbox: false,
+                imageLightbox: shouldEnableImageLightbox(hideImage, this._resolvedImageUrl),
+                onImageClick: () => this.openImageDialog(),
                 onClick: () => moreInfo(this, stateObj.entity_id),
             })}
             <div class="divider"></div>
@@ -593,6 +609,7 @@ export default class FlowerCareCard extends LitElement {
             </ha-card>
             ${this._confirmDialogOpen ? this.renderConfirmDialog() : html``}
             ${this._careDialogOpen ? this.renderCareDialog() : html``}
+            ${this._imageDialogOpen ? this.renderImageDialog() : html``}
             `;
     }
 

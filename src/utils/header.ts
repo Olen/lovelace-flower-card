@@ -19,6 +19,18 @@ export interface HeaderParams {
     onClick: () => void;
 }
 
+/** The lightbox: the plant's picture enlarged, captioned with its name. */
+export function renderImageDialog(imageUrl: string | undefined, displayName: string, onClosed: () => void): HTMLTemplateResult {
+    return html`
+        <ha-dialog open @closed="${() => onClosed()}">
+            <div class="image-dialog">
+                <img src="${imageUrl}" alt="${displayName}">
+                ${displayName ? html`<div class="image-dialog-caption">${displayName}</div>` : ''}
+            </div>
+        </ha-dialog>
+    `;
+}
+
 export function renderPlantHeader(p: HeaderParams): HTMLTemplateResult {
     const headerCssClass = p.displayType === DisplayType.Compact ? 'header-compact' : 'header';
     const noImageClass = p.hideImage ? ' no-image' : '';

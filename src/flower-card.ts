@@ -8,7 +8,7 @@ import './flower-care-card';
 import { computeCareDialogState, renderAttributes, renderBattery, renderCareDialog, renderCareInfo, renderExtraBadges } from './utils/attributes';
 import { CARD_NAME, default_show_bars, getCareFields, getPlantAttributes } from './utils/constants';
 import { getHassLanguage, localize } from './localize/localize';
-import { renderPlantHeader } from './utils/header';
+import { renderImageDialog, renderPlantHeader } from './utils/header';
 import { entityDisplayName, getConfigFormLanguage, getHaVersion, moreInfo, nameSelector, resolveEntityPicture, shouldEnableImageLightbox } from './utils/utils';
 
 console.info(
@@ -245,14 +245,7 @@ export default class FlowerCard extends LitElement {
 
     private renderImageDialog(): HTMLTemplateResult {
         const displayName = this.stateObj ? entityDisplayName(this._hass, this.stateObj, this.config?.name) : '';
-        return html`
-            <ha-dialog open @closed="${() => this._closeImageDialog()}">
-                <div class="image-dialog">
-                    <img src="${this._resolvedImageUrl}" alt="${displayName}">
-                    ${displayName ? html`<div class="image-dialog-caption">${displayName}</div>` : ''}
-                </div>
-            </ha-dialog>
-        `;
+        return renderImageDialog(this._resolvedImageUrl, displayName, () => this._closeImageDialog());
     }
 
     render(): HTMLTemplateResult {
