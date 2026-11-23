@@ -1,0 +1,507 @@
+import { CSSResult, HTMLTemplateResult, LitElement, html, nothing } from 'lit';
+import { state } from 'lit/decorators.js';
+import { HomeAssistant } from 'custom-card-helpers';
+import { UnsubscribeFunc } from 'home-assistant-js-websocket';
+import { style } from './styles';
+import { careStyle } from './care/styles';
+import {
+    buildCareRows,
+    careDatesFromStates,
+    CareInfo,
+    CareRow,
+    earlyDoneDate,
+    formatCareDate,
+    initiallyExpanded,
+    msUntilMidnight,
+    predictionDays,
+    RowKey,
+    RowStatus,
+    snoozedDue,
+    TodoItem,
+} from './care/model';
+import { DisplayType, EntitySuggestion, HomeAssistantEntity, PlantCareCardConfig } from './types/flower-card-types';
+import { CARE_CARD_NAME, careRowIcons } from './utils/constants';
+import { getHassLanguage, localize, localizeWith } from './localize/localize';
+import { renderPlantHeader } from './utils/header';
+import { getConfigFormLanguage, isMediaSourceUrl, moreInfo, resolveMediaSource } from './utils/utils';
+
+const ALL_ROW_KEYS: RowKey[] = ['water', 'fertilize', 'repot', 'prune', 'light', 'soil'];
+const CARE_ROW_KEYS: RowKey[] = ['water', 'fertilize', 'repot', 'prune'];
+const SNOOZE_CHOICES: { days: number; label: string }[] = [
+    { days: 1, label: 'care_snooze_1d' },
+    { days: 3, label: 'care_snooze_3d' },
+    { days: 7, label: 'care_snooze_1w' },
+];
+
+interface PlantCareInfoReply {
+    result: { care?: CareInfo };
+}
+
+interface TodoSubscriptionMessage {
+    items: TodoItem[];
+}
+
+export function validateCareCardConfig(config: Partial<PlantCareCardConfig>): PlantCareCardConfig {
+    if (!config.entity) {
+        throw new Error("You need to define an entity");
+    }
+    return config as PlantCareCardConfig;
+}
+
+export const getCareCardEntitySuggestion = (hass: HomeAssistant, entityId: string): EntitySuggestion[] | null => {
+    if (entityId.split('.')[0] !== 'plant') {
+        return null;
+    }
+    return [
+        { label: 'Full', config: { type: `custom:${CARE_CARD_NAME}`, entity: entityId, display_type: DisplayType.Full } },
+        { label: 'Compact', config: { type: `custom:${CARE_CARD_NAME}`, entity: entityId, display_type: DisplayType.Compact } },
+    ];
+};
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+(window as any).customCards = (window as any).customCards || [];
+const alreadyListed = (window as any).customCards.some((card: { type: string }) => card.type === CARE_CARD_NAME);
+if (!alreadyListed) {
+    (window as any).customCards.push({
+        type: CARE_CARD_NAME,
+        name: localize({ language: getConfigFormLanguage() }, 'care_card_name'),
+        preview: true,
+        description: 'Care tasks for a plant from https://github.com/Olen/homeassistant-plant',
+        getEntitySuggestion: getCareCardEntitySuggestion,
+    });
+}
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
+export default class PlantCareCard extends LitElement {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    @state() private _hass?: any;
+    @state() private config?: PlantCareCardConfig;
+    // undefined until plant/get_info has answered; null when plant sends no care block
+    @state() private care: CareInfo | null | undefined = undefined;
+    @state() private items: TodoItem[] = [];
+    @state() private expanded: Set<RowKey> = new Set();
+    @state() private _snoozeMenuRow: RowKey | null = null;
+    @state() private _confirmDialogOpen = false;
+    @state() private _confirmRow: CareRow | null = null;
+    @state() private _confirmDate = '';
+
+    private stateObj: HomeAssistantEntity | undefined;
+    private previousFetchDate = 0;
+    private _lastEntityPicture: string | undefined;
+    private _resolvedImageUrl: string | undefined;
+    private _subscribedList: string | null = null;
+    private _unsubscribeTodo: Promise<UnsubscribeFunc> | null = null;
+    private _midnightTimer: ReturnType<typeof setTimeout> | undefined;
+
+    set hass(hass: HomeAssistant) {
+        this._hass = hass;
+        this.stateObj = this.config?.entity ? hass.states[this.config.entity] as HomeAssistantEntity : undefined;
+
+        const entityPicture = this.stateObj?.attributes.entity_picture;
+        if (entityPicture !== this._lastEntityPicture) {
+            this._lastEntityPicture = entityPicture;
+            this._resolveEntityPicture(hass, entityPicture);
+        }
+
+        // Only fetch once every second at max. HA is flooded with websocket requests
+        if (Date.now() > this.previousFetchDate + 1000) {
+            this.previousFetchDate = Date.now();
+            this.fetchCare(hass);
+        }
+    }
+
+    private async _resolveEntityPicture(hass: HomeAssistant, entityPicture: string | undefined): Promise<void> {
+        if (!entityPicture) {
+            this._resolvedImageUrl = undefined;
+            return;
+        }
+
+        if (isMediaSourceUrl(entityPicture)) {
+            this._resolvedImageUrl = await resolveMediaSource(hass, entityPicture);
+            this.requestUpdate();
+        } else {
+            this._resolvedImageUrl = entityPicture;
+        }
+    }
+
+    private async fetchCare(hass: HomeAssistant): Promise<void> {
+        let reply: PlantCareInfoReply;
+        try {
+            reply = await hass.callWS<PlantCareInfoReply>({
+                type: "plant/get_info",
+                entity_id: this.config?.entity,
+            });
+        } catch (err) {
+            console.warn(`Plant care card: Failed to fetch data for ${this.config?.entity}:`, err);
+            return;
+        }
+        this.care = reply.result.care ?? null;
+        this.syncTodoSubscription();
+    }
+
+    private syncTodoSubscription(): void {
+        if (!this.isConnected || this.care === undefined) {
+            return;
+        }
+        const wanted = this.care === null ? null : this.care.todo_list;
+        if (wanted === this._subscribedList) {
+            return;
+        }
+        this.unsubscribeTodo();
+        this.items = [];
+        this._subscribedList = wanted;
+        if (wanted === null) {
+            return;
+        }
+        const subscription = this._hass.connection.subscribeMessage(
+            (message: TodoSubscriptionMessage) => {
+                // Messages for a list we have just left can still arrive before the unsubscribe lands
+                if (this._subscribedList === wanted) {
+                    this.items = message.items;
+                }
+            },
+            { type: 'todo/item/subscribe', entity_id: wanted },
+        ) as Promise<UnsubscribeFunc>;
+        subscription.catch((err: unknown) => {
+            console.warn(`Plant care card: Failed to subscribe to ${wanted}:`, err);
+        });
+        this._unsubscribeTodo = subscription;
+    }
+
+    private unsubscribeTodo(): void {
+        const subscription = this._unsubscribeTodo;
+        this._unsubscribeTodo = null;
+        this._subscribedList = null;
+        if (subscription === null) {
+            return;
+        }
+        // A failed subscription has already been reported; there is nothing to undo
+        subscription.then((unsubscribe) => unsubscribe(), () => undefined);
+    }
+
+    connectedCallback(): void {
+        super.connectedCallback();
+        this.armMidnightTimer();
+        this.syncTodoSubscription();
+    }
+
+    disconnectedCallback(): void {
+        super.disconnectedCallback();
+        clearTimeout(this._midnightTimer);
+        this._midnightTimer = undefined;
+        this.unsubscribeTodo();
+    }
+
+    private armMidnightTimer(): void {
+        clearTimeout(this._midnightTimer);
+        this._midnightTimer = setTimeout(() => {
+            this.requestUpdate();
+            this.armMidnightTimer();
+        }, msUntilMidnight(new Date()));
+    }
+
+    static getConfigForm() {
+        const language = getConfigFormLanguage();
+        return {
+            schema: [
+                {
+                    name: "entity",
+                    required: true,
+                    selector: { entity: { domain: "plant" } }
+                },
+                {
+                    name: "display_type",
+                    selector: {
+                        select: {
+                            options: [
+                                { value: "full", label: localize({ language }, 'settings_full') },
+                                { value: "compact", label: localize({ language }, 'settings_compact') }
+                            ]
+                        }
+                    }
+                }
+            ],
+            computeLabel: (schema: { name: string }) => {
+                const labels: Record<string, string> = {
+                    entity: localize({ language }, 'settings_entity'),
+                    display_type: localize({ language }, 'settings_display_type'),
+                };
+                return labels[schema.name] || schema.name;
+            }
+        };
+    }
+
+    static getStubConfig(ha: HomeAssistant) {
+        const plantId = Object.keys(ha.states).find((entityId) => entityId.startsWith('plant.'));
+        return {
+            entity: plantId ?? 'plant.my_plant',
+            display_type: DisplayType.Full,
+        };
+    }
+
+    setConfig(config: PlantCareCardConfig): void {
+        this.config = validateCareCardConfig(config);
+        this.expanded = initiallyExpanded(this.config.display_type) ? new Set(ALL_ROW_KEYS) : new Set();
+    }
+
+    getCardSize(): number {
+        return 6;
+    }
+
+    getGridOptions() {
+        return { columns: 6, min_columns: 4, rows: 'auto' };
+    }
+
+    private toggleRow(key: RowKey): void {
+        const expanded = new Set(this.expanded);
+        if (expanded.has(key)) {
+            expanded.delete(key);
+        } else {
+            expanded.add(key);
+        }
+        this.expanded = expanded;
+    }
+
+    private toggleSnoozeMenu(key: RowKey): void {
+        this._snoozeMenuRow = this._snoozeMenuRow === key ? null : key;
+    }
+
+    private snooze(row: CareRow, days: number): void {
+        const snooze = row.snooze;
+        if (snooze === null || !this.care?.todo_list) {
+            throw new Error(`Cannot snooze the ${row.key} row`);
+        }
+        const dueDate = snoozedDue(snooze.due, days, new Date());
+        for (const uid of snooze.uids) {
+            this._hass.callService('todo', 'update_item', { item: uid, due_date: dueDate }, { entity_id: this.care.todo_list });
+        }
+        this._snoozeMenuRow = null;
+    }
+
+    private pressDone(row: CareRow): void {
+        const date = earlyDoneDate(row);
+        if (date === null) {
+            this.completeRow(row);
+            return;
+        }
+        this.openConfirmDialog(row, date);
+    }
+
+    private completeRow(row: CareRow): void {
+        const done = row.done;
+        if (done === null || !this.care?.todo_list) {
+            throw new Error(`Cannot complete the ${row.key} row`);
+        }
+        for (const uid of done.uids) {
+            this._hass.callService('todo', 'update_item', { item: uid, status: 'completed' }, { entity_id: this.care.todo_list });
+        }
+    }
+
+    openConfirmDialog(row: CareRow, date: string): void {
+        this._confirmRow = row;
+        this._confirmDate = formatCareDate(date, getHassLanguage(this._hass));
+        this._confirmDialogOpen = true;
+    }
+
+    private _closeConfirmDialog(): void {
+        this._confirmDialogOpen = false;
+        this._confirmRow = null;
+    }
+
+    private confirmDone(): void {
+        const row = this._confirmRow;
+        if (row === null) {
+            throw new Error('No row to confirm');
+        }
+        this.completeRow(row);
+        this._closeConfirmDialog();
+    }
+
+    private renderConfirmDialog(): HTMLTemplateResult {
+        return html`
+            <ha-dialog open @closed="${() => this._closeConfirmDialog()}">
+                <div>${localizeWith(this._hass, 'care_confirm_early', { date: this._confirmDate })}</div>
+                <div class="care-confirm-actions">
+                    <button class="care-button outlined" @click="${() => this._closeConfirmDialog()}">
+                        ${localize(this._hass, 'care_cancel')}
+                    </button>
+                    <button class="care-button solid" @click="${() => this.confirmDone()}">
+                        ${localize(this._hass, 'care_confirm_done')}
+                    </button>
+                </div>
+            </ha-dialog>
+        `;
+    }
+
+    private statusText(status: RowStatus, now: Date): string {
+        const language = getHassLanguage(this._hass);
+        switch (status.kind) {
+            case 'none':
+                return '';
+            case 'prediction':
+                return localizeWith(this._hass, 'care_status_prediction', { n: predictionDays(status.at, now) });
+            case 'due':
+                return localizeWith(this._hass, 'care_status_due', { n: status.days, date: formatCareDate(status.date, language) });
+            case 'due_today':
+                return localize(this._hass, 'care_status_due_today');
+            case 'overdue':
+                return localizeWith(this._hass, 'care_status_overdue', { n: status.days });
+        }
+    }
+
+    private renderSubLine(row: CareRow): HTMLTemplateResult | typeof nothing {
+        if (!CARE_ROW_KEYS.includes(row.key)) {
+            return nothing;
+        }
+        const parts: string[] = [];
+        if (row.lastDone === null) {
+            parts.push(localize(this._hass, 'care_not_recorded'));
+        } else {
+            parts.push(localizeWith(this._hass, 'care_last', { date: formatCareDate(row.lastDone, getHassLanguage(this._hass)) }));
+        }
+        if (row.intervalDays !== null) {
+            parts.push(localizeWith(this._hass, 'care_every', { n: row.intervalDays }));
+        }
+        return html`<div class="care-row-sub">${parts.join(' · ')}</div>`;
+    }
+
+    private renderProgress(row: CareRow): HTMLTemplateResult | typeof nothing {
+        if (row.progress === null) {
+            return nothing;
+        }
+        const overdue = row.status.kind === 'overdue' ? 'overdue' : '';
+        return html`<div class="care-progress"><div class="${overdue}" style="width: ${row.progress * 100}%"></div></div>`;
+    }
+
+    private renderSnoozeButton(row: CareRow): HTMLTemplateResult | typeof nothing {
+        if (row.snooze === null) {
+            return nothing;
+        }
+        return html`
+            <button class="care-icon-button" title="${localize(this._hass, 'care_snooze')}"
+                @click="${(e: Event) => { e.stopPropagation(); this.toggleSnoozeMenu(row.key); }}">
+                <ha-icon .icon="${'mdi:alarm-snooze'}"></ha-icon>
+            </button>`;
+    }
+
+    private renderSnoozeMenu(row: CareRow): HTMLTemplateResult | typeof nothing {
+        if (row.snooze === null || this._snoozeMenuRow !== row.key) {
+            return nothing;
+        }
+        return html`
+            <div class="care-snooze-menu">
+                ${SNOOZE_CHOICES.map((choice) => html`
+                    <button class="care-button outlined" @click="${() => this.snooze(row, choice.days)}">
+                        +${localize(this._hass, choice.label)}
+                    </button>`)}
+            </div>`;
+    }
+
+    private renderDoneButton(row: CareRow): HTMLTemplateResult | typeof nothing {
+        if (row.done === null) {
+            return nothing;
+        }
+        return html`
+            <button class="care-button ${row.done.emphasis}"
+                @click="${(e: Event) => { e.stopPropagation(); this.pressDone(row); }}">
+                ${localize(this._hass, 'care_done')}
+            </button>`;
+    }
+
+    private renderRow(row: CareRow, now: Date): HTMLTemplateResult {
+        const expanded = this.expanded.has(row.key);
+        return html`
+            <div class="care-row ${row.alert ? 'alert' : ''}">
+                <div class="care-row-head" @click="${() => this.toggleRow(row.key)}">
+                    <ha-icon .icon="${careRowIcons[row.key]}"></ha-icon>
+                    <span class="care-row-title">${localize(this._hass, `care_row_${row.key}`)}</span>
+                    <span class="care-row-status">${this.statusText(row.status, now)}</span>
+                    <span class="care-row-actions">
+                        ${this.renderSnoozeButton(row)}
+                        ${this.renderDoneButton(row)}
+                    </span>
+                </div>
+                ${this.renderSnoozeMenu(row)}
+                ${expanded ? html`
+                    ${this.renderProgress(row)}
+                    ${this.renderSubLine(row)}
+                    ${row.texts.map((text) => html`<div class="care-text">${text}</div>`)}
+                ` : nothing}
+            </div>`;
+    }
+
+    private renderHint(care: CareInfo | null): HTMLTemplateResult | typeof nothing {
+        if (care === null) {
+            return html`<div class="care-hint">${localize(this._hass, 'care_needs_plant')}</div>`;
+        }
+        if (care.todo_list === null) {
+            return html`<div class="care-hint">${localize(this._hass, 'care_no_list')}</div>`;
+        }
+        return nothing;
+    }
+
+    private renderBody(stateObj: HomeAssistantEntity): HTMLTemplateResult | typeof nothing {
+        const care = this.care;
+        if (care === undefined) {
+            return nothing;
+        }
+        const now = new Date();
+        const dates = careDatesFromStates(care, this._hass.states);
+        const rows = buildCareRows({
+            plantEntityId: stateObj.entity_id,
+            attributes: stateObj.attributes,
+            care,
+            items: this.items,
+            lastDone: dates.lastDone,
+            nextWatering: dates.nextWatering,
+        }, now);
+        return html`
+            <div class="care-rows">
+                ${rows.map((row) => this.renderRow(row, now))}
+                ${this.renderHint(care)}
+            </div>`;
+    }
+
+    render(): HTMLTemplateResult {
+        if (!this.config || !this._hass) return html``;
+
+        if (!this.stateObj) {
+            this._confirmDialogOpen = false;
+            return html`
+                <hui-warning>
+                Entity not available: ${this.config.entity}
+                </hui-warning>
+              `;
+        }
+        const stateObj = this.stateObj;
+        const haCardCssClass = this.config.display_type === DisplayType.Compact ? "" : "card-margin-top";
+
+        return html`
+            <ha-card class="${haCardCssClass}">
+            ${renderPlantHeader({
+                hass: this._hass,
+                stateObj,
+                displayType: this.config.display_type,
+                hideImage: false,
+                hideSpecies: false,
+                imageUrl: this._resolvedImageUrl,
+                badges: nothing,
+                imageLightbox: false,
+                onClick: () => moreInfo(this, stateObj.entity_id),
+            })}
+            <div class="divider"></div>
+            ${this.renderBody(stateObj)}
+            </ha-card>
+            ${this._confirmDialogOpen ? this.renderConfirmDialog() : html``}
+            `;
+    }
+
+    static get styles(): CSSResult[] {
+        return [style, careStyle];
+    }
+}
+
+// Plant serves its own copy, so another copy may already have defined the card
+if (!customElements.get(CARE_CARD_NAME)) {
+    customElements.define(CARE_CARD_NAME, PlantCareCard);
+}

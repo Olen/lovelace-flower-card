@@ -1,4 +1,5 @@
 import { localize } from '../localize/localize';
+import { RowKey } from '../care/model';
 
 // A selectable option (label/value pair) for the card's config-form selectors.
 export interface DropdownOption {
@@ -7,6 +8,7 @@ export interface DropdownOption {
 }
 
 export const CARD_NAME = "flower-card";
+export const CARE_CARD_NAME = "plant-care-card";
 
 export const default_show_bars = [
     "moisture",
@@ -50,4 +52,13 @@ export const careIcons: Record<string, string> = {
   care_soil: 'mdi:shovel',
   care_pruning: 'mdi:content-cut',
   care_fertilization: 'mdi:bottle-tonic-outline',
+};
+
+export const careRowIcons: Record<RowKey, string> = {
+  water: careIcons.care_watering,
+  fertilize: careIcons.care_fertilization,
+  repot: 'mdi:flower-pot-outline',
+  prune: careIcons.care_pruning,
+  light: careIcons.care_sunlight,
+  soil: careIcons.care_soil,
 };

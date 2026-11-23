@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   buildCareRows,
+  careDatesFromStates,
   careOfItem,
   CareInfo,
   CareMode,
@@ -8,8 +9,11 @@ import {
   CareRowInput,
   CareType,
   dueInDays,
+  earlyDoneDate,
+  formatCareDate,
   initiallyExpanded,
   msUntilMidnight,
+  predictionDays,
   progressFraction,
   RowKey,
   snoozedDue,
@@ -428,5 +432,102 @@ describe('initiallyExpanded', () => {
     expect(initiallyExpanded('compact')).toBe(false);
     expect(initiallyExpanded('full')).toBe(true);
     expect(initiallyExpanded(undefined)).toBe(true);
+  });
+});
+
+describe('formatCareDate', () => {
+  it('formats a date-only value as day and short month', () => {
+    expect(formatCareDate('2026-12-02', 'en-GB')).toBe('2 Dec');
+  });
+
+  it('formats a timestamp by its local calendar day', () => {
+    const local = new Date(2026, 11, 2, 23, 30).toISOString();
+    expect(formatCareDate(local, 'en-GB')).toBe('2 Dec');
+  });
+});
+
+describe('predictionDays', () => {
+  it('counts calendar days until the predicted time', () => {
+    expect(predictionDays(new Date(2026, 10, 26, 8, 0).toISOString(), now)).toBe(3);
+  });
+
+  it('is zero when the prediction is already in the past', () => {
+    expect(predictionDays(new Date(2026, 10, 20, 8, 0).toISOString(), now)).toBe(0);
+  });
+});
+
+describe('careDatesFromStates', () => {
+  function withEvents(): CareInfo {
+    return {
+      ...careInfo(),
+      events: {
+        water: 'event.plant_004_watered',
+        fertilize: 'event.plant_004_fertilized',
+        repot: 'event.plant_004_repotted',
+        prune: 'event.plant_004_pruned',
+      },
+      next_watering: 'sensor.plant_004_next_watering',
+    };
+  }
+
+  it('takes last done and next watering from timestamp states', () => {
+    const states = {
+      'event.plant_004_watered': { state: '2026-11-20T08:15:00.000+00:00' },
+      'event.plant_004_fertilized': { state: '2026-11-01T10:00:00.000+00:00' },
+      'sensor.plant_004_next_watering': { state: '2026-11-26T06:00:00+00:00' },
+    };
+    expect(careDatesFromStates(withEvents(), states)).toEqual({
+      lastDone: { water: '2026-11-20T08:15:00.000+00:00', fertilize: '2026-11-01T10:00:00.000+00:00' },
+      nextWatering: '2026-11-26T06:00:00+00:00',
+    });
+  });
+
+  it('ignores unknown and unavailable states', () => {
+    const states = {
+      'event.plant_004_watered': { state: 'unknown' },
+      'event.plant_004_fertilized': { state: 'unavailable' },
+      'sensor.plant_004_next_watering': { state: 'unavailable' },
+    };
+    expect(careDatesFromStates(withEvents(), states)).toEqual({ lastDone: {}, nextWatering: null });
+  });
+
+  it('has no dates without a care block', () => {
+    expect(careDatesFromStates(null, {})).toEqual({ lastDone: {}, nextWatering: null });
+  });
+
+  it('has no next watering when plant names no sensor for it', () => {
+    expect(careDatesFromStates(careInfo(), {})).toEqual({ lastDone: {}, nextWatering: null });
+  });
+});
+
+describe('earlyDoneDate', () => {
+  function rowWith(overrides: Partial<CareRow>): CareRow {
+    return {
+      key: 'fertilize',
+      alert: false,
+      status: { kind: 'none' },
+      lastDone: null,
+      intervalDays: 14,
+      texts: [],
+      done: null,
+      snooze: null,
+      progress: null,
+      ...overrides,
+    };
+  }
+
+  it('gives the due date when an outlined Done is pressed before the due date', () => {
+    const early = rowWith({ status: { kind: 'due', days: 9, date: '2026-12-02' }, done: { uids: ['a'], emphasis: 'outlined' } });
+    expect(earlyDoneDate(early)).toBe('2026-12-02');
+  });
+
+  it('is null for a solid Done', () => {
+    const due = rowWith({ status: { kind: 'overdue', days: 3 }, done: { uids: ['a'], emphasis: 'solid' } });
+    expect(earlyDoneDate(due)).toBeNull();
+  });
+
+  it('is null when the open item has no due date', () => {
+    const undated = rowWith({ status: { kind: 'none' }, done: { uids: ['a'], emphasis: 'outlined' } });
+    expect(earlyDoneDate(undated)).toBeNull();
   });
 });

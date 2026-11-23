@@ -39,6 +39,11 @@ export interface FlowerCardConfig extends LovelaceCardConfig {
     battery_ok_level?: number;     // Above this → green (default: 40)
 }
 
+export interface PlantCareCardConfig extends LovelaceCardConfig {
+    entity: string;
+    display_type?: DisplayType;
+}
+
 export enum DisplayType {
     Full = "full",
     Compact = "compact"

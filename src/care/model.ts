@@ -164,6 +164,56 @@ export function msUntilMidnight(now: Date): number {
   return midnight.getTime() - now.getTime();
 }
 
+export function formatCareDate(value: string, language: string): string {
+  const date = parseCalendarDate(value);
+  return new Date(date.year, date.month - 1, date.day).toLocaleDateString(language, { day: 'numeric', month: 'short' });
+}
+
+export function predictionDays(at: string, now: Date): number {
+  return Math.max(0, dueInDays(at, now));
+}
+
+export interface CareDates {
+  lastDone: Partial<Record<CareType, string>>;
+  nextWatering: string | null;
+}
+
+function timestampState(states: Record<string, { state: string }>, entityId: string | null): string | null {
+  if (entityId === null) {
+    return null;
+  }
+  const state = states[entityId]?.state;
+  if (state === undefined || !isParsableDate(state)) {
+    return null;
+  }
+  return state;
+}
+
+export function careDatesFromStates(care: CareInfo | null, states: Record<string, { state: string }>): CareDates {
+  const dates: CareDates = { lastDone: {}, nextWatering: null };
+  if (care === null) {
+    return dates;
+  }
+  for (const careType of CARE_TYPES) {
+    const lastDone = timestampState(states, care.events[careType]);
+    if (lastDone !== null) {
+      dates.lastDone[careType] = lastDone;
+    }
+  }
+  dates.nextWatering = timestampState(states, care.next_watering);
+  return dates;
+}
+
+export function earlyDoneDate(row: CareRow): string | null {
+  if (row.done === null || row.done.emphasis !== 'outlined') {
+    return null;
+  }
+  if (row.status.kind !== 'due') {
+    return null;
+  }
+  return row.status.date;
+}
+
 export function initiallyExpanded(displayType: string | undefined): boolean {
   return displayType !== 'compact';
 }

@@ -1,15 +1,20 @@
 import { fireEvent, HomeAssistant } from "custom-card-helpers";
 import { HassEntity } from "home-assistant-js-websocket";
-import FlowerCard from "../flower-card";
 import { CardName } from "../types/flower-card-types";
 
-export const moreInfo = (card: FlowerCard, entityId: string): void => {
+export const moreInfo = (element: HTMLElement, entityId: string): void => {
     fireEvent(
-        card,
+        element,
         'hass-more-info',
         { entityId },
         { bubbles: false, composed: true }
     );
+};
+
+// getConfigForm is static, so it has no hass of its own; read the language from the page
+export const getConfigFormLanguage = (): string => {
+    if (typeof document === 'undefined') return 'en';
+    return document.documentElement?.lang || 'en';
 };
 
 // Media source URL handling

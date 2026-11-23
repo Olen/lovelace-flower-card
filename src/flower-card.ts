@@ -4,22 +4,18 @@ import { HomeAssistant } from 'custom-card-helpers';
 import { style } from './styles';
 import { DisplayType, EntitySuggestion, ExtraBadge, FlowerCardConfig, HomeAssistantEntity, PlantInfo } from './types/flower-card-types';
 import * as packageJson from '../package.json';
+import './plant-care-card';
 import { computeCareDialogState, renderAttributes, renderBattery, renderCareInfo, renderCareItems, renderExtraBadges, selectCareInfo } from './utils/attributes';
 import { CARD_NAME, default_show_bars, getCareFields, getPlantAttributes } from './utils/constants';
 import { getHassLanguage, localize } from './localize/localize';
 import { renderPlantHeader } from './utils/header';
-import { entityDisplayName, isMediaSourceUrl, moreInfo, nameSelector, resolveMediaSource, shouldEnableImageLightbox } from './utils/utils';
+import { entityDisplayName, getConfigFormLanguage, isMediaSourceUrl, moreInfo, nameSelector, resolveMediaSource, shouldEnableImageLightbox } from './utils/utils';
 
 console.info(
     `%c FLOWER-CARD %c ${packageJson.version}`,
     'color: cyan; background: black; font-weight: bold;',
     'color: darkblue; background: white; font-weight: bold;'
 );
-
-const getConfigFormLanguage = (): string => {
-    if (typeof document === 'undefined') return 'en';
-    return document.documentElement?.lang || 'en';
-};
 
 // getConfigForm is static, so it has no hass of its own; read the version from the page
 const getHaVersion = (): string | undefined => {
