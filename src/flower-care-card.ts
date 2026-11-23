@@ -16,15 +16,17 @@ import {
     Readings,
     readingsFromPlantInfo,
     RowKey,
+    rowKeysFromShowCare,
     snoozedDue,
     statusLabel,
     TodoItem,
 } from './care/model';
-import { DisplayType, EntitySuggestion, HomeAssistantEntity, PlantCareCardConfig } from './types/flower-card-types';
-import { CARE_CARD_NAME, careRowIcons } from './utils/constants';
+import { DisplayType, EntitySuggestion, ExtraBadge, FlowerCareCardConfig, HomeAssistantEntity } from './types/flower-card-types';
+import { computeCareDialogState, renderBattery, renderCareDialog, renderExtraBadges } from './utils/attributes';
+import { CARE_CARD_NAME, careRowIcons, getCareAreaFields } from './utils/constants';
 import { getHassLanguage, localize, localizeWith } from './localize/localize';
 import { renderPlantHeader } from './utils/header';
-import { getConfigFormLanguage, moreInfo, resolveEntityPicture } from './utils/utils';
+import { getConfigFormLanguage, getHaVersion, moreInfo, nameSelector, resolveEntityPicture } from './utils/utils';
 
 const ALL_ROW_KEYS: RowKey[] = ['water', 'fertilize', 'repot', 'prune', 'light', 'soil'];
 const CARE_ROW_KEYS: RowKey[] = ['water', 'fertilize', 'repot', 'prune'];
@@ -42,14 +44,15 @@ interface TodoSubscriptionMessage {
     items: TodoItem[];
 }
 
-export function validateCareCardConfig(config: Partial<PlantCareCardConfig>): PlantCareCardConfig {
+export function validateCareCardConfig(config: Partial<FlowerCareCardConfig>): FlowerCareCardConfig {
     if (!config.entity) {
         throw new Error("You need to define an entity");
     }
-    return config as PlantCareCardConfig;
+    rowKeysFromShowCare(config.show_care);
+    return config as FlowerCareCardConfig;
 }
 
-export const getCareCardEntitySuggestion = (hass: HomeAssistant, entityId: string): EntitySuggestion<PlantCareCardConfig>[] | null => {
+export const getCareCardEntitySuggestion = (hass: HomeAssistant, entityId: string): EntitySuggestion<FlowerCareCardConfig>[] | null => {
     if (entityId.split('.')[0] !== 'plant') {
         return null;
     }
@@ -73,10 +76,10 @@ if (!alreadyListed) {
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
-export default class PlantCareCard extends LitElement {
+export default class FlowerCareCard extends LitElement {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    @state() private _hass?: any;
-    @state() private config?: PlantCareCardConfig;
+    @state() _hass?: any;
+    @state() config?: FlowerCareCardConfig;
     // undefined until plant/get_info has answered; null when plant sends no care block
     @state() private care: CareInfo | null | undefined = undefined;
     @state() private items: TodoItem[] = [];
@@ -86,6 +89,9 @@ export default class PlantCareCard extends LitElement {
     @state() private _confirmDialogOpen = false;
     @state() private _confirmRow: CareRow | null = null;
     @state() private _confirmText = '';
+    @state() private _careDialogOpen = false;
+    @state() private _careDialogFields: string[] = [];
+    @state() private _careDialogTitle = '';
 
     private stateObj: HomeAssistantEntity | undefined;
     private previousFetchDate = 0;
@@ -127,7 +133,7 @@ export default class PlantCareCard extends LitElement {
                 entity_id: this.config?.entity,
             });
         } catch (err) {
-            console.warn(`Plant care card: Failed to fetch data for ${this.config?.entity}:`, err);
+            console.warn(`Flower care card: Failed to fetch data for ${this.config?.entity}:`, err);
             return;
         }
         this.care = reply.result.care ?? null;
@@ -159,7 +165,7 @@ export default class PlantCareCard extends LitElement {
             { type: 'todo/item/subscribe', entity_id: wanted },
         ) as Promise<UnsubscribeFunc>;
         subscription.catch((err: unknown) => {
-            console.warn(`Plant care card: Failed to subscribe to ${wanted}:`, err);
+            console.warn(`Flower care card: Failed to subscribe to ${wanted}:`, err);
         });
         this._unsubscribeTodo = subscription;
     }
@@ -205,22 +211,63 @@ export default class PlantCareCard extends LitElement {
                     required: true,
                     selector: { entity: { domain: "plant" } }
                 },
+                nameSelector(getHaVersion()),
                 {
-                    name: "display_type",
-                    selector: {
-                        select: {
-                            options: [
-                                { value: "full", label: localize({ language }, 'settings_full') },
-                                { value: "compact", label: localize({ language }, 'settings_compact') }
-                            ]
+                    name: "battery_sensor",
+                    selector: { entity: { domain: "sensor", device_class: "battery" } }
+                },
+                {
+                    type: "expandable",
+                    name: "",
+                    title: localize({ language }, 'settings_care_info'),
+                    schema: [
+                        {
+                            name: "show_care",
+                            selector: {
+                                select: {
+                                    multiple: true,
+                                    options: getCareAreaFields(language)
+                                }
+                            }
                         }
-                    }
+                    ]
+                },
+                {
+                    type: "expandable",
+                    name: "",
+                    title: localize({ language }, 'settings_appearance'),
+                    schema: [
+                        {
+                            name: "display_type",
+                            selector: {
+                                select: {
+                                    options: [
+                                        { value: "full", label: localize({ language }, 'settings_full') },
+                                        { value: "compact", label: localize({ language }, 'settings_compact') }
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            name: "hide_species",
+                            selector: { boolean: {} }
+                        },
+                        {
+                            name: "hide_image",
+                            selector: { boolean: {} }
+                        }
+                    ]
                 }
             ],
             computeLabel: (schema: { name: string }) => {
                 const labels: Record<string, string> = {
                     entity: localize({ language }, 'settings_entity'),
+                    name: localize({ language }, 'settings_display_name'),
                     display_type: localize({ language }, 'settings_display_type'),
+                    battery_sensor: localize({ language }, 'settings_battery_sensor'),
+                    show_care: localize({ language }, 'settings_show_care_info'),
+                    hide_species: localize({ language }, 'settings_hide_species'),
+                    hide_image: localize({ language }, 'settings_hide_image'),
                 };
                 return labels[schema.name] || schema.name;
             }
@@ -235,7 +282,7 @@ export default class PlantCareCard extends LitElement {
         };
     }
 
-    setConfig(config: PlantCareCardConfig): void {
+    setConfig(config: FlowerCareCardConfig): void {
         this.config = validateCareCardConfig(config);
         this.expanded = initiallyExpanded(this.config.display_type) ? new Set(ALL_ROW_KEYS) : new Set();
     }
@@ -270,7 +317,7 @@ export default class PlantCareCard extends LitElement {
         const dueDate = snoozedDue(snooze.due, days, new Date());
         for (const uid of snooze.uids) {
             this._hass.callService('todo', 'update_item', { item: uid, due_date: dueDate }, { entity_id: this.care.todo_list })
-                .catch((err: unknown) => console.warn(`Plant care card: Failed to snooze ${row.key} for ${this.config?.entity}:`, err));
+                .catch((err: unknown) => console.warn(`Flower care card: Failed to snooze ${row.key} for ${this.config?.entity}:`, err));
         }
         this._snoozeMenuRow = null;
     }
@@ -291,8 +338,24 @@ export default class PlantCareCard extends LitElement {
         }
         for (const uid of done.uids) {
             this._hass.callService('todo', 'update_item', { item: uid, status: 'completed' }, { entity_id: this.care.todo_list })
-                .catch((err: unknown) => console.warn(`Plant care card: Failed to mark ${row.key} as done for ${this.config?.entity}:`, err));
+                .catch((err: unknown) => console.warn(`Flower care card: Failed to mark ${row.key} as done for ${this.config?.entity}:`, err));
         }
+    }
+
+    openCareDialog(badge: ExtraBadge): void {
+        const { open, fields, title } = computeCareDialogState(badge, getHassLanguage(this._hass));
+        this._careDialogFields = fields;
+        this._careDialogTitle = title;
+        this._careDialogOpen = open;
+    }
+
+    private _closeCareDialog(): void {
+        this._careDialogOpen = false;
+    }
+
+    private renderCareDialog(): HTMLTemplateResult {
+        const attributes = this.stateObj?.attributes;
+        return renderCareDialog(this._hass, attributes, this._careDialogFields, this._careDialogTitle, () => this._closeCareDialog());
     }
 
     openConfirmDialog(row: CareRow, date: string | null): void {
@@ -468,7 +531,7 @@ export default class PlantCareCard extends LitElement {
         }
         const now = new Date();
         const dates = careDatesFromStates(care, this._hass.states);
-        const rows = buildCareRows({
+        const allRows = buildCareRows({
             plantEntityId: stateObj.entity_id,
             attributes: stateObj.attributes,
             care,
@@ -477,6 +540,8 @@ export default class PlantCareCard extends LitElement {
             nextWatering: dates.nextWatering,
             readings: this.readings,
         }, now);
+        const shown = rowKeysFromShowCare(this.config?.show_care);
+        const rows = allRows.filter((row) => shown.has(row.key));
         return html`
             <div class="care-body">
                 <div class="care-rows">
@@ -491,6 +556,7 @@ export default class PlantCareCard extends LitElement {
 
         if (!this.stateObj) {
             this._confirmDialogOpen = false;
+            this._careDialogOpen = false;
             return html`
                 <hui-warning>
                 Entity not available: ${this.config.entity}
@@ -498,7 +564,9 @@ export default class PlantCareCard extends LitElement {
               `;
         }
         const stateObj = this.stateObj;
-        const haCardCssClass = this.config.display_type === DisplayType.Compact ? "" : "card-margin-top";
+        const hideSpecies = this.config.hide_species ?? false;
+        const hideImage = this.config.hide_image ?? false;
+        const haCardCssClass = (this.config.display_type === DisplayType.Compact || hideImage) ? "" : "card-margin-top";
 
         return html`
             <ha-card class="${haCardCssClass}">
@@ -506,10 +574,11 @@ export default class PlantCareCard extends LitElement {
                 hass: this._hass,
                 stateObj,
                 displayType: this.config.display_type,
-                hideImage: false,
-                hideSpecies: false,
+                hideImage,
+                hideSpecies,
+                name: this.config.name,
                 imageUrl: this._resolvedImageUrl,
-                badges: nothing,
+                badges: html`${renderExtraBadges(this)}${renderBattery(this)}`,
                 imageLightbox: false,
                 onClick: () => moreInfo(this, stateObj.entity_id),
             })}
@@ -517,6 +586,7 @@ export default class PlantCareCard extends LitElement {
             ${this.renderBody(stateObj)}
             </ha-card>
             ${this._confirmDialogOpen ? this.renderConfirmDialog() : html``}
+            ${this._careDialogOpen ? this.renderCareDialog() : html``}
             `;
     }
 
@@ -527,5 +597,5 @@ export default class PlantCareCard extends LitElement {
 
 // Plant serves its own copy, so another copy may already have defined the card
 if (!customElements.get(CARE_CARD_NAME)) {
-    customElements.define(CARE_CARD_NAME, PlantCareCard);
+    customElements.define(CARE_CARD_NAME, FlowerCareCard);
 }

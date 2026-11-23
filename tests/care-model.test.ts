@@ -16,6 +16,7 @@ import {
   predictionDays,
   progressFraction,
   readingsFromPlantInfo,
+  rowKeysFromShowCare,
   RowKey,
   snoozedDue,
   statusLabel,
@@ -650,5 +651,32 @@ describe('readings on rows', () => {
   it('has no bar when min and max leave no range', () => {
     const flat = buildCareRows(input({ readings: { moisture: { current: 20, min: 20, max: 20, unit: '%' } } }), now);
     expect(row(flat, 'water').reading?.barFraction).toBeNull();
+  });
+});
+
+describe('rowKeysFromShowCare', () => {
+  it('shows every area when show_care is omitted', () => {
+    expect(rowKeysFromShowCare(undefined)).toEqual(new Set(['water', 'fertilize', 'repot', 'prune', 'light', 'soil']));
+  });
+
+  it('shows only the chosen areas', () => {
+    expect(rowKeysFromShowCare(['care_watering', 'care_repotting'])).toEqual(new Set(['water', 'repot']));
+  });
+
+  it('ignores the order of the config', () => {
+    expect(rowKeysFromShowCare(['care_soil', 'care_fertilization', 'care_sunlight']))
+      .toEqual(rowKeysFromShowCare(['care_fertilization', 'care_sunlight', 'care_soil']));
+  });
+
+  it('rejects an unknown value and names it', () => {
+    expect(() => rowKeysFromShowCare(['care_watering', 'care_misting'])).toThrow(/care_misting/);
+  });
+
+  it('rejects a name that only exists on plain objects', () => {
+    expect(() => rowKeysFromShowCare(['toString'])).toThrow(/toString/);
+  });
+
+  it('lists the valid values when rejecting', () => {
+    expect(() => rowKeysFromShowCare(['care_misting'])).toThrow(/care_watering.*care_soil/);
   });
 });

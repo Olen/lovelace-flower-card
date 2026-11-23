@@ -160,7 +160,7 @@ The card adapts to its own rendered width with a CSS container query (`container
 ### Card config (minimum)
 
 ```yaml
-type: custom:plant-care-card   # exact name is builder's call; must not clash with flower-card
+type: custom:flower-care-card   # exact name is builder's call; must not clash with flower-card
 entity: plant.plant_004
 display_type: full             # or compact
 ```

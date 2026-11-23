@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** A second Lovelace card, `plant-care-card`, in the flower-card bundle: flower-card header, one row per care area with care text, status, last done and a Done button where the plant's care mode allows it.
+**Goal:** A second Lovelace card, `flower-care-card`, in the flower-card bundle: flower-card header, one row per care area with care text, status, last done and a Done button where the plant's care mode allows it.
 
-**Architecture:** All decisions live in pure functions in `src/care/model.ts` (rows, marker matching, dates, column split) and are unit-tested. `src/plant-care-card.ts` is a thin Lit element: it fetches `plant/get_info` (for the `care` block), subscribes to the to-do list with `todo/item/subscribe`, reads event/sensor states from `hass.states`, calls `buildCareRows`, and renders. It is imported from `src/flower-card.ts`, so it ships inside the existing `flower-card.js` — no change to plant's resource registration, HACS, or the release scripts.
+**Architecture:** All decisions live in pure functions in `src/care/model.ts` (rows, marker matching, dates, column split) and are unit-tested. `src/flower-care-card.ts` is a thin Lit element: it fetches `plant/get_info` (for the `care` block), subscribes to the to-do list with `todo/item/subscribe`, reads event/sensor states from `hass.states`, calls `buildCareRows`, and renders. It is imported from `src/flower-card.ts`, so it ships inside the existing `flower-card.js` — no change to plant's resource registration, HACS, or the release scripts.
 
 **Tech Stack:** TypeScript, Lit, webpack, vitest (jsdom).
 
@@ -161,18 +161,18 @@ git commit -m "Extract the plant header so the care card can share it"
 
 ---
 
-### Task 3: The `plant-care-card` element
+### Task 3: The `flower-care-card` element
 
 **Files:**
-- Create: `src/plant-care-card.ts`, `src/care/styles.ts`
-- Modify: `src/flower-card.ts` (add `import './plant-care-card';` at the top level), `src/utils/constants.ts` (`CARE_CARD_NAME = "plant-care-card"`, `careRowIcons`), `src/types/flower-card-types.ts` (`PlantCareCardConfig`), `src/localize/languages/{en,de,nl}.json`
+- Create: `src/flower-care-card.ts`, `src/care/styles.ts`
+- Modify: `src/flower-card.ts` (add `import './flower-care-card';` at the top level), `src/utils/constants.ts` (`CARE_CARD_NAME = "flower-care-card"`, `careRowIcons`), `src/types/flower-card-types.ts` (`FlowerCareCardConfig`), `src/localize/languages/{en,de,nl}.json`
 - Test: `tests/care-card-config.test.ts`, extend `tests/register.test.ts`
 
 **Interfaces:**
 - Consumes: Task 1 model, Task 2 `renderPlantHeader`, `style` from `src/styles.ts`, `localize`.
 - Produces:
-  - `export interface PlantCareCardConfig extends LovelaceCardConfig { entity: string; display_type?: DisplayType; }`
-  - `export function validateCareCardConfig(config: Partial<PlantCareCardConfig>): PlantCareCardConfig` — throws `Error("You need to define an entity")` without `entity`; returned config keeps `display_type` as given (pure; used by `setConfig`).
+  - `export interface FlowerCareCardConfig extends LovelaceCardConfig { entity: string; display_type?: DisplayType; }`
+  - `export function validateCareCardConfig(config: Partial<FlowerCareCardConfig>): FlowerCareCardConfig` — throws `Error("You need to define an entity")` without `entity`; returned config keeps `display_type` as given (pure; used by `setConfig`).
   - `careRowIcons: Record<RowKey, string>` — water `mdi:watering-can-outline`, fertilize `mdi:bottle-tonic-outline`, repot `mdi:flower-pot-outline`, prune `mdi:content-cut`, light `mdi:white-balance-sunny`, soil `mdi:shovel` (reuse `careIcons` values where they exist).
   - Localize keys (en shown; de/nl translated): `care_row_water` "Water", `care_row_fertilize` "Fertilize", `care_row_repot` "Repot", `care_row_prune` "Prune", `care_row_light` "Light", `care_row_soil` "Soil", `care_status_prediction` "~{n} days at this rate", `care_status_due` "due in {n} days ({date})", `care_status_due_today` "due today", `care_status_overdue` "overdue {n} d", `care_last` "Last {date}", `care_not_recorded` "Not recorded yet", `care_every` "every {n} days", `care_done` "Done", `care_no_list` "Choose a to-do list under Configure → Care tasks to track care.", `care_needs_plant` "Update the Plant integration to see care tasks.", `care_card_name` "Plant care card", `care_confirm_early` "Not due until {date}. Mark as done now?", `care_confirm_done` "Mark as done", `care_cancel` "Cancel", `care_snooze` "Snooze", `care_snooze_1d` "1 day", `care_snooze_3d` "3 days", `care_snooze_1w` "1 week".
 
@@ -190,11 +190,11 @@ Element behaviour (not determined by the model):
 - `care === null` ⇒ a hint row `care_needs_plant`; `care.todo_list === null` ⇒ hint row `care_no_list`.
 - `static getConfigForm()`: `entity` (domain plant, required) and `display_type` select (`full`/`compact`, labels `settings_full`/`settings_compact`), same pattern as the flower card.
 - `getStubConfig`: first `plant.*` entity, `display_type: 'full'`. `getCardSize()`: 6. `getGridOptions()`: `{ columns: 6, min_columns: 4, rows: 'auto' }`.
-- Registration exactly like the flower card: guarded `customElements.define(CARE_CARD_NAME, PlantCareCard)` and a de-duplicated `window.customCards` entry (`name: localize(..., 'care_card_name')`, `preview: true`, `getEntitySuggestion` returning a full and a compact suggestion for `plant.*`).
+- Registration exactly like the flower card: guarded `customElements.define(CARE_CARD_NAME, FlowerCareCard)` and a de-duplicated `window.customCards` entry (`name: localize(..., 'care_card_name')`, `preview: true`, `getEntitySuggestion` returning a full and a compact suggestion for `plant.*`).
 
 - [ ] **Step 1: Write failing tests**:
   - `tests/care-card-config.test.ts`: `validateCareCardConfig({})` throws "You need to define an entity"; `validateCareCardConfig({entity:'plant.x', display_type:'compact'})` returns it unchanged.
-  - `tests/register.test.ts`: after importing `src/flower-card.ts`, `customElements.get('plant-care-card')` is defined and `window.customCards` contains exactly one entry with `type: 'plant-care-card'` (import twice, still one).
+  - `tests/register.test.ts`: after importing `src/flower-card.ts`, `customElements.get('flower-care-card')` is defined and `window.customCards` contains exactly one entry with `type: 'flower-care-card'` (import twice, still one).
   - `tests/localize.test.ts` (existing style): every `care_*` key above exists in en, de and nl.
 - [ ] **Step 2: Run** `npx vitest run` — FAIL.
 - [ ] **Step 3: Implement** the element, styles, constants, types and translations as above.
@@ -213,7 +213,7 @@ git commit -m "Add the plant-care card"
 - Modify: `README.md` (new "Plant care card" section)
 - Add: `docs/superpowers/specs/2026-11-23-plant-care-card-design.md`, this plan
 
-- [ ] **Step 1: Write** the README section: config (`type: custom:plant-care-card`, `entity`, `display_type`), what each row shows, sensor vs interval mode via plant's problem-trigger checkboxes, **no to-do list ⇒ no due dates and no Done buttons**, compact vs full, wide layout, required plant version (the 2026.12 release carrying the `care` block).
+- [ ] **Step 1: Write** the README section: config (`type: custom:flower-care-card`, `entity`, `display_type`), what each row shows, sensor vs interval mode via plant's problem-trigger checkboxes, **no to-do list ⇒ no due dates and no Done buttons**, compact vs full, wide layout, required plant version (the 2026.12 release carrying the `care` block).
 - [ ] **Step 2: Run** `npx vitest run`, `npx tsc --noEmit`, `npm run lint` — PASS.
 - [ ] **Step 3: Commit, push, open the PR** (label `enhancement`), watch CI to green: `gh pr checks <n> --watch`.
 ```bash

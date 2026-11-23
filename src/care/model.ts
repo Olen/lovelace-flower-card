@@ -275,6 +275,31 @@ export function statusLabel(status: RowStatus, now: Date): StatusLabel | null {
   }
 }
 
+const ROW_OF_SHOW_CARE = new Map<string, RowKey>([
+  ['care_watering', 'water'],
+  ['care_fertilization', 'fertilize'],
+  ['care_repotting', 'repot'],
+  ['care_pruning', 'prune'],
+  ['care_sunlight', 'light'],
+  ['care_soil', 'soil'],
+]);
+
+export function rowKeysFromShowCare(showCare: string[] | undefined): Set<RowKey> {
+  if (showCare === undefined) {
+    return new Set(ROW_OF_SHOW_CARE.values());
+  }
+  const keys = new Set<RowKey>();
+  for (const value of showCare) {
+    const key = ROW_OF_SHOW_CARE.get(value);
+    if (key === undefined) {
+      const valid = [...ROW_OF_SHOW_CARE.keys()].join(', ');
+      throw new Error(`Unknown show_care value "${value}". Valid values: ${valid}`);
+    }
+    keys.add(key);
+  }
+  return keys;
+}
+
 export function initiallyExpanded(displayType: string | undefined): boolean {
   return displayType !== 'compact';
 }

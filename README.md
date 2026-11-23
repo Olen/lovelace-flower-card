@@ -18,7 +18,7 @@ A Lovelace card for displaying plant data from the [Plant Monitor](https://githu
   - [🖼️ Display Types](#️-display-types)
   - [📊 Show Bars](#-show-bars)
   - [🌿 Care Info](#-care-info)
-  - [🪴 Plant Care Card](#-plant-care-card)
+  - [🪴 Flower Care Card](#-flower-care-card)
   - [🔋 Battery Sensor](#-battery-sensor)
   - [🏷️ Extra Badges](#️-extra-badges)
   - [🔍 Image Lightbox](#-image-lightbox)
@@ -192,14 +192,14 @@ Each selected field renders as a labeled text box — and only when the plant ac
 
 ---
 
-## 🪴 Plant Care Card
+## 🪴 Flower Care Card
 
-The flower card shows how your plant is doing right now. The **plant care card** shows what it needs from you: what to do, when, and how. Use them side by side.
+The flower card shows how your plant is doing right now. The **flower care card** shows what it needs from you: what to do, when, and how. Use them side by side.
 
-It comes with the flower card. If the flower card works, the plant care card is already installed.
+It comes with the flower card. If the flower card works, the flower care card is already installed.
 
 ```yaml
-type: custom:plant-care-card
+type: custom:flower-care-card
 entity: plant.monstera
 display_type: full   # or compact
 ```
@@ -208,6 +208,12 @@ display_type: full   # or compact
 |--------|---------|-------------|
 | `entity` | *(required)* | A `plant.…` entity |
 | `display_type` | `full` | `full` shows every row unfolded; `compact` uses the small header and folds the rows (tap a row to unfold it) |
+| `name` | Entity name | As on the flower card, see [Custom Name](#custom-name) |
+| `battery_sensor` | — | As on the flower card, see [Battery Sensor](#-battery-sensor) |
+| `extra_badges` | — | As on the flower card, see [Extra Badges](#️-extra-badges) |
+| `show_care` | *(all)* | Which care areas to show: `care_watering`, `care_fertilization`, `care_repotting`, `care_pruning`, `care_sunlight`, `care_soil`. Omitted = all. The rows keep their order whatever order you list them in |
+| `hide_species` | `false` | As on the flower card, see [Hide Species / Image](#hide-species--image) |
+| `hide_image` | `false` | As on the flower card, see [Hide Species / Image](#hide-species--image) |
 
 > **Note:** The card needs [Plant Monitor](https://github.com/Olen/homeassistant-plant) **2026.12 or newer**. With an older version it only shows the care advice. Task-related parts (due dates, the **Done** button, red rows for due tasks) appear only when the plant has a to-do list. Choose one under **Settings → Devices & Services → Plant Monitor → *your plant* → Configure → Care tasks**.
 

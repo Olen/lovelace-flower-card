@@ -17,6 +17,13 @@ export const getConfigFormLanguage = (): string => {
     return document.documentElement?.lang || 'en';
 };
 
+// getConfigForm is static, so it has no hass of its own; read the version from the page
+export const getHaVersion = (): string | undefined => {
+    if (typeof document === 'undefined') return undefined;
+    const root = document.querySelector('home-assistant') as (Element & { hass?: HomeAssistant }) | null;
+    return root?.hass?.config?.version;
+};
+
 // Media source URL handling
 const MEDIA_SOURCE_PREFIX = "media-source://";
 

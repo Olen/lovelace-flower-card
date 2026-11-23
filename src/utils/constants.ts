@@ -8,7 +8,7 @@ export interface DropdownOption {
 }
 
 export const CARD_NAME = "flower-card";
-export const CARE_CARD_NAME = "plant-care-card";
+export const CARE_CARD_NAME = "flower-care-card";
 
 export const default_show_bars = [
     "moisture",
@@ -45,6 +45,16 @@ export const getCareFields = (language = 'en'): DropdownOption[] => [
 ];
 
 export const careFields: DropdownOption[] = getCareFields('en');
+
+// The flower care card's show_care values, in row order
+export const getCareAreaFields = (language = 'en'): DropdownOption[] => [
+  { label: localize({ language }, 'care_watering'), value: 'care_watering' },
+  { label: localize({ language }, 'care_fertilization'), value: 'care_fertilization' },
+  { label: localize({ language }, 'care_repotting'), value: 'care_repotting' },
+  { label: localize({ language }, 'care_pruning'), value: 'care_pruning' },
+  { label: localize({ language }, 'care_sunlight'), value: 'care_sunlight' },
+  { label: localize({ language }, 'care_soil'), value: 'care_soil' }
+];
 
 export const careIcons: Record<string, string> = {
   care_watering: 'mdi:watering-can-outline',

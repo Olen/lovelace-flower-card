@@ -4,12 +4,12 @@ import { HomeAssistant } from 'custom-card-helpers';
 import { style } from './styles';
 import { DisplayType, EntitySuggestion, ExtraBadge, FlowerCardConfig, HomeAssistantEntity, PlantInfo } from './types/flower-card-types';
 import * as packageJson from '../package.json';
-import './plant-care-card';
-import { computeCareDialogState, renderAttributes, renderBattery, renderCareInfo, renderCareItems, renderExtraBadges, selectCareInfo } from './utils/attributes';
+import './flower-care-card';
+import { computeCareDialogState, renderAttributes, renderBattery, renderCareDialog, renderCareInfo, renderExtraBadges } from './utils/attributes';
 import { CARD_NAME, default_show_bars, getCareFields, getPlantAttributes } from './utils/constants';
 import { getHassLanguage, localize } from './localize/localize';
 import { renderPlantHeader } from './utils/header';
-import { entityDisplayName, getConfigFormLanguage, moreInfo, nameSelector, resolveEntityPicture, shouldEnableImageLightbox } from './utils/utils';
+import { entityDisplayName, getConfigFormLanguage, getHaVersion, moreInfo, nameSelector, resolveEntityPicture, shouldEnableImageLightbox } from './utils/utils';
 
 console.info(
     `%c FLOWER-CARD %c ${packageJson.version}`,
@@ -17,12 +17,6 @@ console.info(
     'color: darkblue; background: white; font-weight: bold;'
 );
 
-// getConfigForm is static, so it has no hass of its own; read the version from the page
-const getHaVersion = (): string | undefined => {
-    if (typeof document === 'undefined') return undefined;
-    const root = document.querySelector('home-assistant') as (Element & { hass?: HomeAssistant }) | null;
-    return root?.hass?.config?.version;
-};
 
 // Suggests flower-card in Home Assistant's card picker when a plant entity is
 // selected (HA 2026.6+). Returns null for any non-plant entity so the card only
@@ -238,21 +232,7 @@ export default class FlowerCard extends LitElement {
     private renderCareDialog(): HTMLTemplateResult {
         const entity = this.config?.entity;
         const attributes = entity ? this._hass?.states[entity]?.attributes : undefined;
-        const language = getHassLanguage(this._hass);
-        const entries = selectCareInfo(attributes, this._careDialogFields, language);
-        // ha-dialog takes its title from header-title; older HA read heading
-        return html`
-            <ha-dialog
-                open
-                header-title="${this._careDialogTitle}"
-                heading="${this._careDialogTitle}"
-                @closed="${() => this._closeCareDialog()}"
-            >
-                ${entries.length > 0
-                    ? html`<div class="care-info care-info--dialog">${renderCareItems(entries)}</div>`
-                    : html`<div class="care-info-empty">${localize({ language }, 'no_care_info')}</div>`}
-            </ha-dialog>
-        `;
+        return renderCareDialog(this._hass, attributes, this._careDialogFields, this._careDialogTitle, () => this._closeCareDialog());
     }
 
     openImageDialog(): void {
