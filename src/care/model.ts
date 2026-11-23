@@ -204,14 +204,50 @@ export function careDatesFromStates(care: CareInfo | null, states: Record<string
   return dates;
 }
 
-export function earlyDoneDate(row: CareRow): string | null {
+export interface DoneConfirmation {
+  date: string | null;
+}
+
+export function doneConfirmation(row: CareRow): DoneConfirmation | null {
   if (row.done === null || row.done.emphasis !== 'outlined') {
     return null;
   }
-  if (row.status.kind !== 'due') {
-    return null;
+  if (row.status.kind === 'due') {
+    return { date: row.status.date };
   }
-  return row.status.date;
+  return { date: null };
+}
+
+export interface StatusLabel {
+  key: string;
+  n?: number;
+  date?: string;
+}
+
+export function statusLabel(status: RowStatus, now: Date): StatusLabel | null {
+  switch (status.kind) {
+    case 'none':
+      return null;
+    case 'prediction': {
+      const days = predictionDays(status.at, now);
+      if (days === 0) {
+        return { key: 'care_status_prediction_today' };
+      }
+      if (days === 1) {
+        return { key: 'care_status_prediction_one' };
+      }
+      return { key: 'care_status_prediction', n: days };
+    }
+    case 'due':
+      if (status.days === 1) {
+        return { key: 'care_status_due_tomorrow', date: status.date };
+      }
+      return { key: 'care_status_due', n: status.days, date: status.date };
+    case 'due_today':
+      return { key: 'care_status_due_today' };
+    case 'overdue':
+      return { key: 'care_status_overdue', n: status.days };
+  }
 }
 
 export function initiallyExpanded(displayType: string | undefined): boolean {

@@ -49,6 +49,16 @@ export const resolveMediaSource = async (
     }
 };
 
+export const resolveEntityPicture = async (
+    hass: HomeAssistant,
+    entityPicture: string | undefined,
+): Promise<string | undefined> => {
+    if (!entityPicture) {
+        return undefined;
+    }
+    return resolveMediaSource(hass, entityPicture);
+};
+
 /** True when the thumbnail should open a lightbox (real image present and not hidden). */
 export const shouldEnableImageLightbox = (
     hideImage: boolean,

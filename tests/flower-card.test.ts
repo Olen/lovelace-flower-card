@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { PlantInfo } from '../src/types/flower-card-types';
 import { default_show_bars } from '../src/utils/constants';
-import { isMediaSourceUrl, resolveMediaSource } from '../src/utils/utils';
+import { isMediaSourceUrl, resolveEntityPicture, resolveMediaSource } from '../src/utils/utils';
 import { getEntitySuggestion } from '../src/flower-card';
 
 // hass is unused by the suggestion logic (domain is derived from entityId),
@@ -382,6 +382,28 @@ describe('FlowerCard logic', () => {
       it('should return false for undefined or empty values', () => {
         expect(isMediaSourceUrl(undefined)).toBe(false);
         expect(isMediaSourceUrl('')).toBe(false);
+      });
+    });
+
+    describe('resolveEntityPicture', () => {
+      it('has no picture when the entity has none', async () => {
+        const mockHass = { callWS: vi.fn() };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        expect(await resolveEntityPicture(mockHass as any, undefined)).toBeUndefined();
+        expect(mockHass.callWS).not.toHaveBeenCalled();
+      });
+
+      it('keeps a plain URL as it is', async () => {
+        const mockHass = { callWS: vi.fn() };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        expect(await resolveEntityPicture(mockHass as any, '/local/plant.jpg')).toBe('/local/plant.jpg');
+        expect(mockHass.callWS).not.toHaveBeenCalled();
+      });
+
+      it('resolves a media-source URL', async () => {
+        const mockHass = { callWS: vi.fn().mockResolvedValue({ url: '/media/local/plant.jpg', mime_type: 'image/jpeg' }) };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        expect(await resolveEntityPicture(mockHass as any, 'media-source://media_source/local/plant.jpg')).toBe('/media/local/plant.jpg');
       });
     });
 

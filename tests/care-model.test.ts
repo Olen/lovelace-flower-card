@@ -9,7 +9,7 @@ import {
   CareRowInput,
   CareType,
   dueInDays,
-  earlyDoneDate,
+  doneConfirmation,
   formatCareDate,
   initiallyExpanded,
   msUntilMidnight,
@@ -17,6 +17,7 @@ import {
   progressFraction,
   RowKey,
   snoozedDue,
+  statusLabel,
   TodoItem,
 } from '../src/care/model';
 
@@ -500,7 +501,7 @@ describe('careDatesFromStates', () => {
   });
 });
 
-describe('earlyDoneDate', () => {
+describe('doneConfirmation', () => {
   function rowWith(overrides: Partial<CareRow>): CareRow {
     return {
       key: 'fertilize',
@@ -516,18 +517,62 @@ describe('earlyDoneDate', () => {
     };
   }
 
-  it('gives the due date when an outlined Done is pressed before the due date', () => {
+  it('asks with the due date when an outlined Done is pressed before the due date', () => {
     const early = rowWith({ status: { kind: 'due', days: 9, date: '2026-12-02' }, done: { uids: ['a'], emphasis: 'outlined' } });
-    expect(earlyDoneDate(early)).toBe('2026-12-02');
+    expect(doneConfirmation(early)).toEqual({ date: '2026-12-02' });
   });
 
-  it('is null for a solid Done', () => {
+  it('does not ask for a solid Done', () => {
     const due = rowWith({ status: { kind: 'overdue', days: 3 }, done: { uids: ['a'], emphasis: 'solid' } });
-    expect(earlyDoneDate(due)).toBeNull();
+    expect(doneConfirmation(due)).toBeNull();
   });
 
-  it('is null when the open item has no due date', () => {
+  it('asks without a date when the open item has no due date', () => {
     const undated = rowWith({ status: { kind: 'none' }, done: { uids: ['a'], emphasis: 'outlined' } });
-    expect(earlyDoneDate(undated)).toBeNull();
+    expect(doneConfirmation(undated)).toEqual({ date: null });
+  });
+
+  it('asks without a date when the row shows a watering prediction instead of a due date', () => {
+    const predicted = rowWith({ status: { kind: 'prediction', at: '2026-11-26T06:00:00+00:00' }, done: { uids: ['a'], emphasis: 'outlined' } });
+    expect(doneConfirmation(predicted)).toEqual({ date: null });
+  });
+});
+
+describe('statusLabel', () => {
+  it('has no label without a status', () => {
+    expect(statusLabel({ kind: 'none' }, now)).toBeNull();
+  });
+
+  it('says dry today for a prediction of zero days', () => {
+    expect(statusLabel({ kind: 'prediction', at: new Date(2026, 10, 23, 20, 0).toISOString() }, now))
+      .toEqual({ key: 'care_status_prediction_today' });
+  });
+
+  it('uses the singular for a prediction of one day', () => {
+    expect(statusLabel({ kind: 'prediction', at: new Date(2026, 10, 24, 8, 0).toISOString() }, now))
+      .toEqual({ key: 'care_status_prediction_one' });
+  });
+
+  it('counts days for a longer prediction', () => {
+    expect(statusLabel({ kind: 'prediction', at: new Date(2026, 10, 26, 8, 0).toISOString() }, now))
+      .toEqual({ key: 'care_status_prediction', n: 3 });
+  });
+
+  it('says tomorrow for a due date one day away', () => {
+    expect(statusLabel({ kind: 'due', days: 1, date: '2026-11-24' }, now))
+      .toEqual({ key: 'care_status_due_tomorrow', date: '2026-11-24' });
+  });
+
+  it('counts days for a later due date', () => {
+    expect(statusLabel({ kind: 'due', days: 9, date: '2026-12-02' }, now))
+      .toEqual({ key: 'care_status_due', n: 9, date: '2026-12-02' });
+  });
+
+  it('says due today', () => {
+    expect(statusLabel({ kind: 'due_today' }, now)).toEqual({ key: 'care_status_due_today' });
+  });
+
+  it('counts overdue days', () => {
+    expect(statusLabel({ kind: 'overdue', days: 3 }, now)).toEqual({ key: 'care_status_overdue', n: 3 });
   });
 });

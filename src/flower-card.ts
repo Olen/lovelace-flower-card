@@ -9,7 +9,7 @@ import { computeCareDialogState, renderAttributes, renderBattery, renderCareInfo
 import { CARD_NAME, default_show_bars, getCareFields, getPlantAttributes } from './utils/constants';
 import { getHassLanguage, localize } from './localize/localize';
 import { renderPlantHeader } from './utils/header';
-import { entityDisplayName, getConfigFormLanguage, isMediaSourceUrl, moreInfo, nameSelector, resolveMediaSource, shouldEnableImageLightbox } from './utils/utils';
+import { entityDisplayName, getConfigFormLanguage, moreInfo, nameSelector, resolveEntityPicture, shouldEnableImageLightbox } from './utils/utils';
 
 console.info(
     `%c FLOWER-CARD %c ${packageJson.version}`,
@@ -88,17 +88,8 @@ export default class FlowerCard extends LitElement {
     }
 
     private async _resolveEntityPicture(hass: HomeAssistant, entityPicture: string | undefined): Promise<void> {
-        if (!entityPicture) {
-            this._resolvedImageUrl = undefined;
-            return;
-        }
-
-        if (isMediaSourceUrl(entityPicture)) {
-            this._resolvedImageUrl = await resolveMediaSource(hass, entityPicture);
-            this.requestUpdate();
-        } else {
-            this._resolvedImageUrl = entityPicture;
-        }
+        this._resolvedImageUrl = await resolveEntityPicture(hass, entityPicture);
+        this.requestUpdate();
     }
 
     static getConfigForm() {

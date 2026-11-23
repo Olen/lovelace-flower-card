@@ -9,21 +9,20 @@ import {
     careDatesFromStates,
     CareInfo,
     CareRow,
-    earlyDoneDate,
+    doneConfirmation,
     formatCareDate,
     initiallyExpanded,
     msUntilMidnight,
-    predictionDays,
     RowKey,
-    RowStatus,
     snoozedDue,
+    statusLabel,
     TodoItem,
 } from './care/model';
 import { DisplayType, EntitySuggestion, HomeAssistantEntity, PlantCareCardConfig } from './types/flower-card-types';
 import { CARE_CARD_NAME, careRowIcons } from './utils/constants';
 import { getHassLanguage, localize, localizeWith } from './localize/localize';
 import { renderPlantHeader } from './utils/header';
-import { getConfigFormLanguage, isMediaSourceUrl, moreInfo, resolveMediaSource } from './utils/utils';
+import { getConfigFormLanguage, moreInfo, resolveEntityPicture } from './utils/utils';
 
 const ALL_ROW_KEYS: RowKey[] = ['water', 'fertilize', 'repot', 'prune', 'light', 'soil'];
 const CARE_ROW_KEYS: RowKey[] = ['water', 'fertilize', 'repot', 'prune'];
@@ -83,7 +82,7 @@ export default class PlantCareCard extends LitElement {
     @state() private _snoozeMenuRow: RowKey | null = null;
     @state() private _confirmDialogOpen = false;
     @state() private _confirmRow: CareRow | null = null;
-    @state() private _confirmDate = '';
+    @state() private _confirmText = '';
 
     private stateObj: HomeAssistantEntity | undefined;
     private previousFetchDate = 0;
@@ -111,17 +110,8 @@ export default class PlantCareCard extends LitElement {
     }
 
     private async _resolveEntityPicture(hass: HomeAssistant, entityPicture: string | undefined): Promise<void> {
-        if (!entityPicture) {
-            this._resolvedImageUrl = undefined;
-            return;
-        }
-
-        if (isMediaSourceUrl(entityPicture)) {
-            this._resolvedImageUrl = await resolveMediaSource(hass, entityPicture);
-            this.requestUpdate();
-        } else {
-            this._resolvedImageUrl = entityPicture;
-        }
+        this._resolvedImageUrl = await resolveEntityPicture(hass, entityPicture);
+        this.requestUpdate();
     }
 
     private async fetchCare(hass: HomeAssistant): Promise<void> {
@@ -279,12 +269,12 @@ export default class PlantCareCard extends LitElement {
     }
 
     private pressDone(row: CareRow): void {
-        const date = earlyDoneDate(row);
-        if (date === null) {
+        const confirmation = doneConfirmation(row);
+        if (confirmation === null) {
             this.completeRow(row);
             return;
         }
-        this.openConfirmDialog(row, date);
+        this.openConfirmDialog(row, confirmation.date);
     }
 
     private completeRow(row: CareRow): void {
@@ -297,9 +287,13 @@ export default class PlantCareCard extends LitElement {
         }
     }
 
-    openConfirmDialog(row: CareRow, date: string): void {
+    openConfirmDialog(row: CareRow, date: string | null): void {
         this._confirmRow = row;
-        this._confirmDate = formatCareDate(date, getHassLanguage(this._hass));
+        if (date === null) {
+            this._confirmText = localize(this._hass, 'care_confirm_early_undated');
+        } else {
+            this._confirmText = localizeWith(this._hass, 'care_confirm_early', { date: formatCareDate(date, getHassLanguage(this._hass)) });
+        }
         this._confirmDialogOpen = true;
     }
 
@@ -320,7 +314,7 @@ export default class PlantCareCard extends LitElement {
     private renderConfirmDialog(): HTMLTemplateResult {
         return html`
             <ha-dialog open @closed="${() => this._closeConfirmDialog()}">
-                <div>${localizeWith(this._hass, 'care_confirm_early', { date: this._confirmDate })}</div>
+                <div>${this._confirmText}</div>
                 <div class="care-confirm-actions">
                     <button class="care-button outlined" @click="${() => this._closeConfirmDialog()}">
                         ${localize(this._hass, 'care_cancel')}
@@ -333,20 +327,19 @@ export default class PlantCareCard extends LitElement {
         `;
     }
 
-    private statusText(status: RowStatus, now: Date): string {
-        const language = getHassLanguage(this._hass);
-        switch (status.kind) {
-            case 'none':
-                return '';
-            case 'prediction':
-                return localizeWith(this._hass, 'care_status_prediction', { n: predictionDays(status.at, now) });
-            case 'due':
-                return localizeWith(this._hass, 'care_status_due', { n: status.days, date: formatCareDate(status.date, language) });
-            case 'due_today':
-                return localize(this._hass, 'care_status_due_today');
-            case 'overdue':
-                return localizeWith(this._hass, 'care_status_overdue', { n: status.days });
+    private statusText(row: CareRow, now: Date): string {
+        const label = statusLabel(row.status, now);
+        if (label === null) {
+            return '';
         }
+        const values: Record<string, string | number> = {};
+        if (label.n !== undefined) {
+            values.n = label.n;
+        }
+        if (label.date !== undefined) {
+            values.date = formatCareDate(label.date, getHassLanguage(this._hass));
+        }
+        return localizeWith(this._hass, label.key, values);
     }
 
     private renderSubLine(row: CareRow): HTMLTemplateResult | typeof nothing {
@@ -415,7 +408,7 @@ export default class PlantCareCard extends LitElement {
                 <div class="care-row-head" @click="${() => this.toggleRow(row.key)}">
                     <ha-icon .icon="${careRowIcons[row.key]}"></ha-icon>
                     <span class="care-row-title">${localize(this._hass, `care_row_${row.key}`)}</span>
-                    <span class="care-row-status">${this.statusText(row.status, now)}</span>
+                    <span class="care-row-status">${this.statusText(row, now)}</span>
                     <span class="care-row-actions">
                         ${this.renderSnoozeButton(row)}
                         ${this.renderDoneButton(row)}
