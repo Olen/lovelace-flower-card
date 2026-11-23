@@ -94,6 +94,23 @@ function parseCalendarDate(value: string): CalendarDate {
   return { year: parsed.getFullYear(), month: parsed.getMonth() + 1, day: parsed.getDate() };
 }
 
+function isParsableDate(value: string): boolean {
+  return DATE_ONLY.test(value) || !isNaN(new Date(value).getTime());
+}
+
+function withValidDates(item: TodoItem): TodoItem {
+  const cleaned = { ...item };
+  if (cleaned.due !== undefined && !isParsableDate(cleaned.due)) {
+    console.warn(`Ignoring unparsable due date on to-do item ${item.uid}: ${item.due}`);
+    delete cleaned.due;
+  }
+  if (cleaned.completed !== undefined && !isParsableDate(cleaned.completed)) {
+    console.warn(`Ignoring unparsable completed date on to-do item ${item.uid}: ${item.completed}`);
+    delete cleaned.completed;
+  }
+  return cleaned;
+}
+
 function calendarDay(date: CalendarDate): number {
   return Math.round(Date.UTC(date.year, date.month - 1, date.day) / MS_PER_DAY);
 }
@@ -228,7 +245,7 @@ function buildCareTypeRow(
   const separator = care === null ? '' : care.marker_separator;
 
   const keyItems = hasList
-    ? input.items.filter((item) => careOfItem(item, input.plantEntityId, separator) === key)
+    ? input.items.filter((item) => careOfItem(item, input.plantEntityId, separator) === key).map(withValidDates)
     : [];
   const openItems = keyItems.filter((item) => item.status === 'needs_action');
   const completedItems = keyItems.filter((item) => item.status === 'completed');

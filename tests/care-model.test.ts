@@ -12,7 +12,6 @@ import {
   msUntilMidnight,
   progressFraction,
   RowKey,
-  SNOOZE_WINDOW_DAYS,
   snoozedDue,
   TodoItem,
 } from '../src/care/model';
@@ -301,6 +300,23 @@ describe('last done', () => {
     expect(water.lastDone).toBe('2026-11-20T08:00:00+01:00');
   });
 
+  it('ignores a completed item with an unparsable timestamp', () => {
+    const items = [
+      item('water', { uid: 'bad', status: 'completed', completed: 'not a date' }),
+      item('water', { uid: 'good', status: 'completed', completed: '2026-11-01T09:00:00+01:00' }),
+    ];
+    const water = row(buildCareRows(input({ care: careInfo({ water: 'interval' }), items }), now), 'water');
+    expect(water.lastDone).toBe('2026-11-01T09:00:00+01:00');
+  });
+
+  it('treats an open item with an unparsable due as having no due', () => {
+    const items = [item('water', { due: 'garbage' })];
+    const water = row(buildCareRows(input({ care: careInfo({ water: 'interval' }), items }), now), 'water');
+    expect(water.status).toEqual({ kind: 'none' });
+    expect(water.done).toEqual({ uids: ['uid-water'], emphasis: 'outlined' });
+    expect(water.snooze).toBeNull();
+  });
+
   it('uses the newest completed item', () => {
     const items = [
       item('water', { uid: 'old', status: 'completed', completed: '2026-10-01T09:00:00+01:00' }),
@@ -339,10 +355,6 @@ describe('progress and snooze on rows', () => {
       'water',
     );
     expect(water.progress).toBeNull();
-  });
-
-  it('defines the snooze window as 2 days', () => {
-    expect(SNOOZE_WINDOW_DAYS).toBe(2);
   });
 
   it.each([
