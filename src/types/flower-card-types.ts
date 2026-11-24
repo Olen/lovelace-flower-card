@@ -54,6 +54,7 @@ export interface FlowerCareCardConfig extends LovelaceCardConfig {
     battery_ok_level?: number;
     extra_badges?: ExtraBadge[];
     show_care?: string[] | null;   // care areas to show (default: all)
+    show_tasks?: boolean;          // custom task: items from the to-do list (default: true)
 }
 
 export interface FlowerCareAgendaConfig extends LovelaceCardConfig {
@@ -67,6 +68,7 @@ export interface FlowerCareAgendaConfig extends LovelaceCardConfig {
     show_care?: string[] | null;   // care types to list (default: all four)
     show_predictions?: boolean;    // default: true
     show_filters?: boolean;        // default: false
+    show_tasks?: boolean;          // custom task: items from the to-do list (default: true)
 }
 
 export enum DisplayType {

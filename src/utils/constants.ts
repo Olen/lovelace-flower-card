@@ -65,6 +65,8 @@ export const careIcons: Record<string, string> = {
   care_fertilization: 'mdi:bottle-tonic-outline',
 };
 
+export const TASK_ICON = 'mdi:clipboard-check-outline';
+
 export const careRowIcons: Record<RowKey, string> = {
   water: careIcons.care_watering,
   fertilize: careIcons.care_fertilization,

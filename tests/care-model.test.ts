@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import {
   buildCareRows,
+  buildTaskRows,
+  taskMarkerOf,
   careDatesFromStates,
   careOfItem,
   CareInfo,
@@ -768,5 +770,98 @@ describe('nextCareRows', () => {
       careRow('soil', { kind: 'none' }),
     ];
     expect(nextCareRows(rows, now)).toEqual([]);
+  });
+});
+
+describe('taskMarkerOf', () => {
+  it('reads the slug and every plant of an item', () => {
+    const shared = item('task:fill_cistern', {
+      description: `Refill when the level is low\nplant.basil${SEP}task:fill_cistern\nplant.chili${SEP}task:fill_cistern`,
+    });
+    expect(taskMarkerOf(shared, SEP)).toEqual({ slug: 'fill_cistern', plants: ['plant.basil', 'plant.chili'] });
+  });
+
+  it('ignores built-in care types, other text and an empty slug', () => {
+    expect(taskMarkerOf(item('water'), SEP)).toBeNull();
+    expect(taskMarkerOf(item('x', { description: 'just a note' }), SEP)).toBeNull();
+    expect(taskMarkerOf(item('task:'), SEP)).toBeNull();
+  });
+
+  it('keeps the first slug when lines disagree', () => {
+    const mixed = item('task:a', { description: `${PLANT}${SEP}task:a\nplant.other${SEP}task:b` });
+    expect(taskMarkerOf(mixed, SEP)).toEqual({ slug: 'a', plants: [PLANT] });
+  });
+});
+
+describe('buildTaskRows', () => {
+  const today = '2026-11-23';
+
+  it('makes a row per open task of this plant, titled by its summary', () => {
+    const rows = buildTaskRows(input({
+      items: [item('task:fill_reservoir', { uid: 'r1', summary: 'Fill reservoir', due: today })],
+    }), now);
+    expect(rows).toEqual([{
+      key: 'task:fill_reservoir',
+      alert: true,
+      status: { kind: 'due_today' },
+      lastDone: null,
+      intervalDays: null,
+      texts: [],
+      done: { uids: ['r1'], emphasis: 'solid' },
+      snooze: { uids: ['r1'], due: today },
+      progress: null,
+      reading: null,
+      task: { slug: 'fill_reservoir', summary: 'Fill reservoir', plants: [PLANT] },
+    }]);
+  });
+
+  it('asks before Done and offers no snooze when the task is far off', () => {
+    const [far] = buildTaskRows(input({ items: [item('task:wipe', { due: '2026-12-10' })] }), now);
+    expect(far.alert).toBe(false);
+    expect(far.done?.emphasis).toBe('outlined');
+    expect(far.snooze).toBeNull();
+  });
+
+  it('treats an open task without a date as due now', () => {
+    const [undated] = buildTaskRows(input({ items: [item('task:check')] }), now);
+    expect(undated.status).toEqual({ kind: 'due_today' });
+    expect(undated.snooze).toBeNull();
+  });
+
+  it('leaves out other plants, completed tasks and built-in items, and needs a list', () => {
+    const items = [
+      item('task:other', { description: `plant.other${SEP}task:other` }),
+      item('task:done', { status: 'completed', completed: '2026-11-20T10:00:00Z' }),
+      item('water', { due: today }),
+    ];
+    expect(buildTaskRows(input({ items }), now)).toEqual([]);
+    expect(buildTaskRows(input({ items: [item('task:x')], care: careInfo({}, null) }), now)).toEqual([]);
+  });
+
+  it('merges open items of one slug and records the last time it was done', () => {
+    const items = [
+      item('task:wipe', { uid: 'w1', due: '2026-11-25', summary: 'Wipe leaves' }),
+      item('task:wipe', { uid: 'w2', due: '2026-11-21', summary: 'Wipe the leaves' }),
+      item('task:wipe', { uid: 'w0', status: 'completed', completed: '2026-10-20T10:00:00Z' }),
+    ];
+    const [wipe] = buildTaskRows(input({ items }), now);
+    expect(wipe.status).toEqual({ kind: 'overdue', days: 2 });
+    expect(wipe.done?.uids).toEqual(['w1', 'w2']);
+    expect(wipe.task?.summary).toBe('Wipe the leaves');
+    expect(wipe.lastDone).toBe('2026-10-20T10:00:00Z');
+  });
+
+  it('sorts tasks soonest first', () => {
+    const items = [
+      item('task:later', { uid: 'l', due: '2026-11-30' }),
+      item('task:now', { uid: 'n', due: '2026-11-22' }),
+    ];
+    expect(buildTaskRows(input({ items }), now).map((r) => r.key)).toEqual(['task:now', 'task:later']);
+  });
+
+  it('competes for the next-care slots with the built-in rows', () => {
+    const [task] = buildTaskRows(input({ items: [item('task:fill', { due: '2026-11-21' })] }), now);
+    const water = { ...task, key: 'water' as const, task: undefined, status: { kind: 'due_today' as const } };
+    expect(nextCareRows([water, task], now).map((r) => r.key)).toEqual(['task:fill', 'water']);
   });
 });

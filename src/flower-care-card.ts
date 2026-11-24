@@ -3,24 +3,25 @@ import { state } from 'lit/decorators.js';
 import { HomeAssistant } from 'custom-card-helpers';
 import { style } from './styles';
 import { careButtonStyle, careStyle } from './care/styles';
-import { CareTasksController } from './care/controller';
+import { careRowIcon, careRowTitle, CareTasksController } from './care/controller';
 import {
     CareInfo,
     CareRow,
     careHeaderDisplayType,
     formatCareDate,
     initiallyExpanded,
+    AnyRowKey,
+    isTaskKey,
     RowKey,
     rowKeysFromShowCare,
 } from './care/model';
 import { CARE_DISPLAY_TYPES, EntitySuggestion, ExtraBadge, FlowerCareCardConfig, HomeAssistantEntity } from './types/flower-card-types';
 import { computeCareDialogState, renderBattery, renderCareDialog, renderExtraBadges } from './utils/attributes';
-import { CARE_CARD_NAME, careRowIcons, getCareAreaFields } from './utils/constants';
+import { CARE_CARD_NAME, getCareAreaFields } from './utils/constants';
 import { getHassLanguage, localize, localizeWith } from './localize/localize';
 import { renderImageDialog, renderPlantHeader } from './utils/header';
 import { entityDisplayName, getConfigFormLanguage, getHaVersion, moreInfo, nameSelector, resolveEntityPicture, shouldEnableImageLightbox } from './utils/utils';
 
-const ALL_ROW_KEYS: RowKey[] = ['water', 'fertilize', 'repot', 'prune', 'light', 'soil'];
 const CARE_ROW_KEYS: RowKey[] = ['water', 'fertilize', 'repot', 'prune'];
 const SNOOZE_CHOICES: { days: number; label: string }[] = [
     { days: 1, label: 'care_snooze_1d' },
@@ -72,8 +73,10 @@ export default class FlowerCareCard extends LitElement {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     @state() _hass?: any;
     @state() config?: FlowerCareCardConfig;
-    @state() private expanded: Set<RowKey> = new Set();
-    @state() private _snoozeMenuRow: RowKey | null = null;
+    // Rows start unfolded or folded by display type; a tap flips one row
+    @state() private unfoldByDefault = true;
+    @state() private flipped: Set<AnyRowKey> = new Set();
+    @state() private _snoozeMenuRow: AnyRowKey | null = null;
     @state() private _careDialogOpen = false;
     @state() private _imageDialogOpen = false;
     @state() private _careDialogFields: string[] = [];
@@ -151,6 +154,10 @@ export default class FlowerCareCard extends LitElement {
                                     options: getCareAreaFields(language)
                                 }
                             }
+                        },
+                        {
+                            name: "show_tasks",
+                            selector: { boolean: {} }
                         }
                     ]
                 },
@@ -189,6 +196,7 @@ export default class FlowerCareCard extends LitElement {
                     display_type: localize({ language }, 'settings_display_type'),
                     battery_sensor: localize({ language }, 'settings_battery_sensor'),
                     show_care: localize({ language }, 'settings_show_care_info'),
+                    show_tasks: localize({ language }, 'settings_show_tasks'),
                     hide_species: localize({ language }, 'settings_hide_species'),
                     hide_image: localize({ language }, 'settings_hide_image'),
                 };
@@ -207,7 +215,8 @@ export default class FlowerCareCard extends LitElement {
 
     setConfig(config: FlowerCareCardConfig): void {
         this.config = validateCareCardConfig(config);
-        this.expanded = initiallyExpanded(this.config.display_type) ? new Set(ALL_ROW_KEYS) : new Set();
+        this.unfoldByDefault = initiallyExpanded(this.config.display_type);
+        this.flipped = new Set();
     }
 
     getCardSize(): number {
@@ -218,17 +227,21 @@ export default class FlowerCareCard extends LitElement {
         return { columns: 6, min_columns: 4, rows: 'auto' };
     }
 
-    private toggleRow(key: RowKey): void {
-        const expanded = new Set(this.expanded);
-        if (expanded.has(key)) {
-            expanded.delete(key);
-        } else {
-            expanded.add(key);
-        }
-        this.expanded = expanded;
+    private isUnfolded(key: AnyRowKey): boolean {
+        return this.unfoldByDefault !== this.flipped.has(key);
     }
 
-    private toggleSnoozeMenu(key: RowKey): void {
+    private toggleRow(key: AnyRowKey): void {
+        const flipped = new Set(this.flipped);
+        if (flipped.has(key)) {
+            flipped.delete(key);
+        } else {
+            flipped.add(key);
+        }
+        this.flipped = flipped;
+    }
+
+    private toggleSnoozeMenu(key: AnyRowKey): void {
         this._snoozeMenuRow = this._snoozeMenuRow === key ? null : key;
     }
 
@@ -267,7 +280,7 @@ export default class FlowerCareCard extends LitElement {
     }
 
     private renderSubLine(row: CareRow): HTMLTemplateResult | typeof nothing {
-        if (!CARE_ROW_KEYS.includes(row.key)) {
+        if (isTaskKey(row.key) || !CARE_ROW_KEYS.includes(row.key)) {
             return nothing;
         }
         const parts: string[] = this.readingParts(row);
@@ -345,12 +358,12 @@ export default class FlowerCareCard extends LitElement {
     }
 
     private renderRow(row: CareRow, now: Date): HTMLTemplateResult {
-        const expanded = this.expanded.has(row.key);
+        const expanded = this.isUnfolded(row.key);
         return html`
             <div class="care-row care-row-${row.key} ${row.alert ? 'alert' : ''} ${expanded ? '' : 'folded'}">
                 <div class="care-row-head" @click="${() => this.toggleRow(row.key)}">
-                    <ha-icon .icon="${careRowIcons[row.key]}"></ha-icon>
-                    <span class="care-row-title">${localize(this._hass, `care_row_${row.key}`)}</span>
+                    <ha-icon .icon="${careRowIcon(row)}"></ha-icon>
+                    <span class="care-row-title">${careRowTitle(this._hass, row)}</span>
                     <span class="care-row-status">${this.careTasks.statusText(row, now)}</span>
                     <span class="care-row-actions">
                         ${this.renderSnoozeButton(row)}
@@ -385,7 +398,8 @@ export default class FlowerCareCard extends LitElement {
         const now = new Date();
         const allRows = this.careTasks.rows(stateObj, now);
         const shown = rowKeysFromShowCare(this.config?.show_care);
-        const rows = allRows.filter((row) => shown.has(row.key));
+        const showTasks = this.config?.show_tasks ?? true;
+        const rows = allRows.filter((row) => (isTaskKey(row.key) ? showTasks : shown.has(row.key)));
         return html`
             <div class="care-body">
                 <div class="care-rows">

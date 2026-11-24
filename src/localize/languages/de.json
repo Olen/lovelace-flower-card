@@ -90,5 +90,7 @@
   "settings_group_by_area": "Bereich",
   "settings_days": "Tage voraus",
   "settings_show_predictions": "Vorhergesagtes Gießen anzeigen",
-  "settings_show_filters": "Filter-Chips anzeigen"
+  "settings_show_filters": "Filter-Chips anzeigen",
+  "settings_show_tasks": "Zusätzliche Aufgaben anzeigen",
+  "agenda_tasks": "Aufgaben"
 }
