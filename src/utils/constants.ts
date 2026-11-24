@@ -68,7 +68,7 @@ export const careIcons: Record<string, string> = {
 export const careRowIcons: Record<RowKey, string> = {
   water: careIcons.care_watering,
   fertilize: careIcons.care_fertilization,
-  repot: 'mdi:flower-pot-outline',
+  repot: 'mdi:pot-mix-outline',
   prune: careIcons.care_pruning,
   light: careIcons.care_sunlight,
   soil: careIcons.care_soil,
