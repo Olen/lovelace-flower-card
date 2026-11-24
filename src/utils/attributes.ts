@@ -227,7 +227,7 @@ export const renderExtraBadge = (card: FlowerCard, badge: ExtraBadge) => {
                 lock: ['mdi:lock-open', 'mdi:lock'],
                 moisture: ['mdi:water', 'mdi:water-off'],
                 motion: ['mdi:motion-sensor', 'mdi:motion-sensor-off'],
-                moving: ['mdi:motion', 'mdi:motion-off'],
+                moving: ['mdi:arrow-right', 'mdi:octagon'],
                 occupancy: ['mdi:home', 'mdi:home-outline'],
                 opening: ['mdi:square-outline', 'mdi:square'],
                 plug: ['mdi:power-plug', 'mdi:power-plug-off'],
