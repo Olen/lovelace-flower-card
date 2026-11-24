@@ -4,6 +4,7 @@ import { FrontendLocaleData, formatNumber } from "custom-card-helpers";
 import { careFields, careIcons, default_show_bars, getCareFields } from "./constants";
 import { getHassLanguage, localize, localizeReading } from "../localize/localize";
 import { entityDisplayName, moreInfo } from "./utils";
+import { extraBarAttributes } from "./extra-bars";
 import FlowerCard from "../flower-card";
 
 export interface CareEntry {
@@ -351,7 +352,13 @@ export const renderAttributes = (card: FlowerCard): TemplateResult[] => {
         }
     }
 
-    return renderAttributeChunks(card, displayed);
+    const extraBars = extraBarAttributes(
+        card.config?.extra_bars ?? [],
+        card._hass.states,
+        (state) => card._hass.formatEntityState(state),
+        (state) => entityDisplayName(card._hass, state),
+    );
+    return renderAttributeChunks(card, { ...displayed, ...extraBars });
 }
 
 const DLI_UNIT = html`<math style="display: inline-grid;" xmlns="http://www.w3.org/1998/Math/MathML"><mrow><mfrac><mrow><mn>mol</mn></mrow><mrow><mn>d</mn><mn>⋅</mn><msup><mn>m</mn><mn>2</mn></msup></mrow></mfrac></mrow></math>`;
@@ -373,7 +380,7 @@ export const renderAttribute = (card: FlowerCard, attr: DisplayedAttribute) => {
     const pct = useLinear
         ? 100 * Math.max(0, Math.min(1, (val - min) / (max - min)))
         : 100 * Math.max(0, Math.min(1, (Math.log(val) - Math.log(min)) / (Math.log(max) - Math.log(min))));
-    const translatedName = localizeReading(card._hass, attr.name);
+    const translatedName = attr.label ?? localizeReading(card._hass, attr.name);
     const toolTip = aval
         ? html`${translatedName}: ${val} ${unitTooltip}<br>(${min} ~ ${max} ${unitTooltip})`
         : card._hass.localize('state.default.unavailable');

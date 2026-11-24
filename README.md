@@ -17,6 +17,7 @@ A Lovelace card for displaying plant data from the [Plant Monitor](https://githu
   - [⚙️ Configuration](#️-configuration)
   - [🖼️ Display Types](#️-display-types)
   - [📊 Show Bars](#-show-bars)
+  - [📏 Extra Bars](#-extra-bars)
   - [🌿 Care Info](#-care-info)
   - [🔋 Battery Sensor](#-battery-sensor)
   - [🏷️ Extra Badges](#️-extra-badges)
@@ -80,6 +81,7 @@ entity: plant.my_plant
 | `hide_species` | boolean | `false` | Hide the species name |
 | `hide_image` | boolean | `false` | Hide the plant image |
 | `extra_badges` | list | — | Additional icons ([details](EXTRA_BADGES.md)) |
+| `extra_bars` | list | — | Bars for other sensors, such as a reservoir level ([details](#-extra-bars)) |
 
 ### Full Example
 
@@ -167,6 +169,33 @@ show_bars:
 ```
 
 Available bars: `moisture`, `temperature`, `conductivity`, `illuminance`, `humidity`, `dli`, `co2`, `soil_temperature`
+
+---
+
+## 📏 Extra Bars
+
+Add bars for sensors that are not part of the plant, such as the water reservoir of a self-watering pot or the weight of the pot. They look like the plant's own bars and come after them.
+
+```yaml
+extra_bars:
+  - entity: sensor.ivy_reservoir_level
+    name: Reservoir
+    icon: mdi:cup-water
+    min: 20
+  - entity: sensor.pot_weight
+    min: 900
+    max: 2500
+```
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `entity` | *(required)* | Any entity with a numeric state |
+| `name` | The entity's name | Shown in the tooltip |
+| `icon` | The entity's icon, else `mdi:gauge` | |
+| `min` | `0` | Where the bar starts. Below it, the bar turns red |
+| `max` | `100` | Where the bar ends. Above it, the bar turns red |
+
+Click a bar to open the entity. An entity that is missing or has no numeric value shows as an unavailable bar.
 
 ---
 

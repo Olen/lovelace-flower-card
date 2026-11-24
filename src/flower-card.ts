@@ -5,6 +5,7 @@ import { style } from './styles';
 import { DisplayType, EntitySuggestion, ExtraBadge, FlowerCardConfig, HomeAssistantEntity, PlantInfo } from './types/flower-card-types';
 import * as packageJson from '../package.json';
 import { computeCareDialogState, renderAttributes, renderBattery, renderCareInfo, renderCareItems, renderExtraBadges, selectCareInfo } from './utils/attributes';
+import { validateExtraBars } from './utils/extra-bars';
 import { CARD_NAME, default_show_bars, getCareFields, getPlantAttributes, missingImage } from './utils/constants';
 import { getHassLanguage, localize } from './localize/localize';
 import { entityDisplayName, isMediaSourceUrl, moreInfo, nameSelector, resolveMediaSource, shouldEnableImageLightbox } from './utils/utils';
@@ -230,6 +231,7 @@ export default class FlowerCard extends LitElement {
         if (!config.entity) {
             throw new Error("You need to define an entity");
         }
+        validateExtraBars(config.extra_bars);
 
         this.config = config;
     }
