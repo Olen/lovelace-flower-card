@@ -2,11 +2,13 @@ import { HTMLTemplateResult, ReactiveController, ReactiveControllerHost, html } 
 import { UnsubscribeFunc } from 'home-assistant-js-websocket';
 import {
     buildCareRows,
+    buildTaskRows,
     careDatesFromStates,
     CareInfo,
     CareRow,
     doneConfirmation,
     formatCareDate,
+    isTaskKey,
     msUntilMidnight,
     Readings,
     readingsFromPlantInfo,
@@ -16,6 +18,7 @@ import {
 } from './model';
 import { HomeAssistantEntity } from '../types/flower-card-types';
 import { getHassLanguage, localize, localizeWith } from '../localize/localize';
+import { careRowIcons, TASK_ICON } from '../utils/constants';
 
 interface TodoSubscriptionMessage {
     items: TodoItem[];
@@ -169,6 +172,21 @@ export class ConfirmDoneDialog {
     }
 }
 
+export function careRowIcon(row: CareRow): string {
+    if (isTaskKey(row.key)) {
+        return TASK_ICON;
+    }
+    return careRowIcons[row.key];
+}
+
+/** "Water" for a built-in row, the to-do item's own summary for a custom task. */
+export function careRowTitle(hass: Hass, row: CareRow): string {
+    if (row.task !== undefined) {
+        return row.task.summary;
+    }
+    return localize(hass, `care_row_${row.key}`);
+}
+
 export function careStatusText(hass: Hass, row: CareRow, now: Date): string {
     const label = statusLabel(row.status, now);
     if (label === null) {
@@ -263,7 +281,7 @@ export class CareTasksController implements ReactiveController {
         const care = this.care ?? null;
         const dates = careDatesFromStates(care, this.hass.states);
         const list = care?.todo_list ?? null;
-        return buildCareRows({
+        const input = {
             plantEntityId: stateObj.entity_id,
             attributes: stateObj.attributes,
             care,
@@ -271,7 +289,8 @@ export class CareTasksController implements ReactiveController {
             lastDone: dates.lastDone,
             nextWatering: dates.nextWatering,
             readings: this.readings,
-        }, now);
+        };
+        return [...buildCareRows(input, now), ...buildTaskRows(input, now)];
     }
 
     statusText(row: CareRow, now: Date): string {

@@ -4,6 +4,8 @@ import { HomeAssistant } from 'custom-card-helpers';
 import { careButtonStyle } from './care/styles';
 import { agendaStyle } from './care/agenda-styles';
 import {
+    careRowIcon,
+    careRowTitle,
     careStatusText,
     completeCareRow,
     ConfirmDoneDialog,
@@ -12,7 +14,7 @@ import {
     snoozeCareRow,
     TodoSubscriptions,
 } from './care/controller';
-import { buildCareRows, careDatesFromStates, CareInfo, CareRow, CareType } from './care/model';
+import { buildCareRows, buildTaskRows, careDatesFromStates, CareInfo, CareRow, CareType, isTaskKey } from './care/model';
 import {
     agendaCareTypes,
     agendaSummary,
@@ -31,13 +33,20 @@ import {
     validateAgendaOptions,
 } from './care/agenda';
 import { FlowerCareAgendaConfig } from './types/flower-card-types';
-import { AGENDA_CARD_NAME, careRowIcons } from './utils/constants';
+import { AGENDA_CARD_NAME, careRowIcons, TASK_ICON } from './utils/constants';
 import { localize, localizeWith } from './localize/localize';
 import { entityDisplayName, getConfigFormLanguage, moreInfo, resolveEntityPicture } from './utils/utils';
 
 const CARD_LABEL = 'Flower care agenda';
 const FETCH_INTERVAL_MS = 60000;
 const CARE_TYPES: CareType[] = ['water', 'fertilize', 'repot', 'prune'];
+// The care-type chips, plus one for all custom tasks
+type FilterKind = CareType | 'task';
+const FILTER_KINDS: FilterKind[] = [...CARE_TYPES, 'task'];
+
+function filterKindOf(task: AgendaTask): FilterKind {
+    return isTaskKey(task.row.key) ? 'task' : task.row.key as CareType;
+}
 const SNOOZE_CHOICES: { days: number; label: string }[] = [
     { days: 1, label: 'care_snooze_1d' },
     { days: 3, label: 'care_snooze_3d' },
@@ -71,7 +80,7 @@ export default class FlowerCareAgenda extends LitElement {
     @state() _hass?: any;
     @state() config?: FlowerCareAgendaConfig;
     @state() private filterArea: string | null = null;
-    @state() private filterCare: CareType | null = null;
+    @state() private filterCare: FilterKind | null = null;
     @state() private showLater = false;
     @state() private snoozeMenu: string | null = null;
 
@@ -202,6 +211,7 @@ export default class FlowerCareAgenda extends LitElement {
                         { name: 'days', selector: { number: { min: 1, max: 60, mode: 'box' } } },
                         { name: 'show_care', selector: { select: { multiple: true, options: careOptions } } },
                         { name: 'show_predictions', selector: { boolean: {} } },
+                        { name: 'show_tasks', selector: { boolean: {} } },
                         { name: 'show_filters', selector: { boolean: {} } },
                     ],
                 },
@@ -217,6 +227,7 @@ export default class FlowerCareAgenda extends LitElement {
                     days: localize({ language }, 'settings_days'),
                     show_care: localize({ language }, 'settings_show_care_info'),
                     show_predictions: localize({ language }, 'settings_show_predictions'),
+                    show_tasks: localize({ language }, 'settings_show_tasks'),
                     show_filters: localize({ language }, 'settings_show_filters'),
                 };
                 return labels[schema.name] || schema.name;
@@ -280,7 +291,7 @@ export default class FlowerCareAgenda extends LitElement {
             const care = this.careByPlant.get(plant) ?? null;
             const list = care?.todo_list ?? null;
             const dates = careDatesFromStates(care, this._hass.states);
-            const rows = buildCareRows({
+            const input = {
                 plantEntityId: plant,
                 attributes: stateObj.attributes,
                 care,
@@ -288,7 +299,8 @@ export default class FlowerCareAgenda extends LitElement {
                 lastDone: dates.lastDone,
                 nextWatering: dates.nextWatering,
                 readings: {},
-            }, now);
+            };
+            const rows = [...buildCareRows(input, now), ...buildTaskRows(input, now)];
             result.push({ plant, name: entityDisplayName(this._hass, stateObj), area: plantArea(plant, registry), rows });
         }
         return result;
@@ -322,8 +334,8 @@ export default class FlowerCareAgenda extends LitElement {
         this.filterArea = this.filterArea === area ? null : area;
     }
 
-    private toggleFilterCare(careType: CareType): void {
-        this.filterCare = this.filterCare === careType ? null : careType;
+    private toggleFilterCare(kind: FilterKind): void {
+        this.filterCare = this.filterCare === kind ? null : kind;
     }
 
     private renderThumb(task: AgendaTask): HTMLTemplateResult {
@@ -371,9 +383,9 @@ export default class FlowerCareAgenda extends LitElement {
                     ${this.renderThumb(task)}
                     <div class="agenda-text" @click="${() => moreInfo(this, task.plant)}">
                         <div class="agenda-what">
-                            <ha-icon .icon="${careRowIcons[task.row.key]}"></ha-icon>
-                            <span class="agenda-plant">${task.name}</span>
-                            <span>· ${localize(this._hass, `care_row_${task.row.key}`)}</span>
+                            <ha-icon .icon="${careRowIcon(task.row)}"></ha-icon>
+                            <span class="agenda-plant">${task.names.join(', ')}</span>
+                            <span>· ${careRowTitle(this._hass, task.row)}</span>
                         </div>
                         ${this.renderWhen(task, now)}
                     </div>
@@ -426,16 +438,16 @@ export default class FlowerCareAgenda extends LitElement {
             return nothing;
         }
         const areas = [...new Set(tasks.map((task) => task.area ?? ''))].sort((a, b) => this.areaName(a).localeCompare(this.areaName(b)));
-        const careTypes = CARE_TYPES.filter((careType) => tasks.some((task) => task.row.key === careType));
+        const kinds = FILTER_KINDS.filter((kind) => tasks.some((task) => filterKindOf(task) === kind));
         return html`
             <div class="agenda-chips">
                 ${areas.length > 1 ? areas.map((area) => html`
                     <button class="agenda-chip" aria-pressed="${this.filterArea === area}" @click="${() => this.toggleFilterArea(area)}">
                         ${this.areaName(area)}
                     </button>`) : nothing}
-                ${careTypes.map((careType) => html`
-                    <button class="agenda-chip" aria-pressed="${this.filterCare === careType}" @click="${() => this.toggleFilterCare(careType)}">
-                        <ha-icon .icon="${careRowIcons[careType]}"></ha-icon>${localize(this._hass, `care_row_${careType}`)}
+                ${kinds.map((kind) => html`
+                    <button class="agenda-chip" aria-pressed="${this.filterCare === kind}" @click="${() => this.toggleFilterCare(kind)}">
+                        <ha-icon .icon="${kind === 'task' ? TASK_ICON : careRowIcons[kind]}"></ha-icon>${localize(this._hass, kind === 'task' ? 'agenda_tasks' : `care_row_${kind}`)}
                     </button>`)}
             </div>`;
     }
@@ -445,7 +457,7 @@ export default class FlowerCareAgenda extends LitElement {
             if (this.filterArea !== null && (task.area ?? '') !== this.filterArea) {
                 return false;
             }
-            if (this.filterCare !== null && task.row.key !== this.filterCare) {
+            if (this.filterCare !== null && filterKindOf(task) !== this.filterCare) {
                 return false;
             }
             return true;
@@ -464,7 +476,13 @@ export default class FlowerCareAgenda extends LitElement {
     render(): HTMLTemplateResult {
         if (!this.config || !this._hass) return html``;
         const now = new Date();
-        const all = agendaTasks(this.plantRows(now), agendaCareTypes(this.config.show_care), this.config.show_predictions ?? true, now);
+        const all = agendaTasks(
+            this.plantRows(now),
+            agendaCareTypes(this.config.show_care),
+            this.config.show_predictions ?? true,
+            this.config.show_tasks ?? true,
+            now,
+        );
         const tasks = this.filtered(all);
         const horizon = this.showLater ? Number.MAX_SAFE_INTEGER : this.horizon();
         const grouped = this.groupBy() === 'area'

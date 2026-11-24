@@ -90,5 +90,7 @@
   "settings_group_by_area": "Ruimte",
   "settings_days": "Dagen vooruit",
   "settings_show_predictions": "Voorspelde watergift tonen",
-  "settings_show_filters": "Filterchips tonen"
+  "settings_show_filters": "Filterchips tonen",
+  "settings_show_tasks": "Extra taken tonen",
+  "agenda_tasks": "Taken"
 }

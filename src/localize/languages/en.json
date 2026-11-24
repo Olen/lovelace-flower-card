@@ -90,5 +90,7 @@
   "settings_group_by_area": "Area",
   "settings_days": "Days ahead",
   "settings_show_predictions": "Show predicted watering",
-  "settings_show_filters": "Show filter chips"
+  "settings_show_filters": "Show filter chips",
+  "settings_show_tasks": "Show extra tasks",
+  "agenda_tasks": "Tasks"
 }

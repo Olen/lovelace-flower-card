@@ -1,5 +1,7 @@
 export type CareType = 'water' | 'fertilize' | 'repot' | 'prune';
 export type RowKey = CareType | 'light' | 'soil';
+export type TaskKey = `task:${string}`;
+export type AnyRowKey = RowKey | TaskKey;
 export type CareMode = 'sensor' | 'interval' | 'none';
 
 export interface CareInfo {
@@ -32,8 +34,14 @@ export interface DoneAction {
   emphasis: 'outlined' | 'solid';
 }
 
+export interface TaskInfo {
+  slug: string;
+  summary: string;
+  plants: string[];
+}
+
 export interface CareRow {
-  key: RowKey;
+  key: AnyRowKey;
   alert: boolean;
   status: RowStatus;
   lastDone: string | null;
@@ -43,6 +51,7 @@ export interface CareRow {
   snooze: { uids: string[]; due: string | null } | null;
   progress: number | null;
   reading: RowReading | null;
+  task?: TaskInfo;
 }
 
 export type ReadingKind = 'moisture' | 'conductivity';
@@ -561,7 +570,7 @@ export function daysUntilCare(row: CareRow, now: Date): number | null {
 export function nextCareRows(rows: CareRow[], now: Date): CareRow[] {
   const candidates: { row: CareRow; days: number }[] = [];
   for (const row of rows) {
-    if (!CARE_ROW_KEYS.has(row.key)) {
+    if (!isTaskKey(row.key) && !CARE_ROW_KEYS.has(row.key)) {
       continue;
     }
     const days = daysUntilCare(row, now);
@@ -571,4 +580,109 @@ export function nextCareRows(rows: CareRow[], now: Date): CareRow[] {
   }
   candidates.sort((a, b) => a.days - b.days);
   return candidates.slice(0, NEXT_CARE_LIMIT).map((candidate) => candidate.row);
+}
+
+export const TASK_PREFIX = 'task:';
+
+export function isTaskKey(key: AnyRowKey): key is TaskKey {
+  return key.startsWith(TASK_PREFIX);
+}
+
+export interface TaskMarker {
+  slug: string;
+  plants: string[];
+}
+
+/** The `plant.<id> · task:<slug>` lines of an item: its slug and every plant it belongs to. */
+export function taskMarkerOf(item: TodoItem, separator: string): TaskMarker | null {
+  if (!item.description || separator === '') {
+    return null;
+  }
+  let slug: string | null = null;
+  const plants: string[] = [];
+  for (const rawLine of item.description.split('\n')) {
+    const line = rawLine.trim();
+    const at = line.indexOf(separator);
+    if (at <= 0) {
+      continue;
+    }
+    const entityId = line.slice(0, at);
+    const care = line.slice(at + separator.length);
+    if (!entityId.startsWith('plant.') || !care.startsWith(TASK_PREFIX) || care === TASK_PREFIX) {
+      continue;
+    }
+    const lineSlug = care.slice(TASK_PREFIX.length);
+    if (slug === null) {
+      slug = lineSlug;
+    }
+    if (lineSlug === slug && !plants.includes(entityId)) {
+      plants.push(entityId);
+    }
+  }
+  return slug === null ? null : { slug, plants };
+}
+
+interface TaskGroup {
+  slug: string;
+  open: TodoItem[];
+  completed: TodoItem[];
+  plants: string[];
+}
+
+function taskGroups(input: CareRowInput): TaskGroup[] {
+  const care = input.care;
+  if (care === null || care.todo_list === null) {
+    return [];
+  }
+  const groups = new Map<string, TaskGroup>();
+  for (const rawItem of input.items) {
+    const marker = taskMarkerOf(rawItem, care.marker_separator);
+    if (marker === null || !marker.plants.includes(input.plantEntityId)) {
+      continue;
+    }
+    const item = withValidDates(rawItem);
+    const group = groups.get(marker.slug) ?? { slug: marker.slug, open: [], completed: [], plants: [] };
+    if (item.status === 'needs_action') {
+      group.open.push(item);
+      for (const plant of marker.plants) {
+        if (!group.plants.includes(plant)) {
+          group.plants.push(plant);
+        }
+      }
+    } else {
+      group.completed.push(item);
+    }
+    groups.set(marker.slug, group);
+  }
+  return [...groups.values()].filter((group) => group.open.length > 0);
+}
+
+function summaryOf(openItems: TodoItem[], due: string | null): string {
+  const first = openItems.find((item) => item.due === due) ?? openItems[0];
+  return first.summary;
+}
+
+/** One row per custom task with open items for this plant, soonest first. An open task without a date is due now. */
+export function buildTaskRows(input: CareRowInput, now: Date): CareRow[] {
+  const rows: CareRow[] = [];
+  for (const group of taskGroups(input)) {
+    const due = earliestDue(group.open);
+    const status: RowStatus = due === null ? { kind: 'due_today' } : statusOfDue(due, now);
+    const overdueOrToday = status.kind === 'overdue' || status.kind === 'due_today';
+    const uids = group.open.map((item) => item.uid);
+    rows.push({
+      key: `${TASK_PREFIX}${group.slug}`,
+      alert: overdueOrToday,
+      status,
+      lastDone: newestCompleted(group.completed),
+      intervalDays: null,
+      texts: [],
+      done: { uids, emphasis: overdueOrToday ? 'solid' : 'outlined' },
+      snooze: due !== null && dueInDays(due, now) <= SNOOZE_WINDOW_DAYS ? { uids, due } : null,
+      progress: null,
+      reading: null,
+      task: { slug: group.slug, summary: summaryOf(group.open, due), plants: group.plants },
+    });
+  }
+  return rows.sort((a, b) => (daysUntilCare(a, now) ?? 0) - (daysUntilCare(b, now) ?? 0));
 }

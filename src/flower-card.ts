@@ -3,14 +3,14 @@ import { property, state } from 'lit/decorators.js';
 import { HomeAssistant } from 'custom-card-helpers';
 import { style } from './styles';
 import { careButtonStyle, nextCareStyle } from './care/styles';
-import { CareTasksController } from './care/controller';
+import { careRowIcon, careRowTitle, CareTasksController } from './care/controller';
 import { CareRow, nextCareRows } from './care/model';
 import { DisplayType, EntitySuggestion, ExtraBadge, FlowerCardConfig, HomeAssistantEntity, PlantInfo } from './types/flower-card-types';
 import * as packageJson from '../package.json';
 import './flower-care-card';
 import './flower-care-agenda';
 import { computeCareDialogState, renderAttributes, renderBattery, renderCareDialog, renderCareInfo, renderExtraBadges } from './utils/attributes';
-import { CARD_NAME, careRowIcons, default_show_bars, getCareFields, getPlantAttributes } from './utils/constants';
+import { CARD_NAME, default_show_bars, getCareFields, getPlantAttributes } from './utils/constants';
 import { getHassLanguage, localize } from './localize/localize';
 import { renderImageDialog, renderPlantHeader } from './utils/header';
 import { entityDisplayName, getConfigFormLanguage, getHaVersion, moreInfo, nameSelector, resolveEntityPicture, shouldEnableImageLightbox } from './utils/utils';
@@ -308,8 +308,8 @@ export default class FlowerCard extends LitElement {
     private renderNextCareItem(row: CareRow, now: Date): HTMLTemplateResult {
         return html`
             <div class="next-care-item ${row.alert ? 'alert' : ''}">
-                <ha-icon .icon="${careRowIcons[row.key]}"></ha-icon>
-                <span>${localize(this._hass, `care_row_${row.key}`)}: ${this.careTasks.statusText(row, now)}</span>
+                <ha-icon .icon="${careRowIcon(row)}"></ha-icon>
+                <span>${careRowTitle(this._hass, row)}: ${this.careTasks.statusText(row, now)}</span>
                 ${row.done === null ? nothing : html`
                     <button class="care-button ${row.done.emphasis}" @click="${() => this.careTasks.pressDone(row)}">
                         ${localize(this._hass, 'care_done')}

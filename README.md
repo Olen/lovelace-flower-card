@@ -216,6 +216,7 @@ display_type: full   # or compact
 | `show_care` | *(all)* | Which care areas to show: `care_watering`, `care_fertilization`, `care_repotting`, `care_pruning`, `care_sunlight`, `care_soil`. Omitted = all. The rows keep their order whatever order you list them in |
 | `hide_species` | `false` | As on the flower card, see [Hide Species / Image](#hide-species--image) |
 | `hide_image` | `false` | As on the flower card, see [Hide Species / Image](#hide-species--image) |
+| `show_tasks` | `true` | Show [extra tasks](#extra-tasks) from the to-do list |
 
 > **Note:** The card needs [Plant Monitor](https://github.com/Olen/homeassistant-plant) **2026.12 or newer**. With an older version it only shows the care advice. Task-related parts (due dates, the **Done** button, red rows for due tasks) appear only when the plant has a to-do list. Choose one under **Settings → Devices & Services → Plant Monitor → *your plant* → Configure → Care tasks**.
 
@@ -249,6 +250,18 @@ A watering or fertilizing the plant notices by itself ticks the task off too, wh
 ### Snooze
 
 A row with an open task has a ⏰ button. The button appears when the task is due within two days or overdue. It moves the task's due date by 1 day, 3 days or 1 week, counted from today if the task is overdue. Nothing else changes: the task stays in your to-do list with the new date.
+
+### Extra tasks
+
+Water, Fertilize, Repot and Prune are built in: the plant handles them. You can add your own tasks to the plant's to-do list too, such as "Fill reservoir" or "Wipe the leaves", by hand or from an automation. The card shows each open one as a row under the care rows, titled with the item's own name, with **Done**, snooze and red rows working as for the built-in tasks.
+
+A task belongs to a plant through a line in the item's description:
+
+```
+plant.monstera · task:fill_reservoir
+```
+
+The part after `task:` names the task (its name in lowercase, with `_` for spaces) and lets an automation find it again; the item's summary is what the card shows. An item can belong to several plants, with one such line per plant: one cistern task for all the pots it waters. A task can share a name with a built-in type, so `water` (from the sensor) and `task:water` (a timed one) can both exist.
 
 ### Red rows
 
@@ -284,11 +297,14 @@ area: stue        # leave out for the whole home
 | `days` | `7` | How far ahead to list tasks. Later tasks fold into "N more later" |
 | `show_care` | *(all)* | Which tasks to list: `care_watering`, `care_fertilization`, `care_repotting`, `care_pruning` |
 | `show_predictions` | `true` | List the predicted watering of plants with a moisture sensor |
+| `show_tasks` | `true` | List [extra tasks](#extra-tasks) from the plants' to-do lists |
 | `show_filters` | `false` | Chips under the title to filter by room and by type of task |
 
 > **Note:** Like the flower care card, the agenda needs [Plant Monitor](https://github.com/Olen/homeassistant-plant) **2026.12 or newer**.
 
 Each row shows the plant, the task and when it is due. Tap the plant to open it. The rows behave as on the [flower care card](#-flower-care-card): a **Done** button for tasks on a schedule (outlined and asking first when not due yet), no button for tasks the sensor closes by itself, the ⏰ snooze button when the task is due within two days, and a red background when a task is due, overdue, or the plant has a problem. A predicted watering is shown in italics and has no button: it is not a task, but it puts the week's watering in one list.
+
+An [extra task](#extra-tasks) that belongs to several plants is listed once, with all their names, under the first plant's room.
 
 When two or more plants on a watering schedule are due, a **Water all** button completes them in one go. With `group_by: area` the button is in each room's heading, for that room's plants.
 

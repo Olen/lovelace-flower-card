@@ -1,4 +1,4 @@
-import { CareRow, CareType, daysUntilCare } from './model';
+import { CareRow, CareType, daysUntilCare, isTaskKey } from './model';
 
 export interface RegistryEntity {
   area_id?: string | null;
@@ -26,6 +26,7 @@ export const DEFAULT_DAYS = 7;
 export interface AgendaTask {
   plant: string;
   name: string;
+  names: string[];   // every plant in scope a shared custom task belongs to, in order
   area: string | null;
   row: CareRow;
   days: number;
@@ -136,7 +137,18 @@ export interface PlantRows {
 }
 
 function careIndex(row: CareRow): number {
+  if (isTaskKey(row.key)) {
+    return CARE_ORDER.length;
+  }
   return CARE_ORDER.indexOf(row.key as CareType);
+}
+
+/** A custom task shared by several plants is one to-do item: same key, same items. */
+function sharedTaskKey(row: CareRow): string | null {
+  if (!isTaskKey(row.key) || row.done === null) {
+    return null;
+  }
+  return `${row.key}|${[...row.done.uids].sort().join(',')}`;
 }
 
 function compareTasks(a: AgendaTask, b: AgendaTask): number {
@@ -149,17 +161,26 @@ function compareTasks(a: AgendaTask, b: AgendaTask): number {
   return a.name.localeCompare(b.name);
 }
 
-/** Every care task of the given plants, soonest first. */
+/** Every care task of the given plants, soonest first; a shared custom task is listed once. */
 export function agendaTasks(
   plants: PlantRows[],
   careTypes: Set<CareType>,
   showPredictions: boolean,
+  showTasks: boolean,
   now: Date,
 ): AgendaTask[] {
   const tasks: AgendaTask[] = [];
+  const shared = new Map<string, AgendaTask>();
   for (const plant of plants) {
     for (const row of plant.rows) {
-      if (!careTypes.has(row.key as CareType)) {
+      const wanted = isTaskKey(row.key) ? showTasks : careTypes.has(row.key as CareType);
+      if (!wanted) {
+        continue;
+      }
+      const sharedKey = sharedTaskKey(row);
+      const already = sharedKey === null ? undefined : shared.get(sharedKey);
+      if (already !== undefined) {
+        already.names.push(plant.name);
         continue;
       }
       const isPrediction = row.status.kind === 'prediction' && !row.alert;
@@ -170,7 +191,11 @@ export function agendaTasks(
       if (days === null) {
         continue;
       }
-      tasks.push({ plant: plant.plant, name: plant.name, area: plant.area, row, days });
+      const task: AgendaTask = { plant: plant.plant, name: plant.name, names: [plant.name], area: plant.area, row, days };
+      tasks.push(task);
+      if (sharedKey !== null) {
+        shared.set(sharedKey, task);
+      }
     }
   }
   return tasks.sort(compareTasks);

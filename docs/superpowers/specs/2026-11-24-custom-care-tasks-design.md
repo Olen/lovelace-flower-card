@@ -77,7 +77,7 @@ Custom tasks compete for the two slots like built-in ones (most urgent first), s
 ## Agenda
 
 - `task:` items become agenda tasks like the built-in ones, sorted in by due date, grouped the same way.
-- An item that belongs to several plants in scope is shown **once**: thumbnail of the first plant, title "<summary> · <plant>, <plant>, …"; it counts once in the summary; Done/snooze act on the one item.
+- An item that belongs to several plants in scope is shown **once**: thumbnail of the first plant, title "<plant>, <plant>, … · <summary>" (plants first, as for built-in rows); it counts once in the summary; Done/snooze act on the one item.
 - In scope if at least one of its plants is in scope. With `group_by: area` it goes under the first plant's area.
 - Filter chips get a "Tasks" chip when any are present. `show_care` does not apply; `show_tasks` (default `true`) hides them.
 - Not counted in "Water all".

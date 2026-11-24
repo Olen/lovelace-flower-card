@@ -46,7 +46,7 @@ function row(key: RowKey, status: CareRow['status'], extra: Partial<CareRow> = {
 }
 
 function task(name: string, days: number, area: string | null, key: RowKey = 'water', extra: Partial<CareRow> = {}): AgendaTask {
-  return { plant: `plant.${name}`, name, area, days, row: row(key, { kind: 'due_today' }, extra) };
+  return { plant: `plant.${name}`, name, names: [name], area, days, row: row(key, { kind: 'due_today' }, extra) };
 }
 
 describe('plantArea', () => {
@@ -117,7 +117,7 @@ describe('agendaTasks', () => {
       ],
     },
   ];
-  const all = agendaTasks(plants, agendaCareTypes(undefined), true, now);
+  const all = agendaTasks(plants, agendaCareTypes(undefined), true, true, now);
 
   it('merges plants, soonest first, leaving out advice rows and rows with nothing to do', () => {
     expect(all.map((t) => `${t.name}:${t.row.key}:${t.days}`)).toEqual([
@@ -125,11 +125,11 @@ describe('agendaTasks', () => {
     ]);
   });
   it('can hide predictions', () => {
-    const tasks = agendaTasks(plants, agendaCareTypes(undefined), false, now);
+    const tasks = agendaTasks(plants, agendaCareTypes(undefined), false, true, now);
     expect(tasks.map((t) => t.row.key)).toEqual(['fertilize', 'water', 'prune']);
   });
   it('limits care types', () => {
-    const tasks = agendaTasks(plants, agendaCareTypes(['care_watering']), true, now);
+    const tasks = agendaTasks(plants, agendaCareTypes(['care_watering']), true, true, now);
     expect(tasks.map((t) => t.name)).toEqual(['Basilikum', 'Monstera']);
   });
   it('orders equal days by care type, then plant name', () => {
@@ -137,7 +137,7 @@ describe('agendaTasks', () => {
       { plant: 'plant.b', name: 'B', area: null, rows: [row('fertilize', { kind: 'due_today' }), row('water', { kind: 'due_today' })] },
       { plant: 'plant.a', name: 'A', area: null, rows: [row('fertilize', { kind: 'due_today' })] },
     ];
-    const tasks = agendaTasks(same, agendaCareTypes(undefined), true, now);
+    const tasks = agendaTasks(same, agendaCareTypes(undefined), true, true, now);
     expect(tasks.map((t) => `${t.name}:${t.row.key}`)).toEqual(['B:water', 'A:fertilize', 'B:fertilize']);
   });
 });
@@ -187,8 +187,36 @@ describe('bulkWaterTasks and agendaSummary', () => {
     expect(bulkWaterTasks(tasks).map((t) => t.name)).toEqual(['a', 'b']);
   });
   it('counts tasks in the horizon, not predictions', () => {
-    const prediction: AgendaTask = { plant: 'plant.p', name: 'p', area: null, days: 2, row: row('water', { kind: 'prediction', at: '2026-11-25' }) };
+    const prediction: AgendaTask = { plant: 'plant.p', name: 'p', names: ['p'], area: null, days: 2, row: row('water', { kind: 'prediction', at: '2026-11-25' }) };
     const tasks = [task('a', -2, null), task('b', 0, null), prediction, task('c', 10, null)];
     expect(agendaSummary(tasks, 7)).toEqual({ todo: 2, overdue: 1 });
+  });
+});
+
+describe('custom tasks in the agenda', () => {
+  const done = { uids: ['c1'], emphasis: 'solid' as const };
+  const cistern = () => row('task:fill_cistern' as RowKey, { kind: 'due_today' }, {
+    done, task: { slug: 'fill_cistern', summary: 'Fill cistern', plants: ['plant.basil', 'plant.chili'] },
+  });
+  const plants: PlantRows[] = [
+    { plant: 'plant.basil', name: 'Basilikum', area: 'kjokken', rows: [cistern(), row('water', { kind: 'due_today' }, { done: { uids: ['w1'], emphasis: 'solid' } })] },
+    { plant: 'plant.chili', name: 'Chili', area: 'stue', rows: [cistern()] },
+  ];
+
+  it('lists a task shared by several plants once, with every plant name', () => {
+    const tasks = agendaTasks(plants, agendaCareTypes(undefined), true, true, now);
+    expect(tasks.map((t) => `${t.names.join('+')}:${t.row.key}`)).toEqual(['Basilikum:water', 'Basilikum+Chili:task:fill_cistern']);
+    expect(tasks[1].area).toBe('kjokken');
+    expect(agendaSummary(tasks, 7)).toEqual({ todo: 2, overdue: 0 });
+  });
+
+  it('can hide custom tasks, and show_care does not hide them', () => {
+    expect(agendaTasks(plants, agendaCareTypes(undefined), true, false, now).map((t) => t.row.key)).toEqual(['water']);
+    expect(agendaTasks(plants, agendaCareTypes(['care_pruning']), true, true, now).map((t) => t.row.key)).toEqual(['task:fill_cistern']);
+  });
+
+  it('keeps custom tasks out of Water all', () => {
+    const tasks = agendaTasks(plants, agendaCareTypes(undefined), true, true, now);
+    expect(bulkWaterTasks(tasks).map((t) => t.row.key)).toEqual(['water']);
   });
 });
