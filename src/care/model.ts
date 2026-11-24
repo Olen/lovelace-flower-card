@@ -542,7 +542,7 @@ export const NEXT_CARE_LIMIT = 2;
 const CARE_ROW_KEYS = new Set<RowKey>(CARE_TYPES);
 
 /** Days until the row needs doing: negative when overdue, null when it has nothing to do. */
-function daysUntilCare(row: CareRow, now: Date): number | null {
+export function daysUntilCare(row: CareRow, now: Date): number | null {
   switch (row.status.kind) {
     case 'overdue':
       return -row.status.days;
