@@ -1,6 +1,6 @@
 import { HassEntity } from "home-assistant-js-websocket";
-import { DisplayedAttribute, DisplayedAttributes, ExtraBar, ValuePart } from "../types/flower-card-types";
-import { formattedValue, numericState } from "./utils";
+import { DisplayedAttribute, DisplayedAttributes, ExtraBar } from "../types/flower-card-types";
+import { numericState } from "./utils";
 
 export const EXTRA_BAR_DEFAULT_MIN = 0;
 export const EXTRA_BAR_DEFAULT_MAX = 100;
@@ -39,7 +39,7 @@ export function validateExtraBars(bars: unknown): void {
 export function extraBarAttributes(
     bars: ExtraBar[],
     states: Record<string, HassEntity | undefined>,
-    formatStateParts: (state: HassEntity) => ValuePart[],
+    formatValue: (state: HassEntity) => string,
     displayName: (state: HassEntity) => string,
 ): DisplayedAttributes {
     const displayed: DisplayedAttributes = {};
@@ -54,7 +54,7 @@ export function extraBarAttributes(
             icon: bar.icon ?? state?.attributes.icon ?? EXTRA_BAR_DEFAULT_ICON,
             sensor: bar.entity,
             unit_of_measurement: state?.attributes.unit_of_measurement ?? "",
-            display_state: state && !Number.isNaN(current) ? formattedValue(formatStateParts(state)) : "",
+            display_state: state && !Number.isNaN(current) ? formatValue(state) : "",
         };
         displayed[attribute.name] = attribute;
     });

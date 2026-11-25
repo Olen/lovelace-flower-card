@@ -85,12 +85,6 @@ export interface Limits {
     min: number;
 }
 
-/** One piece of hass.formatEntityStateToParts(). */
-export interface ValuePart {
-    type: "value" | "literal" | "unit";
-    value: string;
-}
-
 export interface Attribute {
     icon: string;
     sensor: string;

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { entityDisplayName, nameSelector, shouldEnableImageLightbox, supportsNameItems } from '../src/utils/utils';
+import { entityDisplayName, formatStateNumber, nameSelector, numericState, shouldEnableImageLightbox, supportsNameItems } from '../src/utils/utils';
+import { NumberFormat, TimeFormat } from 'custom-card-helpers';
 import type { HomeAssistant } from 'custom-card-helpers';
 import type { HassEntity } from 'home-assistant-js-websocket';
 
@@ -82,5 +83,40 @@ describe('name parts', () => {
     });
     expect(nameSelector('2025.10.0')).toEqual({ name: 'name', selector: { text: {} } });
     expect(nameSelector(undefined)).toEqual({ name: 'name', selector: { text: {} } });
+  });
+});
+
+describe('numericState', () => {
+  const withState = (state: string) => ({ entity_id: 'sensor.x', state, attributes: {} }) as unknown as HassEntity;
+
+  it('reads a number', () => {
+    expect(numericState(withState('42.5'))).toBe(42.5);
+    expect(numericState(withState('-3'))).toBe(-3);
+  });
+
+  it('is NaN for blank, non-numeric and infinite states', () => {
+    for (const state of ['', '  ', 'unavailable', 'unknown', 'Infinity', '-Infinity']) {
+      expect(numericState(withState(state))).toBeNaN();
+    }
+  });
+});
+
+describe('formatStateNumber', () => {
+  const withState = (state: string) => ({ entity_id: 'sensor.x', state, attributes: {} }) as unknown as HassEntity;
+  const english = { language: 'en', number_format: NumberFormat.language, time_format: TimeFormat.language };
+  const decimalComma = { language: 'en', number_format: NumberFormat.decimal_comma, time_format: TimeFormat.language };
+
+  it('keeps the decimals of the state without a display precision', () => {
+    expect(formatStateNumber(withState('5.20'), english, undefined)).toBe('5.20');
+    expect(formatStateNumber(withState('1830'), english, null)).toBe('1,830');
+  });
+
+  it('rounds to the display precision', () => {
+    expect(formatStateNumber(withState('21.456'), english, 1)).toBe('21.5');
+    expect(formatStateNumber(withState('21'), english, 2)).toBe('21.00');
+  });
+
+  it("uses the user's number format", () => {
+    expect(formatStateNumber(withState('1234.5'), decimalComma, undefined)).toBe('1.234,5');
   });
 });

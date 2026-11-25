@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { HassEntity } from 'home-assistant-js-websocket';
 import { extraBarAttributes, validateExtraBars } from '../src/utils/extra-bars';
-import type { ValuePart } from '../src/types/flower-card-types';
+import { NumberFormat, TimeFormat } from 'custom-card-helpers';
+import { formatStateNumber } from '../src/utils/utils';
 
 function entity(entity_id: string, state: string, attributes: Record<string, unknown> = {}): HassEntity {
   return {
@@ -18,14 +19,10 @@ const states: Record<string, HassEntity> = {
   'sensor.blank': entity('sensor.blank', ''),
   'sensor.spaces': entity('sensor.spaces', '  '),
   'sensor.infinite': entity('sensor.infinite', 'Infinity'),
+  'sensor.pump_runtime': entity('sensor.pump_runtime', '1.5', { unit_of_measurement: 'h', device_class: 'duration' }),
 };
-const formatState = (state: HassEntity): ValuePart[] => {
-  const unit = state.attributes.unit_of_measurement;
-  if (unit === undefined) {
-    return [{ type: 'value', value: state.state }];
-  }
-  return [{ type: 'value', value: state.state }, { type: 'literal', value: ' ' }, { type: 'unit', value: String(unit) }];
-};
+const english = { language: 'en', number_format: NumberFormat.language, time_format: TimeFormat.language };
+const formatState = (state: HassEntity) => formatStateNumber(state, english, undefined);
 const displayName = (state: HassEntity) => String(state.attributes.friendly_name ?? state.entity_id);
 
 describe('extraBarAttributes', () => {
@@ -83,6 +80,12 @@ describe('extraBarAttributes', () => {
     expect(bar.current).toBe(5.2);
     expect(bar.display_state).toBe('5.2');
     expect(bar.unit_of_measurement).toBe('L/100km');
+  });
+
+  it('shows a duration as a number in its own unit', () => {
+    const [bar] = Object.values(extraBarAttributes([{ entity: 'sensor.pump_runtime' }], states, formatState, displayName));
+    expect(bar.display_state).toBe('1.5');
+    expect(bar.unit_of_measurement).toBe('h');
   });
 
   it('keeps the configured order', () => {
