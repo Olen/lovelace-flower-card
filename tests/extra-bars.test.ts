@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { HassEntity } from 'home-assistant-js-websocket';
 import { extraBarAttributes, validateExtraBars } from '../src/utils/extra-bars';
-import { NumberFormat, TimeFormat } from 'custom-card-helpers';
 import { formatStateNumber } from '../src/utils/utils';
 
 function entity(entity_id: string, state: string, attributes: Record<string, unknown> = {}): HassEntity {
@@ -21,7 +20,7 @@ const states: Record<string, HassEntity> = {
   'sensor.infinite': entity('sensor.infinite', 'Infinity'),
   'sensor.pump_runtime': entity('sensor.pump_runtime', '1.5', { unit_of_measurement: 'h', device_class: 'duration' }),
 };
-const english = { language: 'en', number_format: NumberFormat.language, time_format: TimeFormat.language };
+const english = { language: 'en', number_format: 'language' } as never;
 const formatState = (state: HassEntity) => formatStateNumber(state, english, undefined);
 const displayName = (state: HassEntity) => String(state.attributes.friendly_name ?? state.entity_id);
 

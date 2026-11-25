@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import { entityDisplayName, formatStateNumber, nameSelector, numericState, shouldEnableImageLightbox, supportsNameItems } from '../src/utils/utils';
-import { NumberFormat, TimeFormat } from 'custom-card-helpers';
 import type { HomeAssistant } from 'custom-card-helpers';
 import type { HassEntity } from 'home-assistant-js-websocket';
 
@@ -103,8 +102,8 @@ describe('numericState', () => {
 
 describe('formatStateNumber', () => {
   const withState = (state: string) => ({ entity_id: 'sensor.x', state, attributes: {} }) as unknown as HassEntity;
-  const english = { language: 'en', number_format: NumberFormat.language, time_format: TimeFormat.language };
-  const decimalComma = { language: 'en', number_format: NumberFormat.decimal_comma, time_format: TimeFormat.language };
+  const english = { language: 'en', number_format: 'language' } as never;
+  const decimalComma = { language: 'en', number_format: 'decimal_comma' } as never;
 
   it('keeps the decimals of the state without a display precision', () => {
     expect(formatStateNumber(withState('5.20'), english, undefined)).toBe('5.20');
