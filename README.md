@@ -8,6 +8,9 @@ A Lovelace card for displaying plant data from the [Plant Monitor](https://githu
 > [!IMPORTANT]
 > This card requires the [Plant Monitor](https://github.com/Olen/homeassistant-plant) custom integration. It is **not** compatible with the built-in plant integration.
 
+> [!CAUTION]
+> **From version 2026.12, the card requires Home Assistant 2026.8 or newer**, in step with Plant Monitor 2026.12. Version 2026.11.4 is the last release for older Home Assistant versions.
+
 ---
 
 ## 📑 Table of Contents
