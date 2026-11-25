@@ -22,6 +22,11 @@ export function validateExtraBars(bars: unknown): void {
         if (typeof bar !== "object" || bar === null || typeof bar.entity !== "string" || bar.entity === "") {
             throw new Error(`extra_bars[${index}] needs an entity`);
         }
+        for (const key of ["name", "icon"]) {
+            if (bar[key] !== undefined && typeof bar[key] !== "string") {
+                throw new Error(`extra_bars[${index}].${key} must be text, not "${bar[key]}"`);
+            }
+        }
         for (const key of ["min", "max"]) {
             if (bar[key] !== undefined && !isNumber(bar[key])) {
                 throw new Error(`extra_bars[${index}].${key} must be a number, not "${bar[key]}"`);

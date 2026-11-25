@@ -102,10 +102,12 @@ describe('validateExtraBars', () => {
     expect(() => validateExtraBars([{ entity: 'sensor.reservoir', min: 20 }])).not.toThrow();
   });
 
-  it('rejects a missing entity, non-numeric limits and an empty range', () => {
+  it('rejects a missing entity, non-text name or icon, non-numeric limits and an empty range', () => {
     expect(() => validateExtraBars({ entity: 'sensor.x' })).toThrow(/list/);
     expect(() => validateExtraBars([{ name: 'x' }])).toThrow(/extra_bars\[0\] needs an entity/);
     expect(() => validateExtraBars([{ entity: 'sensor.x', min: '20' }])).toThrow(/min must be a number/);
+    expect(() => validateExtraBars([{ entity: 'sensor.x', icon: 123 }])).toThrow(/icon must be text/);
+    expect(() => validateExtraBars([{ entity: 'sensor.x', name: 42 }])).toThrow(/name must be text/);
     expect(() => validateExtraBars([{ entity: 'sensor.x', min: 50, max: 50 }])).toThrow(/min \(50\) must be below max \(50\)/);
     expect(() => validateExtraBars([{ entity: 'sensor.x', min: 150 }])).toThrow(/max \(100\)/);
   });
