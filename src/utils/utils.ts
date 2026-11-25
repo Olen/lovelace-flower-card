@@ -1,7 +1,32 @@
-import { fireEvent, HomeAssistant } from "custom-card-helpers";
+import { fireEvent, formatNumber, FrontendLocaleData, HomeAssistant } from "custom-card-helpers";
 import { HassEntity } from "home-assistant-js-websocket";
 import FlowerCard from "../flower-card";
 import { CardName } from "../types/flower-card-types";
+
+/** The entity's state as a number; NaN when it is blank or not a finite number. */
+export const numericState = (state: HassEntity): number => {
+    const text = state.state.trim();
+    if (text === "") {
+        return NaN;
+    }
+    const value = Number(text);
+    return Number.isFinite(value) ? value : NaN;
+};
+
+/** The state as a plain number in the user's format, rounded to the entity's display precision if set. */
+export const formatStateNumber = (
+    state: HassEntity,
+    locale: FrontendLocaleData | undefined,
+    displayPrecision: number | null | undefined,
+): string => {
+    if (displayPrecision === undefined || displayPrecision === null) {
+        return formatNumber(state.state, locale);
+    }
+    return formatNumber(state.state, locale, {
+        minimumFractionDigits: displayPrecision,
+        maximumFractionDigits: displayPrecision,
+    });
+};
 
 export const moreInfo = (card: FlowerCard, entityId: string): void => {
     fireEvent(

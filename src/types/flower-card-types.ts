@@ -1,6 +1,14 @@
 import { LovelaceCardConfig } from "custom-card-helpers";
 import { HassEntity } from "home-assistant-js-websocket";
 
+export interface ExtraBar {
+    entity: string;   // Any entity with a numeric state
+    name?: string;    // Tooltip name (default: the entity's name)
+    icon?: string;    // Default: the entity's icon, else mdi:gauge
+    min?: number;     // Bar start; red below (default: 0)
+    max?: number;     // Bar end; red above (default: 100)
+}
+
 export interface ExtraBadge {
     type?: string;        // Badge type discriminator (e.g. "care_info")
     fields?: string[];    // care_info: care fields shown in the popup (default: all)
@@ -34,6 +42,7 @@ export interface FlowerCardConfig extends LovelaceCardConfig {
     hide_species?: boolean;
     hide_image?: boolean;
     extra_badges?: ExtraBadge[];
+    extra_bars?: ExtraBar[];
     show_care?: string[];      // selected care_* attribute keys to display (default: none)
     battery_warn_level?: number;   // Below this → red (default: 20)
     battery_ok_level?: number;     // Above this → green (default: 40)
@@ -87,6 +96,7 @@ export interface DisplayedAttribute extends Attribute {
     current: number;
     limits: Limits;
     name: string;
+    label?: string;   // Shown instead of the translated reading name (extra bars)
 }
 
 export interface DisplayedAttributes {

@@ -242,7 +242,7 @@ describe('renderAttributes entity state guard', () => {
           const { max, min, current, icon, sensor } = plantinfoResult[elem];
           const entityState = states[sensor];
           if (!entityState) continue;
-          const display_state = formatEntityState(entityState).replace(/[^\d,.+-]/g, '');
+          const display_state = formatEntityState(entityState);
           const unit_of_measurement = entityState?.attributes?.unit_of_measurement as string || plantinfoResult[elem].unit_of_measurement || '';
           displayed[elem] = {
             name: elem,
