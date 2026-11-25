@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { HassEntity } from 'home-assistant-js-websocket';
 import { extraBarAttributes, validateExtraBars } from '../src/utils/extra-bars';
+import type { ValuePart } from '../src/types/flower-card-types';
 
 function entity(entity_id: string, state: string, attributes: Record<string, unknown> = {}): HassEntity {
   return {
@@ -13,8 +14,18 @@ const states: Record<string, HassEntity> = {
   'sensor.reservoir': entity('sensor.reservoir', '42.5', { unit_of_measurement: '%', icon: 'mdi:cup-water', friendly_name: 'Reservoir' }),
   'sensor.pot_weight': entity('sensor.pot_weight', '1830', { unit_of_measurement: 'g' }),
   'sensor.offline': entity('sensor.offline', 'unavailable'),
+  'sensor.consumption': entity('sensor.consumption', '5.2', { unit_of_measurement: 'L/100km' }),
+  'sensor.blank': entity('sensor.blank', ''),
+  'sensor.spaces': entity('sensor.spaces', '  '),
+  'sensor.infinite': entity('sensor.infinite', 'Infinity'),
 };
-const formatState = (state: HassEntity) => `${state.state} ${state.attributes.unit_of_measurement ?? ''}`;
+const formatState = (state: HassEntity): ValuePart[] => {
+  const unit = state.attributes.unit_of_measurement;
+  if (unit === undefined) {
+    return [{ type: 'value', value: state.state }];
+  }
+  return [{ type: 'value', value: state.state }, { type: 'literal', value: ' ' }, { type: 'unit', value: String(unit) }];
+};
 const displayName = (state: HassEntity) => String(state.attributes.friendly_name ?? state.entity_id);
 
 describe('extraBarAttributes', () => {
@@ -56,6 +67,22 @@ describe('extraBarAttributes', () => {
     expect(bars.map((bar) => Number.isNaN(bar.current))).toEqual([true, true]);
     expect(bars[1].label).toBe('sensor.gone');
     expect(bars[1].display_state).toBe('');
+  });
+
+  it('gives an unavailable bar for a blank or infinite state', () => {
+    const bars = Object.values(extraBarAttributes(
+      [{ entity: 'sensor.blank' }, { entity: 'sensor.spaces' }, { entity: 'sensor.infinite' }],
+      states, formatState, displayName,
+    ));
+    expect(bars.map((bar) => Number.isNaN(bar.current))).toEqual([true, true, true]);
+    expect(bars.map((bar) => bar.display_state)).toEqual(['', '', '']);
+  });
+
+  it('shows the value without digits from the unit', () => {
+    const [bar] = Object.values(extraBarAttributes([{ entity: 'sensor.consumption' }], states, formatState, displayName));
+    expect(bar.current).toBe(5.2);
+    expect(bar.display_state).toBe('5.2');
+    expect(bar.unit_of_measurement).toBe('L/100km');
   });
 
   it('keeps the configured order', () => {

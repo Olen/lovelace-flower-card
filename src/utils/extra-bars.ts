@@ -1,5 +1,6 @@
 import { HassEntity } from "home-assistant-js-websocket";
-import { DisplayedAttribute, DisplayedAttributes, ExtraBar } from "../types/flower-card-types";
+import { DisplayedAttribute, DisplayedAttributes, ExtraBar, ValuePart } from "../types/flower-card-types";
+import { formattedValue, numericState } from "./utils";
 
 export const EXTRA_BAR_DEFAULT_MIN = 0;
 export const EXTRA_BAR_DEFAULT_MAX = 100;
@@ -38,21 +39,22 @@ export function validateExtraBars(bars: unknown): void {
 export function extraBarAttributes(
     bars: ExtraBar[],
     states: Record<string, HassEntity | undefined>,
-    formatState: (state: HassEntity) => string,
+    formatStateParts: (state: HassEntity) => ValuePart[],
     displayName: (state: HassEntity) => string,
 ): DisplayedAttributes {
     const displayed: DisplayedAttributes = {};
     bars.forEach((bar, index) => {
         const state = states[bar.entity];
+        const current = state ? numericState(state) : NaN;
         const attribute: DisplayedAttribute = {
             name: `extra_bar_${index}`,
             label: bar.name ?? (state ? displayName(state) : bar.entity),
-            current: state ? Number(state.state) : NaN,
+            current,
             limits: { min: bar.min ?? EXTRA_BAR_DEFAULT_MIN, max: bar.max ?? EXTRA_BAR_DEFAULT_MAX },
             icon: bar.icon ?? state?.attributes.icon ?? EXTRA_BAR_DEFAULT_ICON,
             sensor: bar.entity,
             unit_of_measurement: state?.attributes.unit_of_measurement ?? "",
-            display_state: state ? formatState(state).replace(/[^\d,.+-]/g, "") : "",
+            display_state: state && !Number.isNaN(current) ? formattedValue(formatStateParts(state)) : "",
         };
         displayed[attribute.name] = attribute;
     });

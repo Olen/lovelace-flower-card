@@ -3,7 +3,7 @@ import { TemplateResult, html } from "lit";
 import { FrontendLocaleData, formatNumber } from "custom-card-helpers";
 import { careFields, careIcons, default_show_bars, getCareFields } from "./constants";
 import { getHassLanguage, localize, localizeReading } from "../localize/localize";
-import { entityDisplayName, moreInfo } from "./utils";
+import { entityDisplayName, formattedValue, moreInfo, numericState } from "./utils";
 import { extraBarAttributes } from "./extra-bars";
 import FlowerCard from "../flower-card";
 
@@ -332,7 +332,9 @@ export const renderAttributes = (card: FlowerCard): TemplateResult[] => {
                     const { max, min, current, icon, sensor } = result[elem];
                     const entityState = card._hass.states[sensor];
                     if (!entityState) continue;
-                    const display_state = card._hass.formatEntityState(entityState).replace(/[^\d,.+-]/g, "");
+                    const display_state = Number.isNaN(numericState(entityState))
+                        ? ""
+                        : formattedValue(card._hass.formatEntityStateToParts(entityState));
                     // Get unit from entity state attributes (respects user customizations)
                     const unit_of_measurement = entityState?.attributes?.unit_of_measurement || result[elem].unit_of_measurement || "";
                     const limits: Limits = { max: Number(max), min: Number(min) };
@@ -355,7 +357,7 @@ export const renderAttributes = (card: FlowerCard): TemplateResult[] => {
     const extraBars = extraBarAttributes(
         card.config?.extra_bars ?? [],
         card._hass.states,
-        (state) => card._hass.formatEntityState(state),
+        (state) => card._hass.formatEntityStateToParts(state),
         (state) => entityDisplayName(card._hass, state),
     );
     return renderAttributeChunks(card, { ...displayed, ...extraBars });

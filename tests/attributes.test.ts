@@ -2,7 +2,8 @@ import { describe, it, expect, vi } from 'vitest';
 import { render } from 'lit';
 import { formatLimit, getChunkedDisplayed, isPpfdUnit, renderAttribute } from '../src/utils/attributes';
 import FlowerCard from '../src/flower-card';
-import { DisplayedAttribute, DisplayedAttributes, ExtraBadge } from '../src/types/flower-card-types';
+import { DisplayedAttribute, DisplayedAttributes, ExtraBadge, ValuePart } from '../src/types/flower-card-types';
+import { formattedValue } from '../src/utils/utils';
 
 describe('percentage calculation', () => {
   // Test the percentage calculation logic used in renderAttribute
@@ -233,7 +234,7 @@ describe('renderAttributes entity state guard', () => {
     plantinfoResult: Record<string, { max: number; min: number; current: number; icon: string; sensor: string; unit_of_measurement: string }>,
     monitored: string[],
     states: Record<string, { state: string; attributes: Record<string, unknown> } | undefined>,
-    formatEntityState: (entity: { state: string }) => string,
+    formatEntityStateToParts: (entity: { state: string }) => ValuePart[],
   ) => {
     const displayed: DisplayedAttributes = {};
     for (const elem of monitored) {
@@ -242,7 +243,7 @@ describe('renderAttributes entity state guard', () => {
           const { max, min, current, icon, sensor } = plantinfoResult[elem];
           const entityState = states[sensor];
           if (!entityState) continue;
-          const display_state = formatEntityState(entityState).replace(/[^\d,.+-]/g, '');
+          const display_state = formattedValue(formatEntityStateToParts(entityState));
           const unit_of_measurement = entityState?.attributes?.unit_of_measurement as string || plantinfoResult[elem].unit_of_measurement || '';
           displayed[elem] = {
             name: elem,
@@ -278,7 +279,7 @@ describe('renderAttributes entity state guard', () => {
       mockPlantinfoResult,
       ['moisture', 'temperature', 'conductivity'],
       states,
-      (entity) => entity.state,
+      (entity) => [{ type: 'value', value: entity.state }],
     );
 
     expect(Object.keys(displayed)).toHaveLength(2);
@@ -296,7 +297,7 @@ describe('renderAttributes entity state guard', () => {
       mockPlantinfoResult,
       ['moisture'],
       states,
-      (entity) => entity.state,
+      (entity) => [{ type: 'value', value: entity.state }],
     );
 
     expect(Object.keys(displayed)).toHaveLength(0);
@@ -309,7 +310,7 @@ describe('renderAttributes entity state guard', () => {
       mockPlantinfoResult,
       ['moisture', 'temperature', 'conductivity'],
       states,
-      (entity) => entity.state,
+      (entity) => [{ type: 'value', value: entity.state }],
     );
 
     expect(Object.keys(displayed)).toHaveLength(0);
@@ -326,7 +327,7 @@ describe('renderAttributes entity state guard', () => {
       mockPlantinfoResult,
       ['moisture', 'temperature', 'conductivity'],
       states,
-      (entity) => entity.state,
+      (entity) => [{ type: 'value', value: entity.state }],
     );
 
     expect(Object.keys(displayed)).toHaveLength(3);
@@ -345,7 +346,7 @@ describe('renderAttributes entity state guard', () => {
     // formatEntityState throws for temperature but works for others
     const formatEntityState = (entity: { state: string }) => {
       if (entity.state === '22') throw new Error('Formatting failed');
-      return entity.state;
+      return [{ type: 'value' as const, value: entity.state }];
     };
 
     const displayed = buildDisplayedAttributes(
@@ -366,7 +367,7 @@ describe('renderAttributes entity state guard', () => {
     // Before the fix, if entityState was undefined, calling formatEntityState(undefined)
     // would throw a TypeError
     const states: Record<string, { state: string; attributes: Record<string, unknown> } | undefined> = {};
-    const formatEntityState = vi.fn((entity: { state: string }) => entity.state);
+    const formatEntityState = vi.fn((entity: { state: string }): ValuePart[] => [{ type: 'value', value: entity.state }]);
 
     const displayed = buildDisplayedAttributes(
       { moisture: mockPlantinfoResult.moisture },
