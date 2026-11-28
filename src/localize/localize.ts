@@ -28,3 +28,15 @@ export const localizeReading = (hass: HassLanguageContext | undefined, key: stri
   const plantTranslation = hass?.localize?.(`component.plant.entity.sensor.${key}.name`);
   return plantTranslation || localize(hass, key);
 };
+
+export const localizeWith = (
+  hass: HassLanguageContext | undefined,
+  key: string,
+  values: Record<string, string | number>,
+): string => {
+  let text = localize(hass, key);
+  for (const [name, value] of Object.entries(values)) {
+    text = text.split(`{${name}}`).join(String(value));
+  }
+  return text;
+};

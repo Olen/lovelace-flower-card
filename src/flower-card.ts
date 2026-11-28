@@ -1,13 +1,18 @@
-import { CSSResult, HTMLTemplateResult, LitElement, html } from 'lit';
+import { CSSResult, HTMLTemplateResult, LitElement, html, nothing } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { HomeAssistant } from 'custom-card-helpers';
 import { style } from './styles';
+import { careButtonStyle, nextCareStyle } from './care/styles';
+import { CareTasksController } from './care/controller';
+import { CareRow, nextCareRows } from './care/model';
 import { DisplayType, EntitySuggestion, ExtraBadge, FlowerCardConfig, HomeAssistantEntity, PlantInfo } from './types/flower-card-types';
 import * as packageJson from '../package.json';
-import { computeCareDialogState, renderAttributes, renderBattery, renderCareInfo, renderCareItems, renderExtraBadges, selectCareInfo } from './utils/attributes';
-import { CARD_NAME, default_show_bars, getCareFields, getPlantAttributes, missingImage } from './utils/constants';
+import './flower-care-card';
+import { computeCareDialogState, renderAttributes, renderBattery, renderCareDialog, renderCareInfo, renderExtraBadges } from './utils/attributes';
+import { CARD_NAME, careRowIcons, default_show_bars, getCareFields, getPlantAttributes } from './utils/constants';
 import { getHassLanguage, localize } from './localize/localize';
-import { entityDisplayName, isMediaSourceUrl, moreInfo, nameSelector, resolveMediaSource, shouldEnableImageLightbox } from './utils/utils';
+import { renderImageDialog, renderPlantHeader } from './utils/header';
+import { entityDisplayName, getConfigFormLanguage, getHaVersion, moreInfo, nameSelector, resolveEntityPicture, shouldEnableImageLightbox } from './utils/utils';
 
 console.info(
     `%c FLOWER-CARD %c ${packageJson.version}`,
@@ -15,17 +20,6 @@ console.info(
     'color: darkblue; background: white; font-weight: bold;'
 );
 
-const getConfigFormLanguage = (): string => {
-    if (typeof document === 'undefined') return 'en';
-    return document.documentElement?.lang || 'en';
-};
-
-// getConfigForm is static, so it has no hass of its own; read the version from the page
-const getHaVersion = (): string | undefined => {
-    if (typeof document === 'undefined') return undefined;
-    const root = document.querySelector('home-assistant') as (Element & { hass?: HomeAssistant }) | null;
-    return root?.hass?.config?.version;
-};
 
 // Suggests flower-card in Home Assistant's card picker when a plant entity is
 // selected (HA 2026.6+). Returns null for any non-plant entity so the card only
@@ -68,10 +62,12 @@ export default class FlowerCard extends LitElement {
     private previousFetchDate = 0;
     private _lastEntityPicture: string | undefined;
     private _resolvedImageUrl: string | undefined;
+    private careTasks = new CareTasksController(this, 'Flower card');
 
     plantinfo: PlantInfo = { result: {} };
     set hass(hass: HomeAssistant) {
         this._hass = hass;
+        this.careTasks.hass = hass;
         this.stateObj = this.config?.entity ? hass.states[this.config.entity] : undefined;
 
         // Check if entity_picture changed and needs resolution
@@ -90,18 +86,11 @@ export default class FlowerCard extends LitElement {
         }
     }
 
-    private async _resolveEntityPicture(hass: HomeAssistant, entityPicture: string | undefined): Promise<void> {
-        if (!entityPicture) {
-            this._resolvedImageUrl = undefined;
-            return;
-        }
-
-        if (isMediaSourceUrl(entityPicture)) {
-            this._resolvedImageUrl = await resolveMediaSource(hass, entityPicture);
+    private _resolveEntityPicture(hass: HomeAssistant, entityPicture: string | undefined): void {
+        resolveEntityPicture(hass, entityPicture, (url) => {
+            this._resolvedImageUrl = url;
             this.requestUpdate();
-        } else {
-            this._resolvedImageUrl = entityPicture;
-        }
+        });
     }
 
     static getConfigForm() {
@@ -147,6 +136,10 @@ export default class FlowerCard extends LitElement {
                                     options: getCareFields(language)
                                 }
                             }
+                        },
+                        {
+                            name: "show_next_care",
+                            selector: { boolean: {} }
                         }
                     ]
                 },
@@ -193,6 +186,7 @@ export default class FlowerCard extends LitElement {
                     battery_sensor: localize({ language }, 'settings_battery_sensor'),
                     show_bars: localize({ language }, 'settings_show_bars'),
                     show_care: localize({ language }, 'settings_show_care_info'),
+                    show_next_care: localize({ language }, 'settings_show_next_care'),
                     hide_species: localize({ language }, 'settings_hide_species'),
                     hide_image: localize({ language }, 'settings_hide_image'),
                     hide_units: localize({ language }, 'settings_hide_units'),
@@ -248,21 +242,7 @@ export default class FlowerCard extends LitElement {
     private renderCareDialog(): HTMLTemplateResult {
         const entity = this.config?.entity;
         const attributes = entity ? this._hass?.states[entity]?.attributes : undefined;
-        const language = getHassLanguage(this._hass);
-        const entries = selectCareInfo(attributes, this._careDialogFields, language);
-        // ha-dialog takes its title from header-title; older HA read heading
-        return html`
-            <ha-dialog
-                open
-                header-title="${this._careDialogTitle}"
-                heading="${this._careDialogTitle}"
-                @closed="${() => this._closeCareDialog()}"
-            >
-                ${entries.length > 0
-                    ? html`<div class="care-info care-info--dialog">${renderCareItems(entries)}</div>`
-                    : html`<div class="care-info-empty">${localize({ language }, 'no_care_info')}</div>`}
-            </ha-dialog>
-        `;
+        return renderCareDialog(this._hass, attributes, this._careDialogFields, this._careDialogTitle, () => this._closeCareDialog());
     }
 
     openImageDialog(): void {
@@ -275,14 +255,7 @@ export default class FlowerCard extends LitElement {
 
     private renderImageDialog(): HTMLTemplateResult {
         const displayName = this.stateObj ? entityDisplayName(this._hass, this.stateObj, this.config?.name) : '';
-        return html`
-            <ha-dialog open @closed="${() => this._closeImageDialog()}">
-                <div class="image-dialog">
-                    <img src="${this._resolvedImageUrl}" alt="${displayName}">
-                    ${displayName ? html`<div class="image-dialog-caption">${displayName}</div>` : ''}
-                </div>
-            </ha-dialog>
-        `;
+        return renderImageDialog(this._resolvedImageUrl, displayName, () => this._closeImageDialog());
     }
 
     render(): HTMLTemplateResult {
@@ -291,6 +264,7 @@ export default class FlowerCard extends LitElement {
         if (!this.stateObj) {
             this._careDialogOpen = false;
             this._imageDialogOpen = false;
+            this.careTasks.closeDialogs();
             return html`
                 <hui-warning>
                 Entity not available: ${this.config.entity}
@@ -299,42 +273,59 @@ export default class FlowerCard extends LitElement {
         }
         const stateObj = this.stateObj;
 
-        const species = stateObj.attributes.species;
-        const displayName = entityDisplayName(this._hass, stateObj, this.config.name);
         const hideSpecies = this.config.hide_species ?? false;
         const hideImage = this.config.hide_image ?? false;
         const imageLightbox = shouldEnableImageLightbox(hideImage, this._resolvedImageUrl);
-        const headerCssClass = this.config.display_type === DisplayType.Compact ? "header-compact" : "header";
         const haCardCssClass = (this.config.display_type === DisplayType.Compact || hideImage) ? "" : "card-margin-top";
-        const noImageClass = hideImage ? " no-image" : "";
 
         return html`
             <ha-card class="${haCardCssClass}">
-            <div class="${headerCssClass}${noImageClass}" @click="${() =>
-                moreInfo(this, stateObj.entity_id)}">
-                ${!hideImage ? html`<img
-                    src="${this._resolvedImageUrl || missingImage}"
-                    class="${imageLightbox ? 'has-lightbox' : ''}"
-                    @click="${(e: Event) => {
-                        if (!imageLightbox) return;
-                        e.stopPropagation();
-                        this.openImageDialog();
-                    }}">` : ''}
-                <span id="name"> ${displayName} <ha-icon .icon="mdi:${stateObj.state.toLowerCase() == "problem"
-                ? "alert-circle-outline"
-                : ""
-            }"></ha-icon>
-                </span>
-                <span id="battery">${renderExtraBadges(this)}${renderBattery(this)}</span>
-                ${!hideSpecies ? html`<span id="species">${species}</span>` : ''}
-            </div>
+            ${renderPlantHeader({
+                hass: this._hass,
+                stateObj,
+                displayType: this.config.display_type,
+                hideImage,
+                hideSpecies,
+                name: this.config.name,
+                imageUrl: this._resolvedImageUrl,
+                badges: html`${renderExtraBadges(this)}${renderBattery(this)}`,
+                imageLightbox,
+                onImageClick: () => this.openImageDialog(),
+                onClick: () => moreInfo(this, stateObj.entity_id),
+            })}
             <div class="divider"></div>
             ${renderAttributes(this)}
+            ${this.renderNextCare(stateObj)}
             ${renderCareInfo(this)}
             </ha-card>
+            ${this.careTasks.renderConfirmDialog()}
             ${this._careDialogOpen ? this.renderCareDialog() : html``}
             ${this._imageDialogOpen ? this.renderImageDialog() : html``}
             `;
+    }
+
+    private renderNextCareItem(row: CareRow, now: Date): HTMLTemplateResult {
+        return html`
+            <div class="next-care-item ${row.alert ? 'alert' : ''}">
+                <ha-icon .icon="${careRowIcons[row.key]}"></ha-icon>
+                <span>${localize(this._hass, `care_row_${row.key}`)}: ${this.careTasks.statusText(row, now)}</span>
+                ${row.done === null ? nothing : html`
+                    <button class="care-button ${row.done.emphasis}" @click="${() => this.careTasks.pressDone(row)}">
+                        ${localize(this._hass, 'care_done')}
+                    </button>`}
+            </div>`;
+    }
+
+    private renderNextCare(stateObj: HomeAssistantEntity): HTMLTemplateResult | typeof nothing {
+        if (!this.config?.show_next_care || this.careTasks.care === undefined) {
+            return nothing;
+        }
+        const now = new Date();
+        const rows = nextCareRows(this.careTasks.rows(stateObj, now), now);
+        if (rows.length === 0) {
+            return nothing;
+        }
+        return html`<div class="next-care">${rows.map((row) => this.renderNextCareItem(row, now))}</div>`;
     }
 
     async get_data(hass: HomeAssistant): Promise<void> {
@@ -343,6 +334,9 @@ export default class FlowerCard extends LitElement {
                 type: "plant/get_info",
                 entity_id: this.config?.entity,
             });
+            if (this.config?.show_next_care) {
+                this.careTasks.setPlantInfo(this.plantinfo.result as unknown as Record<string, unknown>);
+            }
         } catch (err) {
             console.warn(`Flower card: Failed to fetch data for ${this.config?.entity}:`, err);
             if (!this.plantinfo || !this.plantinfo.result || Object.keys(this.plantinfo.result).length === 0) {
@@ -355,8 +349,8 @@ export default class FlowerCard extends LitElement {
         return 5;
     }
 
-    static get styles(): CSSResult {
-        return style;
+    static get styles(): CSSResult[] {
+        return [style, careButtonStyle, nextCareStyle];
     }
 }
 

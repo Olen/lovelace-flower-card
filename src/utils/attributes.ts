@@ -1,10 +1,26 @@
 import { DisplayType, DisplayedAttribute, DisplayedAttributes, ExtraBadge, Limits } from "../types/flower-card-types";
-import { TemplateResult, html } from "lit";
+import { HTMLTemplateResult, TemplateResult, html } from "lit";
 import { FrontendLocaleData, formatNumber } from "custom-card-helpers";
 import { careFields, careIcons, default_show_bars, getCareFields } from "./constants";
 import { getHassLanguage, localize, localizeReading } from "../localize/localize";
 import { entityDisplayName, moreInfo } from "./utils";
 import FlowerCard from "../flower-card";
+
+/** The badge options both cards share. */
+export interface BadgeConfig {
+    battery_sensor?: string;
+    battery_warn_level?: number;
+    battery_ok_level?: number;
+    extra_badges?: ExtraBadge[];
+}
+
+/** What the battery and extra badges need from the card that shows them. */
+export interface BadgeHost extends HTMLElement {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    _hass?: any;
+    config?: BadgeConfig;
+    openCareDialog(badge: ExtraBadge): void;
+}
 
 export interface CareEntry {
     key: string;
@@ -61,6 +77,32 @@ export const renderCareInfo = (card: FlowerCard): TemplateResult => {
     `;
 };
 
+/** The care-info badge's popup: the chosen care fields of the plant, or a note when it has none. */
+export const renderCareDialog = (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    hass: any,
+    attributes: Record<string, unknown> | undefined,
+    fields: string[],
+    title: string,
+    onClosed: () => void,
+): HTMLTemplateResult => {
+    const language = getHassLanguage(hass);
+    const entries = selectCareInfo(attributes, fields, language);
+    // ha-dialog takes its title from header-title; older HA read heading
+    return html`
+        <ha-dialog
+            open
+            header-title="${title}"
+            heading="${title}"
+            @closed="${() => onClosed()}"
+        >
+            ${entries.length > 0
+                ? html`<div class="care-info care-info--dialog">${renderCareItems(entries)}</div>`
+                : html`<div class="care-info-empty">${localize({ language }, 'no_care_info')}</div>`}
+        </ha-dialog>
+    `;
+};
+
 /** Discriminator value for the care-info badge (extra_badges: - type: care_info). */
 export const CARE_BADGE_TYPE = 'care_info';
 
@@ -91,7 +133,7 @@ export const careBadgeVisual = (
     tip: badge.title ?? localize({ language }, 'care'),
 });
 
-export const renderCareBadge = (card: FlowerCard, badge: ExtraBadge): TemplateResult => {
+export const renderCareBadge = (card: BadgeHost, badge: ExtraBadge): TemplateResult => {
     const { icon, color, tip } = careBadgeVisual(badge, getHassLanguage(card._hass));
     return html`
         <div class="extra-badge tooltip" @click="${(e: Event) => { e.stopPropagation(); card.openCareDialog(badge); }}">
@@ -111,7 +153,7 @@ export const isPpfdUnit = (unit: string | undefined | null): boolean => {
     return lowerUnit.includes('mol');
 };
 
-export const renderBattery = (card: FlowerCard) => {
+export const renderBattery = (card: BadgeHost) => {
     const config = card.config;
     if(!config?.battery_sensor) return html``;
     const batterySensor = config.battery_sensor;
@@ -155,7 +197,7 @@ export const renderBattery = (card: FlowerCard) => {
     `;
 }
 
-export const renderExtraBadge = (card: FlowerCard, badge: ExtraBadge) => {
+export const renderExtraBadge = (card: BadgeHost, badge: ExtraBadge) => {
     // Care info badge - opens a dialog with care details
     if (isCareBadge(badge)) {
         return renderCareBadge(card, badge);
@@ -310,7 +352,7 @@ export const renderExtraBadge = (card: FlowerCard, badge: ExtraBadge) => {
     `;
 }
 
-export const renderExtraBadges = (card: FlowerCard) => {
+export const renderExtraBadges = (card: BadgeHost) => {
     const extraBadges = card.config?.extra_badges;
     if (!extraBadges || extraBadges.length === 0) {
         return html``;

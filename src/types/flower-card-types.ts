@@ -35,8 +35,25 @@ export interface FlowerCardConfig extends LovelaceCardConfig {
     hide_image?: boolean;
     extra_badges?: ExtraBadge[];
     show_care?: string[];      // selected care_* attribute keys to display (default: none)
+    show_next_care?: boolean;  // one line with the most urgent care tasks (default: false)
     battery_warn_level?: number;   // Below this → red (default: 20)
     battery_ok_level?: number;     // Above this → green (default: 40)
+}
+
+export type CareDisplayType = 'full' | 'folded' | 'compact';
+export const CARE_DISPLAY_TYPES: CareDisplayType[] = ['full', 'folded', 'compact'];
+
+export interface FlowerCareCardConfig extends LovelaceCardConfig {
+    entity: string;
+    display_type?: CareDisplayType;
+    name?: CardName;
+    hide_species?: boolean;
+    hide_image?: boolean;
+    battery_sensor?: string;
+    battery_warn_level?: number;
+    battery_ok_level?: number;
+    extra_badges?: ExtraBadge[];
+    show_care?: string[] | null;   // care areas to show (default: all)
 }
 
 export enum DisplayType {
@@ -46,9 +63,9 @@ export enum DisplayType {
 
 // Shape returned to Home Assistant's card picker via `getEntitySuggestion`.
 // `label` distinguishes variants when more than one is offered for an entity.
-export interface EntitySuggestion {
+export interface EntitySuggestion<Config extends LovelaceCardConfig = FlowerCardConfig> {
     label?: string;
-    config: FlowerCardConfig;
+    config: Config;
 }
 
 export interface HomeAssistantEntity extends HassEntity {

@@ -1,15 +1,27 @@
 import { fireEvent, HomeAssistant } from "custom-card-helpers";
 import { HassEntity } from "home-assistant-js-websocket";
-import FlowerCard from "../flower-card";
 import { CardName } from "../types/flower-card-types";
 
-export const moreInfo = (card: FlowerCard, entityId: string): void => {
+export const moreInfo = (element: HTMLElement, entityId: string): void => {
     fireEvent(
-        card,
+        element,
         'hass-more-info',
         { entityId },
         { bubbles: false, composed: true }
     );
+};
+
+// getConfigForm is static, so it has no hass of its own; read the language from the page
+export const getConfigFormLanguage = (): string => {
+    if (typeof document === 'undefined') return 'en';
+    return document.documentElement?.lang || 'en';
+};
+
+// getConfigForm is static, so it has no hass of its own; read the version from the page
+export const getHaVersion = (): string | undefined => {
+    if (typeof document === 'undefined') return undefined;
+    const root = document.querySelector('home-assistant') as (Element & { hass?: HomeAssistant }) | null;
+    return root?.hass?.config?.version;
 };
 
 // Media source URL handling
@@ -20,7 +32,7 @@ interface ResolvedMediaSource {
     mime_type: string;
 }
 
-export const isMediaSourceUrl = (url: string | undefined): boolean => {
+export const isMediaSourceUrl = (url: string | undefined): url is string => {
     return url?.startsWith(MEDIA_SOURCE_PREFIX) ?? false;
 };
 
@@ -42,6 +54,19 @@ export const resolveMediaSource = async (
         console.error("Failed to resolve media source:", error);
         return ""; // Return empty string on failure, will fall back to missingImage
     }
+};
+
+/** Passes the picture URL to `apply`: plain URLs at once, so the first render has them; media-source URLs once resolved. */
+export const resolveEntityPicture = (
+    hass: HomeAssistant,
+    entityPicture: string | undefined,
+    apply: (url: string | undefined) => void,
+): void => {
+    if (!isMediaSourceUrl(entityPicture)) {
+        apply(entityPicture || undefined);
+        return;
+    }
+    resolveMediaSource(hass, entityPicture).then(apply);
 };
 
 /** True when the thumbnail should open a lightbox (real image present and not hidden). */

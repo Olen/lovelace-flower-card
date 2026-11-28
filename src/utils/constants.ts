@@ -1,4 +1,5 @@
 import { localize } from '../localize/localize';
+import { RowKey } from '../care/model';
 
 // A selectable option (label/value pair) for the card's config-form selectors.
 export interface DropdownOption {
@@ -7,6 +8,7 @@ export interface DropdownOption {
 }
 
 export const CARD_NAME = "flower-card";
+export const CARE_CARD_NAME = "flower-care-card";
 
 export const default_show_bars = [
     "moisture",
@@ -44,10 +46,29 @@ export const getCareFields = (language = 'en'): DropdownOption[] => [
 
 export const careFields: DropdownOption[] = getCareFields('en');
 
+// The flower care card's show_care values, in row order
+export const getCareAreaFields = (language = 'en'): DropdownOption[] => [
+  { label: localize({ language }, 'care_watering'), value: 'care_watering' },
+  { label: localize({ language }, 'care_fertilization'), value: 'care_fertilization' },
+  { label: localize({ language }, 'care_repotting'), value: 'care_repotting' },
+  { label: localize({ language }, 'care_pruning'), value: 'care_pruning' },
+  { label: localize({ language }, 'care_sunlight'), value: 'care_sunlight' },
+  { label: localize({ language }, 'care_soil'), value: 'care_soil' }
+];
+
 export const careIcons: Record<string, string> = {
   care_watering: 'mdi:watering-can-outline',
   care_sunlight: 'mdi:white-balance-sunny',
   care_soil: 'mdi:shovel',
   care_pruning: 'mdi:content-cut',
   care_fertilization: 'mdi:bottle-tonic-outline',
+};
+
+export const careRowIcons: Record<RowKey, string> = {
+  water: careIcons.care_watering,
+  fertilize: careIcons.care_fertilization,
+  repot: 'mdi:pot-mix-outline',
+  prune: careIcons.care_pruning,
+  light: careIcons.care_sunlight,
+  soil: careIcons.care_soil,
 };

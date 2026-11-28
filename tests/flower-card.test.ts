@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { PlantInfo } from '../src/types/flower-card-types';
 import { default_show_bars } from '../src/utils/constants';
-import { isMediaSourceUrl, resolveMediaSource } from '../src/utils/utils';
+import { isMediaSourceUrl, resolveEntityPicture, resolveMediaSource } from '../src/utils/utils';
 import { getEntitySuggestion } from '../src/flower-card';
 
 // hass is unused by the suggestion logic (domain is derived from entityId),
@@ -382,6 +382,35 @@ describe('FlowerCard logic', () => {
       it('should return false for undefined or empty values', () => {
         expect(isMediaSourceUrl(undefined)).toBe(false);
         expect(isMediaSourceUrl('')).toBe(false);
+      });
+    });
+
+    describe('resolveEntityPicture', () => {
+      it('applies no picture at once when the entity has none', () => {
+        const mockHass = { callWS: vi.fn() };
+        const apply = vi.fn();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        resolveEntityPicture(mockHass as any, undefined, apply);
+        expect(apply).toHaveBeenCalledWith(undefined);
+        expect(mockHass.callWS).not.toHaveBeenCalled();
+      });
+
+      it('applies a plain URL at once, as it is', () => {
+        const mockHass = { callWS: vi.fn() };
+        const apply = vi.fn();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        resolveEntityPicture(mockHass as any, '/local/plant.jpg', apply);
+        expect(apply).toHaveBeenCalledWith('/local/plant.jpg');
+        expect(mockHass.callWS).not.toHaveBeenCalled();
+      });
+
+      it('applies a media-source URL once it is resolved', async () => {
+        const mockHass = { callWS: vi.fn().mockResolvedValue({ url: '/media/local/plant.jpg', mime_type: 'image/jpeg' }) };
+        const apply = vi.fn();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        resolveEntityPicture(mockHass as any, 'media-source://media_source/local/plant.jpg', apply);
+        expect(apply).not.toHaveBeenCalled();
+        await vi.waitFor(() => expect(apply).toHaveBeenCalledWith('/media/local/plant.jpg'));
       });
     });
 

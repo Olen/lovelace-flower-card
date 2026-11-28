@@ -1,0 +1,53 @@
+import { describe, it, expect } from 'vitest';
+import { validateCareCardConfig } from '../src/flower-care-card';
+import { DisplayType, FlowerCareCardConfig } from '../src/types/flower-card-types';
+
+describe('validateCareCardConfig', () => {
+  it('rejects a config without an entity', () => {
+    expect(() => validateCareCardConfig({})).toThrow('You need to define an entity');
+  });
+
+  it('returns a valid config unchanged', () => {
+    const config = { type: 'custom:flower-care-card', entity: 'plant.x', display_type: DisplayType.Compact };
+    expect(validateCareCardConfig(config)).toEqual(config);
+  });
+
+  it('accepts the options shared with the flower card', () => {
+    const config = {
+      type: 'custom:flower-care-card',
+      entity: 'plant.x',
+      name: 'Monstera',
+      battery_sensor: 'sensor.x_battery',
+      extra_badges: [{ type: 'care_info' }],
+      show_care: ['care_watering', 'care_repotting'],
+      hide_species: true,
+      hide_image: true,
+    };
+    expect(validateCareCardConfig(config)).toEqual(config);
+  });
+
+  it('rejects an unknown show_care value', () => {
+    expect(() => validateCareCardConfig({ entity: 'plant.x', show_care: ['care_misting'] })).toThrow(/care_misting/);
+  });
+
+  it('treats an empty or null show_care as showing all areas', () => {
+    expect(() => validateCareCardConfig({ entity: 'plant.x', show_care: [] })).not.toThrow();
+    expect(() => validateCareCardConfig({ entity: 'plant.x', show_care: null })).not.toThrow();
+  });
+
+  it('rejects a show_care that is not a list', () => {
+    const config = { entity: 'plant.x', show_care: 'care_watering' } as unknown as Partial<FlowerCareCardConfig>;
+    expect(() => validateCareCardConfig(config)).toThrow('show_care must be a list of:');
+  });
+});
+
+describe('validateCareCardConfig display_type', () => {
+  it('accepts full, folded and compact', () => {
+    for (const display_type of ['full', 'folded', 'compact'] as const) {
+      expect(validateCareCardConfig({ entity: 'plant.x', display_type }).display_type).toBe(display_type);
+    }
+  });
+  it('rejects an unknown display_type, naming the valid ones', () => {
+    expect(() => validateCareCardConfig({ entity: 'plant.x', display_type: 'tiny' as never })).toThrow(/tiny.*full, folded, compact/);
+  });
+});
